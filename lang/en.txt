@@ -1,0 +1,43 @@
+## utf-8
+LANG=English (English)
+
+## Menu
+new_sketch=New Sketch...
+sketchbook=Sketchbook
+
+new_file=New File to Sketch...
+add_file=Add File to Sketch...
+import_lib=Import Library
+show_sketch_folder=Show Sketch Folder...
+
+verify=Verify/Compile
+upload=Upload
+upload_using_programmer=Upload Using Programmer
+
+board=Board
+processor=Processor
+serial_port=Serial Port
+refresh=Refresh
+
+programmer=Programmer
+burn_bootloader=Burn Bootloader
+
+preferences=Preferences
+language=Language
+set_arduino_path=Set Arduino Path...
+building_verbose=Toggle Building Verbose
+uploading_verbose=Toggle Uploading Verbose
+
+examples=Examples
+reference=Reference
+visit_arduino=Visit Arduino.cc
+
+about_stino=About Stino
+
+## Messages
+version=Version
+new_sketch_input=New Sketch Name: 
+new_file_input=New File Name: 
+error_msg_1=File exists. Please reinput another file name!
+error_msg_2=Sketch _sketch_name exists. Press OK to overwrite this sketch. Or Press Cancel to create another sketch.
+error_msg_3=Please connect your Arduino Board!
