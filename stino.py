@@ -866,6 +866,9 @@ def create_Def_File(file_path, mode = 'all'):
 	serial_port = Setting.get('serial_port', '')
 	building_verbose = Setting.get('building_verbose')
 	uploading_verbose = Setting.get('uploading_verbose')
+	posix_root = Setting.get('posix_root')
+
+# Read platform.txt file
 	index = platforms.index(platform)
 	core_root = core_paths[index]
 
@@ -884,15 +887,6 @@ def create_Def_File(file_path, mode = 'all'):
 			value = get_Value(line)
 			compile_info[key] = value
 	
-	REMOVE = 'rm -rf'
-	MV = 'mv -f'
-	MKDIR = 'mkdir -p'
-	SED = 'sed'
-	FIND = 'find'
-	DIRNAME = 'dirname'
-
-	posix_root = Setting.get('posix_root')
-
 	CC = compile_info['compiler.c.cmd']
 	C_ELF = compile_info['compiler.c.elf.cmd']
 	CPP = compile_info['compiler.cpp.cmd']
@@ -909,12 +903,57 @@ def create_Def_File(file_path, mode = 'all'):
 	if sys.platform == 'win32':
 		gcc_root = gcc_root.replace('/', os.path.sep)
 
-	core_source_root = os.path.join(core_root, 'cores')
-	core_source_root = os.path.join(core_source_root, board_info['build.core'])
-	arduino_var_root = os.path.join(core_root, 'variants')
-	arduino_var_root = os.path.join(arduino_var_root, board_info['build.variant'])
+	if 'AVR' in platform:
+		upload_cmd_windows = compile_info['tools.avrdude.cmd.path'].replace('{runtime.ide.path}', arduino_app_root)
+		upload_conf_windows = compile_info['tools.avrdude.config.path'].replace('{runtime.ide.path}', arduino_app_root)
 
-	build_system_path = os.path.join(core_root, 'system')
+		upload_cmd_linux = compile_info['tools.avrdude.cmd.path.linux'].replace('{runtime.ide.path}', arduino_app_root)
+		upload_conf_linux = compile_info['tools.avrdude.config.path.linux'].replace('{runtime.ide.path}', arduino_app_root)
+
+		if sys.platform == 'win32':
+			upload_cmd = upload_cmd_windows
+			upload_conf = upload_conf_windows
+		else:
+			upload_cmd = upload_cmd_linux
+			upload_conf = upload_conf_linux
+		uploader_path = os.path.split(upload_cmd)[0]
+		upload_cmd = os.path.split(upload_cmd)[1]
+		upload_conf = upload_conf.replace(os.path.sep, '/')
+	else:
+		uploade_cmd = compile_info['tools.bossac.cmd']
+		uploader_path = compile_info['tools.bossac.path'].replace('{runtime.ide.path}', arduino_app_root)
+
+#####################################################################
+	if sys.platform == 'win32':
+		uploader_path = uploader_path.replace('/', os.path.sep)
+		text = '@echo off\n'
+		text += 'Set Path=%s;%s;%s\n' % (posix_root, gcc_root, uploader_path)
+		text += 'make -e -w %s\n' % mode
+		bat_path = os.path.join(prj_path, 'build.bat')
+		write_File(bat_path, text, ENCODING)
+	else:
+		gcc_root = gcc_root.replace(' ', '\\ ')
+		uploader_path = uploader_path.replace(' ', '\\ ')
+		text = '#!/bin/sh\n\n'
+		text += 'export PATH=%s:%s:$PATH\n' % (gcc_root, uploader_path)
+		text += 'make -e -w %s\n' % mode
+		bat_path = os.path.join(prj_path, 'build.sh')
+		write_File(bat_path, text, ENCODING)
+		cmd = 'chmod +x %s' % bat_path
+		os.popen(cmd)
+#######################################################################
+	platform_dir = os.path.split(core_root)[1]
+	core_obj_root = os.path.join(arduino_user_root, platform_dir)
+	
+	core_root = core_root.replace(os.path.sep, '/')
+	core_root = core_root.replace(' ', '\\ ')
+	core_obj_root = core_obj_root.replace(os.path.sep, '/')
+	core_obj_root = core_obj_root.replace(' ', '\\ ')
+
+	core_source_root = core_root + '/cores/' + board_info['build.core']
+	arduino_var_root = core_root + '/variants/' + board_info['build.variant']
+	build_system_path = core_root + '/system'
+
 	if 'compiler.libsam.c.flags' in compile_info.keys():
 		compile_info['compiler.libsam.c.flags'] = compile_info['compiler.libsam.c.flags'].replace('{build.system.path}', build_system_path)
 
@@ -927,9 +966,6 @@ def create_Def_File(file_path, mode = 'all'):
 
 	software_name = 'ARDUINO'
 	build_path = 'build'
-	platform_dir = os.path.split(core_root)[1]
-	core_obj_root = os.path.join(arduino_user_root, platform_dir)
-	core_obj_root = os.path.join(build_path, 'core')
 	core_lib_name = 'core.a'
 
 	ext_lib_paths = Setting.get('libraries')
@@ -937,14 +973,13 @@ def create_Def_File(file_path, mode = 'all'):
 	for paths in ext_lib_paths:
 		include_paths.extend(paths)
 	includes = ''
+	index = 0
 	for path in include_paths:
+		if index >= 2:
+			path = path.replace(os.path.sep, '/')
+			path = path.replace(' ', '\\ ')
 		includes += '-I%s ' % path
-
-	posix_root = posix_root.replace(' ', '\040')
-	gcc_root = gcc_root.replace(' ', '\040')
-	core_root = core_root.replace(' ', '\040')
-	core_obj_root = core_obj_root.replace(' ', '\040')
-	includes = includes.replace(' ', '\040')
+		index += 1
 
 	if not 'build.extra_flags' in board_info.keys():
 		board_info['build.extra_flags'] = ''
@@ -1023,19 +1058,6 @@ def create_Def_File(file_path, mode = 'all'):
 	C_COMBINE_FLAGS4 = C_COMBINE_FLAGS4.replace('"', '')
 
 	if 'AVR' in platform:
-		upload_cmd_windows = compile_info['tools.avrdude.cmd.path'].replace('{runtime.ide.path}', arduino_app_root)
-		upload_conf_windows = compile_info['tools.avrdude.config.path'].replace('{runtime.ide.path}', arduino_app_root)
-
-		upload_cmd_linux = compile_info['tools.avrdude.cmd.path.linux'].replace('{runtime.ide.path}', arduino_app_root)
-		upload_conf_linux = compile_info['tools.avrdude.config.path.linux'].replace('{runtime.ide.path}', arduino_app_root)
-
-		if sys.platform == 'win32':
-			upload_cmd = upload_cmd_windows
-			upload_conf = upload_conf_windows
-		else:
-			upload_cmd = upload_cmd_linux
-			upload_conf = upload_conf_linux
-
 		if uploading_verbose:
 			upload_verb = compile_info['tools.avrdude.upload.params.verbose']
 		else:
@@ -1095,10 +1117,6 @@ def create_Def_File(file_path, mode = 'all'):
 			ERASE_FLAGS = ''
 			BOOTLOADER_FLAGS = ''
 	else:
-		cmd = compile_info['tools.bossac.cmd']
-		path = compile_info['tools.bossac.path'].replace('{runtime.ide.path}', arduino_app_root)
-		upload_cmd = os.path.join(path, cmd)
-
 		if uploading_verbose:
 			upload_verb = compile_info['tools.bossac.upload.params.verbose']
 		else:
@@ -1114,21 +1132,6 @@ def create_Def_File(file_path, mode = 'all'):
 		PROGRAM_FLAGS = ''
 		ERASE_FLAGS = ''
 		BOOTLOADER_FLAGS = ''
-
-	if sys.platform == 'win32':
-		upload_cmd = upload_cmd.replace('/', os.path.sep)
-		C_FLAGS = C_FLAGS.replace(os.path.sep, '/')
-		CPP_FLAGS = CPP_FLAGS.replace(os.path.sep, '/')
-		C_COMBINE_FLAGS1 = C_COMBINE_FLAGS1.replace(os.path.sep, '/')
-		C_COMBINE_FLAGS2 = C_COMBINE_FLAGS2.replace(os.path.sep, '/')
-		C_COMBINE_FLAGS3 = C_COMBINE_FLAGS3.replace(os.path.sep, '/')
-		C_COMBINE_FLAGS4 = C_COMBINE_FLAGS4.replace(os.path.sep, '/')
-		UPLOAD_FLAGS = UPLOAD_FLAGS.replace(os.path.sep, '/')
-		PROGRAM_FLAGS = PROGRAM_FLAGS.replace(os.path.sep, '/')
-		ERASE_FLAGS = ERASE_FLAGS.replace(os.path.sep, '/')
-		BOOTLOADER_FLAGS = BOOTLOADER_FLAGS.replace(os.path.sep, '/')
-		core_source_root = core_source_root.replace(os.path.sep, '/')
-		core_obj_root = core_obj_root.replace(os.path.sep, '/')
 
 	if building_verbose:
 		build_verb = ''
@@ -1150,13 +1153,6 @@ def create_Def_File(file_path, mode = 'all'):
 	text += ('OBJCOPY := %s\n') % OBJCOPY
 	text += ('ELF2HEX := %s\n') % ELF2HEX
 	text += ('SIZE := %s\n\n') % SIZE
-
-	text += ('REMOVE := %s\n') % REMOVE
-	text += ('MV := %s\n') % MV
-	text += ('MKDIR := %s\n') % MKDIR
-	text += ('SED := %s \n') % SED
-	text += ('FIND := %s \n') % FIND
-	text += ('DIRNAME := %s \n\n') % DIRNAME
 
 	text += ('C_FLAGS := %s\n') % C_FLAGS
 	text += ('S_FLAGS := %s\n') % compile_info['compiler.S.flags']
@@ -1183,27 +1179,12 @@ def create_Def_File(file_path, mode = 'all'):
 
 	makefile_path = os.path.join(TEMPLATE_DIR, 'Makefile')
 	f = open(makefile_path, 'r')
-	text += f.read()
+	text += f.read().decode('utf-8')
 	f.close()
 
 	def_name = 'Makefile'
 	def_path = os.path.join(prj_path, def_name)
 	write_File(def_path, text, ENCODING)
-
-	if sys.platform == 'win32':
-		text = '@echo off\n'
-		text += 'Set Path=%s;%s\n' % (posix_root, gcc_root)
-		text += 'make -e %s\n' % mode
-		bat_path = os.path.join(prj_path, 'build.bat')
-		write_File(bat_path, text, ENCODING)
-	else:
-		text = '#!/bin/sh\n\n'
-		text += 'export PATH=%s:$PATH\n' % (gcc_root)
-		text += 'make -e %s\n' % mode
-		bat_path = os.path.join(prj_path, 'build.sh')
-		write_File(bat_path, text, ENCODING)
-		cmd = 'chmod +x %s' % bat_path
-		os.popen(cmd)
 		
 def create_Build_File():
 	build_file_name = 'Arduino.sublime-build'

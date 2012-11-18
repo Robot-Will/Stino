@@ -1,10 +1,17 @@
 
+REMOVE := rm -rf
+MV := mv -f
+MKDIR := mkdir -p
+SED := sed 
+FIND := find 
+DIRNAME := dirname 
+
 ########## Project Defination ##########
-INO_SRC := $(shell $(FIND) -name "*.ino")
-PDE_SRC := $(shell $(FIND) -name "*.pde")
-C_SRC := $(shell $(FIND) -name "*.c")
-CPP_SRC := $(shell $(FIND) -name "*.cpp")
-A_SRC := $(shell $(FIND) -name "*.S")
+INO_SRC := $(shell $(FIND) -name "*.ino" | sed 's/\\ /\\\\ /g')
+PDE_SRC := $(shell $(FIND) -name "*.pde" | sed 's/\\ /\\\\ /g')
+C_SRC := $(shell $(FIND) -name "*.c" | sed 's/\\ /\\\\ /g')
+CPP_SRC := $(shell $(FIND) -name "*.cpp" | sed 's/\\ /\\\\ /g')
+A_SRC := $(shell $(FIND) -name "*.S" | sed 's/\\ /\\\\ /g')
 
 PRJ_SRC := $(INO_SRC)
 PRJ_SRC += $(PDE_SRC)
@@ -18,9 +25,6 @@ endif
 PRJ_BUILD_ROOT := build
 PRJ_OBJ_ROOT := $(PRJ_BUILD_ROOT)/obj
 TARGET := $(PRJ_BUILD_ROOT)/$(PRJ_NAME)
-
-PWD = ${shell pwd}
-XXX:=${shell ls *.ino | sed 's@.ino\"@.o\"@g' | sed 's@\ @\\ @g'}
 
 PRJ_OBJ := $(patsubst %.ino, $(PRJ_OBJ_ROOT)/%.ino.o, $(INO_SRC))
 PRJ_OBJ += $(patsubst %.pde, $(PRJ_OBJ_ROOT)/%.ino.o, $(PDE_SRC))
@@ -37,8 +41,8 @@ DEP_FILE += $(patsubst %.cpp, $(PRJ_OBJ_ROOT)/%.dep, $(CPP_SRC))
 
 CORE_LIB := $(CORE_OBJ_ROOT)/$(CORE_LIB_NAME)
 
-CORE_C_SRC := $(shell $(FIND) '$(CORE_SOURCE_ROOT)' -name "*.c")
-CORE_CPP_SRC := $(shell $(FIND) '$(CORE_SOURCE_ROOT)' -name "*.cpp")
+CORE_C_SRC := $(shell $(FIND) $(CORE_SOURCE_ROOT) -name "*.c" | sed 's/\\ /\\\\ /g')
+CORE_CPP_SRC := $(shell $(FIND) $(CORE_SOURCE_ROOT) -name "*.cpp" | sed 's/\\ /\\\\ /g')
 
 CORE_OBJ := $(patsubst $(CORE_SOURCE_ROOT)/%.c, $(CORE_OBJ_ROOT)/%.c.o, $(CORE_C_SRC))
 CORE_OBJ += $(patsubst $(CORE_SOURCE_ROOT)/%.cpp, $(CORE_OBJ_ROOT)/%.cpp.o, $(CORE_CPP_SRC))
@@ -68,7 +72,6 @@ build: clean_all echo_building $(TARGET).$(HEX_EXT)
 #@echo Binary sketch size: $(HEXSIZE) bytes (of a $(MAX_SIZE) byte maximum)
 
 echo_building:
-	@echo $(CORE_SOURCE_ROOT)
 	@echo Bulding $(TARGET).$(HEX_EXT)...
 
 size: $(TARGET).elf
@@ -99,7 +102,7 @@ clean_core:
 $(TARGET).$(HEX_EXT): $(TARGET).elf
 	$(BUILDING_VERBOSE)$(ELF2HEX) $(OBJCOPY_HEX_FLAGS) $< $@
 
-$(TARGET).elf: $(CORE_LIB) $(PRJ_OBJ)
+$(TARGET).elf: $(PRJ_OBJ) $(CORE_LIB)
 	$(BUILDING_VERBOSE)$(CELF) $(C_COMBINE_FLAGS1) -o $@ $(C_COMBINE_FLAGS2) $(PRJ_OBJ) $(C_COMBINE_FLAGS3) $(CORE_LIB) $(C_COMBINE_FLAGS4)
 
 $(PRJ_OBJ_ROOT)/%.ino.o: %.ino
