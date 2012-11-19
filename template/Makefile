@@ -40,6 +40,7 @@ DEP_FILE += $(patsubst %.cpp, $(PRJ_OBJ_ROOT)/%.dep, $(CPP_SRC))
 ########## Arduino Core Defination ##########
 
 CORE_LIB := $(CORE_OBJ_ROOT)/$(CORE_LIB_NAME)
+CORE_OBJ_ROOT := $(PRJ_BUILD_ROOT)/core
 
 CORE_C_SRC := $(shell $(FIND) $(CORE_SOURCE_ROOT) -name "*.c" | sed 's/\\ /\\\\ /g')
 CORE_CPP_SRC := $(shell $(FIND) $(CORE_SOURCE_ROOT) -name "*.cpp" | sed 's/\\ /\\\\ /g')
@@ -67,7 +68,7 @@ INO_FLAGS = $(CPP_FLAGS) -x c++ -include $(CORE_SOURCE_ROOT)/Arduino.h
 
 all: build
 
-build: clean_all echo_building $(TARGET).$(HEX_EXT)
+build: clean echo_building $(TARGET).$(HEX_EXT)
 	@$(SIZE) $(SIZE_FLAGS) $(TARGET).$(SIZE_EXT)
 #@echo Binary sketch size: $(HEXSIZE) bytes (of a $(MAX_SIZE) byte maximum)
 
@@ -91,7 +92,9 @@ clean_all: clean clean_core
 
 clean:
 	@echo cleaning Project Objects...
-	@$(REMOVE) $(PRJ_BUILD_ROOT)
+	@$(REMOVE) $(PRJ_OBJ_ROOT)
+	@$(REMOVE) *.elf
+	@$(REMOVE) *.$(HEX_EXT)
 
 clean_core:
 	@echo cleaning Arduino Core Objects...

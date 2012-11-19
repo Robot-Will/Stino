@@ -852,8 +852,7 @@ def create_Def_File(file_path, mode = 'all'):
 	blank_num = prj_name.count(' ')
 	word_count = blank_num + 1
 
-	if ' ' in prj_name:
-		prj_name = prj_name.replace(' ', '_')
+	prj_name = prj_name.replace(' ', '_')
 
 	version_txt = Setting.get('arduino_version_txt')
 	arduino_app_root = Setting.get('arduino_app_root')
@@ -1303,8 +1302,7 @@ class NewSketchCommand(sublime_plugin.WindowCommand):
 		if sketch_name:
 			if sketch_name[0] in '0123456789':
 				sketch_name = '_' + sketch_name
-			if ' ' in sketch_name:
-				sketch_name = sketch_name.replace(' ', '_')
+			sketch_name = sketch_name.replace(' ', '_')
 			sketch_folder_path = os.path.join(arduino_sketch_root, sketch_name)
 			if os.path.exists(sketch_folder_path):
 				display_texts = Setting.get('display_texts')
@@ -1354,8 +1352,7 @@ class NewToSketch(sublime_plugin.WindowCommand):
 		is_new = True
 		file_name = input_text
 		if file_name:
-			if ' ' in file_name:
-				file_name = file_name.replace(' ', '_')
+			file_name = file_name.replace(' ', '_')
 			active_file = self.window.active_view().file_name()
 			sketch_path = os.path.split(active_file)[0]
 			file_path = os.path.join(sketch_path, file_name)
@@ -1425,9 +1422,7 @@ class AddToSketch(sublime_plugin.WindowCommand):
 			sel_file_name = os.path.split(sel_path)[1]
 			sel_file_noext = os.path.splitext(sel_file_name)[0]
 			sel_file_ext = os.path.splitext(sel_file_name)[1]
-
-			if ' ' in sel_file_noext:
-				sel_file_noext = sel_file_noext.replace(' ', '_')
+			sel_file_noext = sel_file_noext.replace(' ', '_')
 
 			for arduino_ext in Arduino_Ext:
 				if sel_file_ext == arduino_ext:
@@ -1566,9 +1561,14 @@ class VerifySketchCommand(sublime_plugin.WindowCommand):
 
 class UploadHexCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		get_Ports()
-		serial_ports = Setting.get('serial_ports')
-		if len(serial_ports) > 1:
+		state = True
+		platform = Setting.get('platform', '')
+		if 'AVR' in platform:
+			get_Ports()
+			serial_ports = Setting.get('serial_ports')
+			if len(serial_ports) < 1:
+				state = False	
+		if state:
 			cur_file = self.window.active_view().file_name()
 			create_Def_File(cur_file, 'upload')
 			build_file_path = create_Build_File()
@@ -1580,6 +1580,7 @@ class UploadHexCommand(sublime_plugin.WindowCommand):
 			sublime.message_dialog('%s' % msg)
 
 	def is_enabled(self):
+		platform = Setting.get('platform', '')
 		state = False
 		serial_port = Setting.get('serial_port')
 		serial_ports = Setting.get('serial_ports')
@@ -1590,10 +1591,13 @@ class UploadHexCommand(sublime_plugin.WindowCommand):
 		board = Setting.get('board_name')
 		file_path = self.window.active_view().file_name()
 		ext = os.path.splitext(file_path)[1]
-		if board and has_serial:
+		if board:
 			for arduino_ext in Arduino_Ext:
 				if ext == arduino_ext:
 					state = True
+		if 'AVR' in platform:
+			if not has_serial:
+				state = False
 		return state
 
 class UploadByProgrmmerCommand(sublime_plugin.WindowCommand):
