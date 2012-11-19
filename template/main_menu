@@ -1,4 +1,3 @@
-[
   {
     "caption": "Arduino",
     "id": "arduino",
@@ -67,4 +66,3 @@
       {"caption": "_about_stino_", "command" : "about_stino"}
     ]
   }
-]

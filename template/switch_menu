@@ -1,0 +1,10 @@
+[
+  {
+    "caption": "Preferences",
+    "mnemonic": "n",
+    "id": "preferences",
+    "children":
+    [
+      {"caption": "Show Arduino Menu", "command": "switch_arduino", "checkbox": true}
+    ]
+  }

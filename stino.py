@@ -708,7 +708,7 @@ def get_Language_Menu():
 	return text
 
 ## 生成菜单 ##
-def create_Menu():
+def get_Arduino_Menu():
 	get_lang()
 	display_texts = Setting.get('display_texts')
 	arduino_app_root = Setting.get('arduino_app_root')
@@ -759,8 +759,22 @@ def create_Menu():
 		main_menu_txt = main_menu_txt.replace('_list_example_menu_', list_example_menu)
 		main_menu_txt = main_menu_txt.replace('_arduino_reference_url_', arduino_reference_url)
 
+	return main_menu_txt
+
+def create_Menu():
+	switch_menu_path = os.path.join(TEMPLATE_DIR, 'switch_menu')
+	switch_menu_file = open(switch_menu_path, 'r')
+	text = switch_menu_file.read()
+	switch_menu_file.close()
+
+	arduino_menu = Setting.get('arduino_menu')
+	if arduino_menu:
+		text += ',\n'
+		text += get_Arduino_Menu()
+	text += '\n]'
+
 	menu_path = os.path.join(STINO_ROOT, 'Main.sublime-menu')
-	write_File(menu_path, main_menu_txt)
+	write_File(menu_path, text)
 	sublime.save_settings(Setting_File)
 
 ## 读取信息 ##
@@ -1788,7 +1802,7 @@ class BurnBootloaderCommand(sublime_plugin.WindowCommand):
 						state = False
 		return state
 
-class ListExample(sublime_plugin.WindowCommand):
+class ListExampleCommand(sublime_plugin.WindowCommand):
 	def run(self, menu_str):
 		example = menu_str
 		example_paths = Setting.get('example_paths')
@@ -1824,7 +1838,7 @@ class ListExample(sublime_plugin.WindowCommand):
 			file_list = get_File_List(self.path_list)
 			self.window.show_quick_panel(file_list, self.on_done)
 
-class SetBuildingVerbose(sublime_plugin.WindowCommand):
+class SetBuildingVerboseCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		building_verbose = Setting.get('building_verbose')
 		building_verbose = not building_verbose
@@ -1838,7 +1852,7 @@ class SetBuildingVerbose(sublime_plugin.WindowCommand):
 			state = True
 		return state
 
-class SetUploadingVerbose(sublime_plugin.WindowCommand):
+class SetUploadingVerboseCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		uploading_verbose = Setting.get('uploading_verbose')
 		uploading_verbose = not uploading_verbose
@@ -1852,7 +1866,7 @@ class SetUploadingVerbose(sublime_plugin.WindowCommand):
 			state = True
 		return state
 
-class AboutStino(sublime_plugin.WindowCommand):
+class AboutStinoCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		readme_path = os.path.join(STINO_ROOT, 'readme.txt')
 		try:
@@ -1865,6 +1879,23 @@ class AboutStino(sublime_plugin.WindowCommand):
 		except:
 			text = 'Stino\nVersion: 1.0b1\n\nA Sublime Text 2 Plugin for Arduino\nCopyright (C) 2012 Robot.Will <robot.will.me AT gmail.com>.'
 		sublime.message_dialog(text)
+
+class SwitchArduinoCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		arduino_menu_state = Setting.get('arduino_menu')
+		if not arduino_menu_state:
+			arduino_menu_state = False
+		arduino_menu_state = not arduino_menu_state
+		Setting.set('arduino_menu', arduino_menu_state)
+		sublime.save_settings(Setting_File)
+		create_Menu()
+
+	def is_checked(self):
+		state = False
+		arduino_menu_state = Setting.get('arduino_menu')
+		if arduino_menu_state:
+			state = True
+		return state
 
 class NotEnableCommand(sublime_plugin.WindowCommand):
 	def run(self):
