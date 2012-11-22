@@ -38,9 +38,7 @@ DEP_FILE += $(patsubst %.c, $(PRJ_OBJ_ROOT)/%.dep, $(C_SRC))
 DEP_FILE += $(patsubst %.cpp, $(PRJ_OBJ_ROOT)/%.dep, $(CPP_SRC))
 
 ########## Arduino Core Defination ##########
-
 CORE_LIB := $(CORE_OBJ_ROOT)/$(CORE_LIB_NAME)
-CORE_OBJ_ROOT := $(PRJ_BUILD_ROOT)/core
 
 CORE_C_SRC := $(shell $(FIND) $(CORE_SOURCE_ROOT) -name "*.c" | sed 's/\\ /\\\\ /g')
 CORE_CPP_SRC := $(shell $(FIND) $(CORE_SOURCE_ROOT) -name "*.cpp" | sed 's/\\ /\\\\ /g')

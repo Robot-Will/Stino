@@ -25,6 +25,7 @@ burn_bootloader=烧写Bootloader
 preferences=设置
 language=语言
 set_arduino_path=设置Arduino路径...
+full_building=完全编译
 building_verbose=显示编译信息
 uploading_verbose=显示下载信息
 

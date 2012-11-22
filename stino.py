@@ -1,9 +1,9 @@
 #-*- coding: UTF-8 -*-
 
 import sublime, sublime_plugin
-import os, sys, stat
+import os, sys
 import locale, codecs
-import math
+import re
 
 if sys.platform == 'win32':
 	import _winreg
@@ -179,7 +179,7 @@ def get_Arduino_Version():
 				num = num[:index]
 				break
 		num = int(num)
-		version += num * math.pow(10, power)
+		version += num * (10 ** power)
 		power -= 1
 	Setting.set('arduino_version_txt', version_txt)
 	Setting.set('arduino_version', version)
@@ -723,7 +723,7 @@ def get_Arduino_Menu():
 
 	language_menu = get_Language_Menu()
 	main_menu_txt = main_menu_txt.replace('_list_languages_', language_menu)
-
+	main_menu_txt = main_menu_txt.replace('_full_building_', display_texts['full_building'])
 	main_menu_txt = main_menu_txt.replace('_building_verbose_', display_texts['building_verbose'])
 	main_menu_txt = main_menu_txt.replace('_uploading_verbose_', display_texts['uploading_verbose'])
 	main_menu_txt = main_menu_txt.replace('_new_sketch_', display_texts['new_sketch'])
@@ -857,6 +857,16 @@ def read_Programmer_Info(programmer, programmer_path):
 	Setting.set('programmer_needs_serial', programmer_needs_serial)
 	sublime.save_settings(Setting_File)
 
+def find_files(path, ext_list):
+	file_list = []
+	for cur_path, sub_dirs, files in os.walk(path):
+		for f in files:
+			cur_ext = os.path.splitext(f)[1]
+			if cur_ext in ext_list:
+				f_path = os.path.join(cur_path, f)
+				file_list.append(f_path)
+	return file_list
+
 ## 生成make.def ##
 def create_Def_File(file_path, mode = 'all'):
 	prj_path = os.path.split(file_path)[0]
@@ -936,63 +946,100 @@ def create_Def_File(file_path, mode = 'all'):
 		uploade_cmd = compile_info['tools.bossac.cmd']
 		uploader_path = compile_info['tools.bossac.path'].replace('{runtime.ide.path}', arduino_app_root)
 
-#####################################################################
-	if sys.platform == 'win32':
-		uploader_path = uploader_path.replace('/', os.path.sep)
-		text = '@echo off\n'
-		text += 'Set Path=%s;%s;%s\n' % (posix_root, gcc_root, uploader_path)
-		text += 'make -e -w %s\n' % mode
-		bat_path = os.path.join(prj_path, 'build.bat')
-		write_File(bat_path, text, ENCODING)
-	else:
-		gcc_root = gcc_root.replace(' ', '\\ ')
-		uploader_path = uploader_path.replace(' ', '\\ ')
-		text = '#!/bin/sh\n\n'
-		text += 'export PATH=%s:%s:$PATH\n' % (gcc_root, uploader_path)
-		text += 'make -e -w %s\n' % mode
-		bat_path = os.path.join(prj_path, 'build.sh')
-		write_File(bat_path, text, ENCODING)
-		cmd = 'chmod +x %s' % bat_path
-		os.popen(cmd)
 #######################################################################
-	platform_dir = os.path.split(core_root)[1]
-	core_obj_root = os.path.join(arduino_user_root, platform_dir)
-	
-	core_root = core_root.replace(os.path.sep, '/')
-	core_root = core_root.replace(' ', '\\ ')
-	core_obj_root = core_obj_root.replace(os.path.sep, '/')
-	core_obj_root = core_obj_root.replace(' ', '\\ ')
+	software_name = 'ARDUINO'
+	build_path = 'build'
 
-	core_source_root = core_root + '/cores/' + board_info['build.core']
-	arduino_var_root = core_root + '/variants/' + board_info['build.variant']
-	build_system_path = core_root + '/system'
+	platform_dir = os.path.split(core_root)[1]
+	core_obj_root = os.path.join(build_path, 'core')
+
+	core_source_root = os.path.join(core_root, 'cores')
+	core_source_root = os.path.join(core_source_root, board_info['build.core'])
+	
+	arduino_var_root = os.path.join(core_root, 'variants')
+	arduino_var_root = os.path.join(arduino_var_root, board_info['build.variant'])
+	
+	build_system_path = os.path.join(core_root, 'system')
 
 	if 'compiler.libsam.c.flags' in compile_info.keys():
 		compile_info['compiler.libsam.c.flags'] = compile_info['compiler.libsam.c.flags'].replace('{build.system.path}', build_system_path)
 
 	if 'AVR' in platform:
-		hex_ext = 'hex'
-		size_ext = 'hex'
+		hex_ext = '.hex'
+		size_ext = '.hex'
 	else:
-		hex_ext = 'bin'
-		size_ext = 'elf'
+		hex_ext = '.bin'
+		size_ext = '.elf'
 
-	software_name = 'ARDUINO'
-	build_path = 'build'
-	core_lib_name = 'core.a'
+################################################################################
+	libraries_paths = Setting.get('libraries')
+	prj_file = open(file_path, 'r')
+	lines = prj_file.readlines()
+	prj_file.close()
 
-	ext_lib_paths = Setting.get('libraries')
+	header_list = []
+	ext_lib_paths = []
+	pattern = re.compile(r'["<]\S*[>"]')
+	for line in lines:
+		if '#include' in line:
+			m = pattern.search(line)
+			if m:
+				header_list.append(m.group()[1:-1])
+	for header in header_list:
+		go_out = False
+		for libraries in libraries_paths:
+			for lib_path in libraries:
+				files = os.listdir(lib_path)
+				if header in files:
+					ext_lib_paths.append(lib_path)
+					go_out = True
+					break
+			if go_out:
+				break
+
+	find_cmd = 'find'
+	if sys.platform == 'win32':
+		find_cmd = os.path.join(posix_root, 'find')
+
+	prj_source_files = []
+	ext_list = ['.c', '.cpp', '.ino', '.pde']
+	prj_source_files.extend(find_files('.', ext_list))
+
+	core_source_paths = [core_source_root]
+	core_source_paths.extend(ext_lib_paths)
+	core_source_files = []
+	ext_list = ['.c', '.cpp']
+	for source_path in core_source_paths:
+		core_source_files.extend(find_files(source_path, ext_list))
+
+	prj_obj_root = os.path.join(build_path, 'obj')
+	prj_obj_files = []
+	for source_file in prj_source_files:
+		source_file = source_file.replace('.%s' % os.path.sep, '')
+		obj_file = prj_obj_root + os.path.sep + source_file + '.o'
+		prj_obj_files.append(obj_file)
+	
+	core_obj_root = os.path.join(build_path, 'core')
+	core_obj_files = []
+	for source_file in core_source_files:
+		for path in core_source_paths:
+			if path in source_file:
+				source_file = source_file.replace(path, '')
+				break
+		obj_name = source_file + '.o'
+		obj_file = core_obj_root + obj_name
+		core_obj_files.append(obj_file)
+
 	include_paths = [core_source_root, arduino_var_root]
-	for paths in ext_lib_paths:
-		include_paths.extend(paths)
+	include_paths.extend(ext_lib_paths)
+	for source_file in core_source_files:
+		file_path = os.path.split(source_file)[0]
+		if not file_path in include_paths:
+			include_paths.append(file_path)
+	
 	includes = ''
-	index = 0
 	for path in include_paths:
-		if index >= 2:
-			path = path.replace(os.path.sep, '/')
-			path = path.replace(' ', '\\ ')
-		includes += '-I%s ' % path
-		index += 1
+		includes += r'-I"%s" ' % path
 
 	if not 'build.extra_flags' in board_info.keys():
 		board_info['build.extra_flags'] = ''
@@ -1013,7 +1060,8 @@ def create_Def_File(file_path, mode = 'all'):
 	C_FLAGS = C_FLAGS.replace('{compiler.libsam.c.flags}', compile_info['compiler.libsam.c.flags'])
 	C_FLAGS = C_FLAGS.replace('{includes}', includes)
 	C_FLAGS = C_FLAGS.replace(' "{source_file}" -o "{object_file}"', '')
-	C_FLAGS = C_FLAGS.replace('"', '')
+	# C_FLAGS = C_FLAGS.replace('"', '')
+	# C_FLAGS = C_FLAGS.replace('$', '"')
 
 	CPP_FLAGS = compile_info['recipe.cpp.o.pattern'].replace('"{compiler.path}{compiler.cpp.cmd}" ', '')
 	CPP_FLAGS = CPP_FLAGS.replace('{compiler.cpp.flags}', compile_info['compiler.cpp.flags'])
@@ -1025,7 +1073,7 @@ def create_Def_File(file_path, mode = 'all'):
 	CPP_FLAGS = CPP_FLAGS.replace('{compiler.libsam.c.flags}', compile_info['compiler.libsam.c.flags'])
 	CPP_FLAGS = CPP_FLAGS.replace('{includes}', includes)
 	CPP_FLAGS = CPP_FLAGS.replace(' "{source_file}" -o "{object_file}"', '')
-	CPP_FLAGS = CPP_FLAGS.replace('"', '')
+	# CPP_FLAGS = CPP_FLAGS.replace('"', '')
 
 	AR_FLAGS = compile_info['recipe.ar.pattern'].replace('"{compiler.path}{compiler.ar.cmd}" ', '')
 	AR_FLAGS = AR_FLAGS.replace('{compiler.ar.flags}', compile_info['compiler.ar.flags'])
@@ -1048,10 +1096,10 @@ def create_Def_File(file_path, mode = 'all'):
 
 	OBJCOPY_HEX_FLAGS = compile_info['recipe.objcopy.hex.pattern'].replace('"{compiler.path}{compiler.elf2hex.cmd}" ', '')
 	OBJCOPY_HEX_FLAGS = OBJCOPY_HEX_FLAGS.replace('{compiler.elf2hex.flags}', compile_info['compiler.elf2hex.flags'])
-	OBJCOPY_HEX_FLAGS = OBJCOPY_HEX_FLAGS.replace(' "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.%s"' % hex_ext, '')
+	OBJCOPY_HEX_FLAGS = OBJCOPY_HEX_FLAGS.replace(' "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}%s"' % hex_ext, '')
 
 	SIZE_FLAGS = compile_info['recipe.size.pattern'].replace('"{compiler.path}{compiler.size.cmd}" ', '')
-	SIZE_FLAGS = SIZE_FLAGS.replace(' "{build.path}/{build.project_name}.%s"' % size_ext, '')
+	SIZE_FLAGS = SIZE_FLAGS.replace(' "{build.path}/{build.project_name}%s"' % size_ext, '')
 
 	C_COMBINE_FLAGS_sections = C_COMBINE_FLAGS.split('-o "{build.path}/{build.project_name}.elf"')
 	C_COMBINE_FLAGS1 = C_COMBINE_FLAGS_sections[0]
@@ -1069,6 +1117,8 @@ def create_Def_File(file_path, mode = 'all'):
 	C_COMBINE_FLAGS2 = C_COMBINE_FLAGS2.replace('"', '')
 	C_COMBINE_FLAGS3 = C_COMBINE_FLAGS3.replace('"', '')
 	C_COMBINE_FLAGS4 = C_COMBINE_FLAGS4.replace('"', '')
+
+	INO_FLAGS = CPP_FLAGS + ' -x c++ -include "' + os.path.join(core_source_root, 'Arduino.h') +'"'
 
 	if 'AVR' in platform:
 		if uploading_verbose:
@@ -1151,53 +1201,195 @@ def create_Def_File(file_path, mode = 'all'):
 	else:
 		build_verb = '@'
 
-	text = ''
-	text += ('BUILDING_VERBOSE := %s\n') % build_verb
-	text += ('PRJ_NAME := %s\n') % prj_name
-	text += ('COUNT := %d\n') % word_count
-	text += ('CORE_LIB_NAME := %s\n') % core_lib_name
-	text += ('CORE_SOURCE_ROOT := %s\n') % core_source_root
-	text += ('CORE_OBJ_ROOT := %s\n\n') % core_obj_root
+	print 'includes:', includes
+	print 'cflags:', C_FLAGS
+	print 'c++flags:', CPP_FLAGS
 
-	text += ('CC := %s\n') % CC
-	text += ('CELF := %s\n') % C_ELF
-	text += ('CPP := %s\n') % CPP
-	text += ('AR := %s\n') % AR
-	text += ('OBJCOPY := %s\n') % OBJCOPY
-	text += ('ELF2HEX := %s\n') % ELF2HEX
-	text += ('SIZE := %s\n\n') % SIZE
+####################################################
+	
+	elf_file = build_path + os.path.sep + prj_name + '.elf'
+	bin_file = build_path + os.path.sep + prj_name + hex_ext
+	size_file = build_path + os.path.sep + prj_name + size_ext
 
-	text += ('C_FLAGS := %s\n') % C_FLAGS
-	text += ('S_FLAGS := %s\n') % compile_info['compiler.S.flags']
-	text += ('CPP_FLAGS := %s\n') % CPP_FLAGS
-	text += ('AR_FLAGS := %s\n') % AR_FLAGS
-	text += ('C_COMBINE_FLAGS1 := %s\n') % C_COMBINE_FLAGS1
-	text += ('C_COMBINE_FLAGS2 := %s\n') % C_COMBINE_FLAGS2
-	text += ('C_COMBINE_FLAGS3 := %s\n') % C_COMBINE_FLAGS3
-	text += ('C_COMBINE_FLAGS4 := %s\n') % C_COMBINE_FLAGS4
-	text += ('OBJCOPY_EEP_FLAGS := %s\n') % OBJCOPY_EEP_FLAGS
-	text += ('OBJCOPY_HEX_FLAGS := %s\n') % OBJCOPY_HEX_FLAGS
-	text += ('SIZE_FLAGS := %s\n') % SIZE_FLAGS
+	prj_obj_dirs = []
+	for obj_file in prj_obj_files:
+		d = os.path.split(obj_file)[0]
+		if not d in prj_obj_dirs:
+			prj_obj_dirs.append(d)
+	
+	core_obj_dirs = []
+	for obj_file in core_obj_files:
+		d = d = os.path.split(obj_file)[0]
+		if not d in core_obj_dirs:
+			core_obj_dirs.append(d)
 
-	text += ('MAX_SIZE := %s\n') % board_info['upload.maximum_size']
-	text += ('HEX_EXT := %s\n') % hex_ext
-	text += ('SIZE_EXT := %s\n\n') % size_ext
+	mkdir_cmd = 'mkdir -p'
+	if sys.platform == 'win32':
+		mkdir_cmd = 'md'
+	rm_cmd = 'rm -rf'
+	clean_core_obj_text = '%s %s\n' % (rm_cmd, core_obj_root)
+	clean_prj_obj_text = '%s %s\n' % (rm_cmd, prj_obj_root)
+	clean_prj_obj_text += '%s %s\n' % (rm_cmd, elf_file)
+	clean_prj_obj_text += '%s %s\n' % (rm_cmd, bin_file)
 
-	text += ('UPLOADER := %s\n') % upload_cmd
-	text += ('UPLOAD_FLAGS := %s\n') % UPLOAD_FLAGS
-	if 'AVR' in platform:
-		text += ('PROGRAM_FLAGS := %s\n') % PROGRAM_FLAGS
-		text += ('ERASE_FLAGS := %s\n') % ERASE_FLAGS
-		text += ('BOOTLOADER_FLAGS := %s\n') % BOOTLOADER_FLAGS
+	build_prj_text = 'echo Starting building %s%s...\n' % (prj_name, hex_ext)
+	index = 0
+	for d in prj_obj_dirs:
+		build_prj_text += '%s %s\n' % (mkdir_cmd, d)
+	for source_file in prj_source_files:
+		obj_file = prj_obj_files[index]
+		cur_path = os.path.split(obj_file)[0]
+		ext = os.path.splitext(source_file)[1]
+		if ext == '.ino':
+			cmd = CPP
+			flags = INO_FLAGS
+		elif ext == '.c':
+			cmd = CC
+			flags = C_FLAGS
+		elif ext == '.cpp':
+			cmd = CPP
+			flags = CPP_FLAGS
+		build_prj_text += '%s %s -o "%s" "%s"\n' % (cmd, flags, obj_file, source_file)
+		index += 1
 
-	makefile_path = os.path.join(TEMPLATE_DIR, 'Makefile')
-	f = open(makefile_path, 'r')
-	text += f.read().decode('utf-8')
-	f.close()
+	build_core_text = 'echo Starting building Arduino...\n'
+	index = 0
+	for d in core_obj_dirs:
+		build_core_text += '%s %s\n' % (mkdir_cmd, d)
+	for source_file in core_source_files:
+		obj_file = core_obj_files[index]
+		cur_path = os.path.split(obj_file)[0]
+		ext = os.path.splitext(source_file)[1]
+		if ext == '.c':
+			cmd = CC
+			flags = C_FLAGS
+		elif ext == '.cpp':
+			cmd = CPP
+			flags = CPP_FLAGS
+		build_core_text += '%s %s -o "%s" "%s"\n' % (cmd, flags, obj_file, source_file)
+		index += 1
 
-	def_name = 'Makefile'
-	def_path = os.path.join(prj_path, def_name)
-	write_File(def_path, text, ENCODING)
+	core_lib_file = os.path.join(core_obj_root, 'core.a')
+	build_core_text += '%s %s %s' % (AR, AR_FLAGS, core_lib_file)
+	for obj_file in core_obj_files:
+		build_core_text += ' '
+		build_core_text += obj_file
+	build_core_text += '\n'
+
+	build_prj_text += '%s %s -o "%s" %s' % (C_ELF, C_COMBINE_FLAGS1, elf_file, C_COMBINE_FLAGS2)
+	for obj_file in prj_obj_files:
+		build_prj_text += ' "'
+		build_prj_text += obj_file
+		build_prj_text += '"'
+	build_prj_text += ' %s %s %s\n' % (C_COMBINE_FLAGS3, core_lib_file, C_COMBINE_FLAGS4)
+	build_prj_text += '%s %s "%s" "%s"\n' % (ELF2HEX, OBJCOPY_HEX_FLAGS, elf_file, bin_file)
+	build_prj_text += '%s %s "%s"\n' % (SIZE, SIZE_FLAGS, size_file)
+
+	quick_build_text = clean_prj_obj_text + build_prj_text
+
+	full_building = Setting.get('full_building')
+	if not os.path.isfile(core_lib_file):
+		full_building = True
+
+	build_text = ''
+	if full_building:
+		build_text += clean_core_obj_text 
+		build_text += build_core_text
+	build_text += quick_build_text
+
+	programmer = Setting.get('programmer')
+	if mode == 'upload':
+		upload_text = 'echo Uploading %s...\n' % (bin_file)
+		upload_text += '%s %s\n' % (upload_cmd, UPLOAD_FLAGS)
+		build_text += upload_text
+	elif mode == 'upload_by_programmer':
+		upload_text = 'echo Uploading %s unsing %s...\n' % (bin_file, programmer)
+		upload_text += '%s %s\n' % (upload_cmd, PROGRAM_FLAGS)
+		build_text += upload_text
+	elif mode == 'burn_bootloader':
+		build_text = 'echo Bruning bootloader...\n'
+		build_text += '%s %s\n' % (upload_cmd, ERASE_FLAGS)
+		build_text += '%s %s\n' % (upload_cmd, BOOTLOADER_FLAGS)
+
+	
+	build_text = build_verb + build_text
+	build_text = build_text.replace('\n', '\n%s' % build_verb)
+
+	if sys.platform == 'win32':
+		uploader_path = uploader_path.replace('/', os.path.sep)
+		text = ''
+		# if building_verbose:
+		# 	text = '@echo on\n'
+		# else:
+		# 	text = '@echo off\n'
+		text += '@Set Path=%s;%s;%s\n' % (posix_root, gcc_root, uploader_path)
+		text += build_text
+		bat_path = os.path.join(prj_path, 'build.bat')
+		write_File(bat_path, text, ENCODING)
+	else:
+		gcc_root = gcc_root.replace(' ', '\\ ')
+		uploader_path = uploader_path.replace(' ', '\\ ')
+		text = '#!/bin/sh\n\n'
+		if sys.platform == 'darwin':
+			text += '@launchctl setenv PATH %s:%s $PATH\n' % (gcc_root, uploader_path)
+		else:
+			text += '@export PATH=%s:%s:$PATH\n' % (gcc_root, uploader_path)
+		text += build_text
+		bat_path = os.path.join(prj_path, 'build.sh')
+		write_File(bat_path, text, ENCODING)
+		cmd = 'chmod +x %s' % bat_path
+		os.popen(cmd)
+
+
+##################################################################
+
+	# text = ''
+	# text += ('BUILDING_VERBOSE := %s\n') % build_verb
+	# text += ('PRJ_NAME := %s\n') % prj_name
+	# text += ('COUNT := %d\n') % word_count
+	# text += ('CORE_LIB_NAME := %s\n') % core_lib_name
+	# text += ('CORE_SOURCE_ROOT := %s\n') % core_source_root
+	# text += ('CORE_OBJ_ROOT := %s\n\n') % core_obj_root
+
+	# text += ('CC := %s\n') % CC
+	# text += ('CELF := %s\n') % C_ELF
+	# text += ('CPP := %s\n') % CPP
+	# text += ('AR := %s\n') % AR
+	# text += ('OBJCOPY := %s\n') % OBJCOPY
+	# text += ('ELF2HEX := %s\n') % ELF2HEX
+	# text += ('SIZE := %s\n\n') % SIZE
+
+	# text += ('C_FLAGS := %s\n') % C_FLAGS
+	# text += ('S_FLAGS := %s\n') % compile_info['compiler.S.flags']
+	# text += ('CPP_FLAGS := %s\n') % CPP_FLAGS
+	# text += ('AR_FLAGS := %s\n') % AR_FLAGS
+	# text += ('C_COMBINE_FLAGS1 := %s\n') % C_COMBINE_FLAGS1
+	# text += ('C_COMBINE_FLAGS2 := %s\n') % C_COMBINE_FLAGS2
+	# text += ('C_COMBINE_FLAGS3 := %s\n') % C_COMBINE_FLAGS3
+	# text += ('C_COMBINE_FLAGS4 := %s\n') % C_COMBINE_FLAGS4
+	# text += ('OBJCOPY_EEP_FLAGS := %s\n') % OBJCOPY_EEP_FLAGS
+	# text += ('OBJCOPY_HEX_FLAGS := %s\n') % OBJCOPY_HEX_FLAGS
+	# text += ('SIZE_FLAGS := %s\n') % SIZE_FLAGS
+
+	# text += ('MAX_SIZE := %s\n') % board_info['upload.maximum_size']
+	# text += ('HEX_EXT := %s\n') % hex_ext
+	# text += ('SIZE_EXT := %s\n\n') % size_ext
+
+	# text += ('UPLOADER := %s\n') % upload_cmd
+	# text += ('UPLOAD_FLAGS := %s\n') % UPLOAD_FLAGS
+	# if 'AVR' in platform:
+	# 	text += ('PROGRAM_FLAGS := %s\n') % PROGRAM_FLAGS
+	# 	text += ('ERASE_FLAGS := %s\n') % ERASE_FLAGS
+	# 	text += ('BOOTLOADER_FLAGS := %s\n') % BOOTLOADER_FLAGS
+
+	# makefile_path = os.path.join(TEMPLATE_DIR, 'Makefile')
+	# f = open(makefile_path, 'r')
+	# text += f.read().decode('utf-8')
+	# f.close()
+
+	# def_name = 'Makefile'
+	# def_path = os.path.join(prj_path, def_name)
+	# write_File(def_path, text, ENCODING)
 		
 def create_Build_File():
 	build_file_name = 'Arduino.sublime-build'
@@ -1515,7 +1707,7 @@ class ImportLibCommand(sublime_plugin.WindowCommand):
 		edit = self.window.active_view().begin_edit()
 		pos_txt = 0
 		for header in headers:
-			text = '#include "%s"\n' % header
+			text = '#include <%s>\n' % header
 			len_txt = self.window.active_view().insert(edit, pos_txt, text)
 			pos_txt += len_txt
 		self.window.active_view().insert(edit, pos_txt, '\n')
@@ -1556,6 +1748,7 @@ class OpenSketchFolderCommand(sublime_plugin.WindowCommand):
 
 class VerifySketchCommand(sublime_plugin.WindowCommand):
 	def run(self):
+		self.window.active_view().run_command('save')
 		cur_file = self.window.active_view().file_name()
 		create_Def_File(cur_file)
 		build_file_path = create_Build_File()
@@ -1566,15 +1759,17 @@ class VerifySketchCommand(sublime_plugin.WindowCommand):
 		state = False
 		board = Setting.get('board_name')
 		file_path = self.window.active_view().file_name()
-		ext = os.path.splitext(file_path)[1]
-		if board:
-			for arduino_ext in Arduino_Ext:
-				if ext == arduino_ext:
-					state = True
+		if file_path:
+			ext = os.path.splitext(file_path)[1]
+			if board:
+				for arduino_ext in Arduino_Ext:
+					if ext == arduino_ext:
+						state = True
 		return state
 
 class UploadHexCommand(sublime_plugin.WindowCommand):
 	def run(self):
+		self.window.active_view().run_command('save')
 		state = True
 		platform = Setting.get('platform', '')
 		if 'AVR' in platform:
@@ -1604,11 +1799,12 @@ class UploadHexCommand(sublime_plugin.WindowCommand):
 			has_serial = False
 		board = Setting.get('board_name')
 		file_path = self.window.active_view().file_name()
-		ext = os.path.splitext(file_path)[1]
-		if board:
-			for arduino_ext in Arduino_Ext:
-				if ext == arduino_ext:
-					state = True
+		if file_path:
+			ext = os.path.splitext(file_path)[1]
+			if board:
+				for arduino_ext in Arduino_Ext:
+					if ext == arduino_ext:
+						state = True
 		if 'AVR' in platform:
 			if not has_serial:
 				state = False
@@ -1616,6 +1812,7 @@ class UploadHexCommand(sublime_plugin.WindowCommand):
 
 class UploadByProgrmmerCommand(sublime_plugin.WindowCommand):
 	def run(self):
+		self.window.active_view().run_command('save')
 		cur_file = self.window.active_view().file_name()
 		create_Def_File(cur_file, 'upload_by_programmer')
 		build_file_path = create_Build_File()
@@ -1635,15 +1832,16 @@ class UploadByProgrmmerCommand(sublime_plugin.WindowCommand):
 			board = Setting.get('board_name')
 			programmer = Setting.get('programmer')
 			file_path = self.window.active_view().file_name()
-			ext = os.path.splitext(file_path)[1]
-			if board and programmer:
-				for arduino_ext in Arduino_Ext:
-					if ext == arduino_ext:
-						state = True
-				programmer_needs_serial = Setting.get('programmer_needs_serial')
-				if programmer_needs_serial:
-					if not has_serial:
-						state = False
+			if file_path:
+				ext = os.path.splitext(file_path)[1]
+				if board and programmer:
+					for arduino_ext in Arduino_Ext:
+						if ext == arduino_ext:
+							state = True
+					programmer_needs_serial = Setting.get('programmer_needs_serial')
+					if programmer_needs_serial:
+						if not has_serial:
+							state = False
 		return state
 
 class ListBoardCommand(sublime_plugin.WindowCommand):
@@ -1837,6 +2035,20 @@ class ListExampleCommand(sublime_plugin.WindowCommand):
 			(self.level, self.path_list) = enter_Next(index, self.level, self.top_path_list, sel_path)
 			file_list = get_File_List(self.path_list)
 			self.window.show_quick_panel(file_list, self.on_done)
+
+class SetFullBuildingCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		full_building = Setting.get('full_building')
+		full_building = not full_building
+		Setting.set('full_building', full_building)
+		sublime.save_settings(Setting_File)
+
+	def is_checked(self):
+		state = False
+		full_building = Setting.get('full_building')
+		if full_building:
+			state = True
+		return state
 
 class SetBuildingVerboseCommand(sublime_plugin.WindowCommand):
 	def run(self):

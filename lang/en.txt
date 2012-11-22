@@ -25,6 +25,7 @@ burn_bootloader=Burn Bootloader
 preferences=Preferences
 language=Language
 set_arduino_path=Set Arduino Path...
+full_building=Full Compilation
 building_verbose=Toggle Building Verbose
 uploading_verbose=Toggle Uploading Verbose
 

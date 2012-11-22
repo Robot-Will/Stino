@@ -54,6 +54,7 @@
         [
           _list_languages_
           {"command": "set_arduino_app_root", "caption": "_set_arduino_path_"},
+          {"command": "set_full_building", "caption": "_full_building_", "checkbox": true},
           {"command": "set_building_verbose", "caption": "_building_verbose_", "checkbox": true},
           {"command": "set_uploading_verbose", "caption": "_uploading_verbose_", "checkbox": true}
         ]
