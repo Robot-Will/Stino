@@ -1,0 +1,10 @@
+{
+    "cmd": ["./build.sh"],
+    "selector": "source.arduino",
+    "encoding": "%(encoding)s",
+
+    "windows":
+    {
+        "cmd": ["build.bat"]
+    }
+}

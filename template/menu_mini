@@ -1,0 +1,20 @@
+	{
+		"caption": "%(Arduino)s",
+		"id": "arduino",
+		"children": 
+		[
+			{
+				"id": "arduino_preferences",
+				"caption": "%(Preferences)s",
+				"children":
+				[
+					{"caption": "%(Language)s", "command": "not_enable"},
+					{"caption": "%(Select_Arduino_Folder...)s", "command": "select_arduino_folder"}
+				]
+			},
+			{"caption": "-"},
+			{"caption": "%(Visit_Arduino_Website)s", "command": "open_url", "args": {"url": "http://arduino.cc"}},
+			{"caption": "-"},
+			{"caption": "%(About_Stino)s", "command" : "about_stino"}
+		]
+	}

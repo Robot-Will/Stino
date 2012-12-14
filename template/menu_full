@@ -1,0 +1,78 @@
+	{
+		"caption": "%(Arduino)s",
+		"id": "arduino",
+		"children":
+		[
+			{"caption": "", "command": "not_visible"},
+			{"caption": "%(New_Sketch...)s", "command": "new_sketch"},
+			{"caption": "%(Sketchbook)s", "command": "not_enable"},
+			{"caption": "-"},
+			{"caption": "%(New_File...)s", "command": "new_to_sketch"},
+			{"caption": "%(Add_File...)s", "command": "add_to_sketch"},
+			{"caption": "%(Import_Library...)s", "command": "not_enable"},
+			{"caption": "%(Show_Sketch_Folder)s", "command": "show_sketch_folder"},
+			{"caption": "-"},
+			{"caption": "%(Verify / Compile)s", "command": "compile_sketch"},
+			{"caption": "%(Upload)s", "command": "upload_binary"},
+			{"caption": "%(Upload_Using_Programmer)s", "command": "upload_using_programmer"},
+			{"caption": "-"},
+			{"caption": "%(Board)s", "command": "not_enable"},
+			{"caption": "%(Processor)s", "command": "not_enable"},
+			{"caption": "%(Serial_Port)s", "command": "not_enable"},
+			{"caption": "-"},
+			{"caption": "%(Programmer)s", "command": "not_enable"},
+			{"caption": "%(Burn_Bootloader)s", "command": "burn_bootloader"},
+			{"caption": "-"},
+			{
+				"caption": "%(Preferences)s",
+				"id": "arduino_preferences",
+				"children":
+				[
+					{"caption": "%(Language)s", "command": "not_enable"},
+					{"caption": "%(Select_Arduino_Folder...)s", "command": "select_arduino_folder"},
+					{"caption": "%(Change_Sketchbook_Folder...)s", "command": "add_sketchbook_folder"},
+					{"caption": "%(Full_Compilation)s", "command": "toggle_full_compilation", "checkbox": true},
+					{
+						"caption": "%(Show_Verbose_Output)s",
+						"id": "show_verbose_output",
+						"children":
+						[
+							{"caption": "%(compilation)s", "command": "toggle_verbose_compilation", "checkbox": true},
+							{"caption": "%(Upload)s", "command": "toggle_verbose_upload", "checkbox": true}
+						]
+					},
+					{"caption": "%(Verify_code_after_upload)s", "command": "toggle_verify_code", "checkbox": true}
+				]
+			},
+			{"caption": "-"},
+			{
+				"caption": "%(Tools)s",
+				"id": "arduino_tools",
+				"children":
+				[
+					{"caption": "%(Auto_Format)s", "command": "auto_format"},
+					{"caption": "%(Archive_Sketch)s", "command": "archive_sketch"},
+					{"caption": "%(Fix_Encoding_&_Reload)s", "command": "fix_encoding"},
+					{"caption": "%(Serial_Monitor)s", "command": "serial_monitor"}
+				]
+			},
+			{"caption": "-"},
+			{"caption": "%(Examples)s", "command": "not_enable"},
+			{
+				"caption": "%(Arduino_Help)s",
+				"id": "arduino_help",
+				"children":
+				[
+					{"caption": "%(Getting_Started)s", "command": "open_ref", "args": {"menu_str": "Guide_index"}},
+					{"caption": "%(Troubleshooting)s", "command": "open_ref", "args": {"menu_str": "Guide_Troubleshooting"}},
+					{"caption": "%(Reference)s", "command": "open_ref", "args": {"menu_str": "index"}},
+					{"caption": "%(Find_in_Reference)s", "command": "find_in_reference"},
+					{"caption": "%(Frequently_Asked_Questions)s", "command": "open_ref", "args": {"menu_str": "FAQ"}},
+					{"caption": "%(Visit_Arduino_Website)s", "command": "open_url", "args": {"menu_str": "http://arduino.cc"}}
+				]
+			},			
+			{"caption" : "-"},
+			{"caption": "%(Frequently_Asked_Questions)s", "command": "open_ref", "args": {"menu_str": "FAQ"}},
+			{"caption": "%(About_Stino)s", "command": "about_stino"}
+		]
+	}

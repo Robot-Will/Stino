@@ -1,6 +1,0 @@
-{
-    "cmd": [_cmd_],
-    "file_regex": "file:\\s(.+)\\]",
-    "line_regex": "(\\d+),(\\d+)",
-    "selector": "source.c++.arduino"
-}
