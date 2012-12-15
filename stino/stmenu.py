@@ -274,5 +274,4 @@ class STMenu:
 	def genLangMenuText(self):
 		lang_list = [self.lang.lang_text_dict[language] for language in self.lang.getLangList()]
 		lang_list = [lang_list]
-		print lang_list
 		self.lang_menu_text = self.getMenuText(lang_list, '%(Language)s', 'select_language', checkbox = True)
