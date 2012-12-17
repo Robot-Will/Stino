@@ -583,8 +583,9 @@ def genScriptFile(prj_folder, path_list, mode):
 	utils_dir = os.path.join(arv_dir, 'utils')
 	posix_root = os.path.join(utils_dir, 'bin')
 	
-	text = '@echo off\n'
+	text = ''
 	if sys.platform == 'win32':
+		text += '@echo off\n'
 		text += 'Set Path=%s' % posix_root
 		for path in path_list:
 			path = path.replace('/', os.path.sep)
@@ -596,7 +597,7 @@ def genScriptFile(prj_folder, path_list, mode):
 			text += '%s:' % path
 		text += '$PATH\n'
 	else:
-		text += '@export PATH='
+		text += 'export PATH='
 		for path in path_list:
 			text += '%s:' % path
 		text += '$PATH\n'
