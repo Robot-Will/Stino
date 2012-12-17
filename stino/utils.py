@@ -595,12 +595,14 @@ def genScriptFile(prj_folder, path_list, mode):
 		text += '#!/bin/sh\n\n'
 		text += 'launchctl setenv PATH '
 		for path in path_list:
+			path = path.replace(' ', '\\ ')
 			text += '%s:' % path
 		text += '$PATH\n'
 	else:
 		text += '#!/bin/sh\n\n'
 		text += 'export PATH='
 		for path in path_list:
+			path = path.replace(' ', '\\ ')
 			text += '%s:' % path
 		text += '$PATH\n'
 	text += 'make %s\n' % mode
