@@ -610,6 +610,9 @@ def genScriptFile(prj_folder, path_list, mode):
 
 	encoding = codecs.lookup(locale.getpreferredencoding()).name
 	writeFile(file_path, text, encoding)
+	if sys.platform != 'win32':
+		cmd = 'chmod +x %s' % file_path
+		os.popen(cmd)
 
 def genBuildFiles(prj_file, arduino_info, cur_lang, mode):
 	plugin_root = getPluginRoot()

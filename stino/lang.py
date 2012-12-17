@@ -20,7 +20,7 @@ class Lang():
 		template_dir = os.path.join(plugin_root, 'template')
 		mod_dir = os.path.join(plugin_root, 'stino')
 		dirs = [plugin_root, template_dir, mod_dir]
-		pattern = re.compile(r'%\(\S+?\)s')
+		pattern = re.compile(r'%\([\S\s]+?\)s')
 
 		for cur_dir in dirs:
 			files = os.listdir(cur_dir)
