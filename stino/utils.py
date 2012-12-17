@@ -592,11 +592,13 @@ def genScriptFile(prj_folder, path_list, mode):
 			text += ';%s' % path
 		text+= '\n'
 	elif sys.platform == 'darwin':
+		text += '#!/bin/sh\n\n'
 		text += 'launchctl setenv PATH '
 		for path in path_list:
 			text += '%s:' % path
 		text += '$PATH\n'
 	else:
+		text += '#!/bin/sh\n\n'
 		text += 'export PATH='
 		for path in path_list:
 			text += '%s:' % path
