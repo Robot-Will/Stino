@@ -5,7 +5,7 @@
 		"id": "preferences",
 		"children":
 		[
-			{"caption": "显示Arduino菜单", "command": "show_arduino_menu", "checkbox": true}
+			{"caption": "Arduino", "command": "show_arduino_menu", "checkbox": true}
 		]
 	}
 ]

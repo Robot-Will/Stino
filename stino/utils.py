@@ -658,7 +658,6 @@ def genBuildFiles(prj_file, arduino_info, cur_lang, mode):
 	platform = arduino_info.getPlatform(board)
 
 	has_processor = arduino_info.hasProcessor(board)
-	has_serial = has_serial_port()
 
 	core_root = arduino_info.getPlatformFileFolder(platform)
 	board_file_path = arduino_info.getBoardFile(board)
@@ -667,7 +666,13 @@ def genBuildFiles(prj_file, arduino_info, cur_lang, mode):
 	if not os.path.isfile(platform_file_path):
 		platform_file_path = os.path.join(template_dir, 'platform.txt')
 
-	if not has_serial:
+	serial_list = getSerialPortList()
+	if serial_list:
+		if not serial_port in serial_list:
+			serial_port = serial_list[0]
+			Setting.set('serial_port', serial_port)
+			sublime.save_settings('Stino.sublime-settings')
+	else:
 		serial_port = 'serial_port'
 	build_system_path = os.path.join(core_root, 'system')
 

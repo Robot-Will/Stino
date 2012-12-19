@@ -3,7 +3,6 @@
 		"id": "arduino",
 		"children":
 		[
-			{"caption": "", "command": "not_visible"},
 			{"caption": "%(New_Sketch...)s", "command": "new_sketch"},
 			{"caption": "%(Sketchbook)s", "command": "not_enable"},
 			{"caption": "-"},
@@ -53,7 +52,32 @@
 					{"caption": "%(Auto_Format)s", "command": "auto_format"},
 					{"caption": "%(Archive_Sketch)s", "command": "archive_sketch"},
 					{"caption": "%(Fix_Encoding_&_Reload)s", "command": "fix_encoding"},
-					{"caption": "%(Serial_Monitor)s", "command": "serial_monitor"}
+					{
+						"caption": "%(Serial_Monitor)s",
+						"id": "serial_monitor",
+						"children":
+						[
+							{"caption": "%(Start)s", "command": "serial_monitor"},
+							{
+								"caption": "%(Baudrate)s",
+								"id": "baudrate",
+								"children":
+								[
+									{"caption": "300", "command": "select_baudrate", "args": {"menu_str": "300"}, "checkbox": true},
+									{"caption": "1200", "command": "select_baudrate", "args": {"menu_str": "1200"}, "checkbox": true},
+									{"caption": "2400", "command": "select_baudrate", "args": {"menu_str": "2400"}, "checkbox": true},
+									{"caption": "4800", "command": "select_baudrate", "args": {"menu_str": "4800"}, "checkbox": true},
+									{"caption": "9600", "command": "select_baudrate", "args": {"menu_str": "9600"}, "checkbox": true},
+									{"caption": "14400", "command": "select_baudrate", "args": {"menu_str": "14400"}, "checkbox": true},
+									{"caption": "19200", "command": "select_baudrate", "args": {"menu_str": "19200"}, "checkbox": true},
+									{"caption": "28800", "command": "select_baudrate", "args": {"menu_str": "28800"}, "checkbox": true},
+									{"caption": "38400", "command": "select_baudrate", "args": {"menu_str": "38400"}, "checkbox": true},
+									{"caption": "57600", "command": "select_baudrate", "args": {"menu_str": "57600"}, "checkbox": true},
+									{"caption": "115200", "command": "select_baudrate", "args": {"menu_str": "115200"}, "checkbox": true}
+								]
+							}
+						]
+					}
 				]
 			},
 			{"caption": "-"},

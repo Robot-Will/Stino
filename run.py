@@ -2,19 +2,40 @@
 
 import sublime, sublime_plugin
 import os, zipfile, re
-from stino import stmenu, lang, utils, arduino
+from stino import stmenu, lang, utils, arduino, smonitor
 
 ##
 Setting_File = 'Stino.sublime-settings'
 Settings = sublime.load_settings(Setting_File)
 Settings.set('plugin_root', utils.genPluginRoot())
 sublime.save_settings(Setting_File)
+serial_monitor = None
 
 ## 
 cur_lang = lang.Lang()
 arduino_info = arduino.ArduinoInfo()
 cur_menu = stmenu.STMenu(arduino_info, cur_lang)
+smonitor.SerialListener(cur_menu).start()
 ##
+
+def showInfoText(view):
+	version_text = arduino_info.getVersionText()
+	text = 'Arduino %s' % version_text
+	board = Settings.get('board')
+	text += ', %s' % board
+	has_processor = arduino_info.hasProcessor(board)
+	if has_processor:
+		processor = Settings.get('processor')
+		text += ', %s' % processor
+	has_programmer = arduino_info.hasProgrammer()
+	if has_programmer:
+		programmer = Settings.get('programmer')
+		text += ', %s' % programmer
+	serial_port_list = utils.getSerialPortList()
+	if serial_port_list:
+		serial_port = Settings.get('serial_port')
+		text += ', %s' % serial_port
+	view.set_status('Arduino', text)
 
 class SketchListener(sublime_plugin.EventListener):
 	def on_activated(self, view):
@@ -30,26 +51,19 @@ class SketchListener(sublime_plugin.EventListener):
 		if state:
 			arduino_root = Settings.get('Arduino_root')
 			if arduino.isArduinoFolder(arduino_root):
-				text = ''
-				version_text = arduino_info.getVersionText()
-				text += 'Arduino %s' % version_text
-				board = Settings.get('board')
-				text += ', %s' % board
-				has_processor = arduino_info.hasProcessor(board)
-				if has_processor:
-					processor = Settings.get('processor')
-					text += ', %s' % processor
-				has_programmer = arduino_info.hasProgrammer()
-				if has_programmer:
-					programmer = Settings.get('programmer')
-					text += ', %s' % programmer
-				serial_port_list = utils.getSerialPortList()
-				if serial_port_list:
-					serial_port = Settings.get('serial_port')
-					text += ', %s' % serial_port
+				showInfoText(view)
+			else:
+				text = 'Please select Arduino folder'
 				view.set_status('Arduino', text)
 		else:
 			view.erase_status('Arduino')
+
+	def on_close(self, view):
+		global serial_monitor
+		if serial_monitor:
+			if view.name() == 'Serial Monitor':
+				serial_monitor.stop()
+				serial_monitor = None
 
 class ShowArduinoMenuCommand(sublime_plugin.WindowCommand):
 	def run(self):
@@ -238,6 +252,7 @@ class SelectBoardCommand(sublime_plugin.WindowCommand):
 			Settings.set('full_compilation', True)
 			sublime.save_settings(Setting_File)
 			cur_menu.boardUpdate()
+			showInfoText(self.window.active_view())
 
 	def is_checked(self, menu_str):
 		state = False
@@ -253,6 +268,7 @@ class SelectProcessorCommand(sublime_plugin.WindowCommand):
 		if processor != pre_processor:
 			Settings.set('processor', processor)
 			sublime.save_settings(Setting_File)
+			showInfoText(self.window.active_view())
 
 	def is_checked(self, menu_str):
 		state = False
@@ -272,6 +288,7 @@ class SelectSerialPortCommand(sublime_plugin.WindowCommand):
 		if serial_port != pre_serial_port:
 			Settings.set('serial_port', serial_port)
 			sublime.save_settings(Setting_File)
+			showInfoText(self.window.active_view())
 
 	def is_checked(self, menu_str):
 		state = False
@@ -287,6 +304,7 @@ class SelectProgrammerCommand(sublime_plugin.WindowCommand):
 		if programmer != pre_programmer:
 			Settings.set('programmer', programmer)
 			sublime.save_settings(Setting_File)
+			showInfoText(self.window.active_view())
 
 	def is_checked(self, menu_str):
 		state = False
@@ -501,9 +519,63 @@ class FixEncodingCommand(sublime_plugin.WindowCommand):
 			self.window.active_view().replace(edit, sublime.Region(0, self.window.active_view().size()), content)
 			self.window.active_view().end_edit(edit)
 
+class SelectBaudrateCommand(sublime_plugin.WindowCommand):
+	def run(self, menu_str):
+		baudrate = menu_str
+		Settings.set('baudrate', baudrate)
+		sublime.save_settings(Setting_File)
+
+	def is_checked(self, menu_str):
+		state = False
+		baudrate_list = ['300', '1200', '2400', '4800', '9600', '14400', '19200', '28800', '38400', '57600', '115200']
+		baudrate = Settings.get('baudrate')
+		if not baudrate in baudrate_list:
+			baudrate = '9600'
+		if menu_str == baudrate:
+			state = True
+		return state
+
 class SerialMonitorCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		sublime.message_dialog('Serial Monitor')
+		global serial_monitor
+		serial_port = Settings.get('serial_port')
+		baudrate_list = ['300', '1200', '2400', '4800', '9600', '14400', '19200', '28800', '38400', '57600', '115200']
+		baudrate = Settings.get('baudrate')
+		if not baudrate in baudrate_list:
+			baudrate = '9600'
+		sublime.message_dialog('Serial Monitor is not finished yet.\nYou can Show Console (Ctrl+`) to see the messages from %s.' % serial_port)
+
+		is_open = False
+		windows = sublime.windows()
+		for window in windows:
+			views = window.views()
+			for view in views:
+				if view.name() == 'Serial Monitor':
+					cur_view = view
+					window.focus_view(view)
+					is_open = True
+					break
+			if is_open:
+				break
+		if not is_open:
+			cur_view = self.window.new_file()
+			cur_view.set_name('Serial Monitor')
+		# sublime.run_command('show_panel', {'panel': 'console', 'toggle': True})
+		serial_monitor = smonitor.serialMonitor(cur_view, serial_port, baudrate)
+		serial_monitor.start()
+
+	def is_enabled(self):
+		state = False
+		serial_port = Settings.get('serial_port')
+		serial_list = utils.getSerialPortList()
+		if serial_list:
+			if not serial_port in serial_list:
+				serial_port = serial_list[0]
+				Settings.set('serial_port', serial_port)
+				sublime.save_settings('Stino.sublime-settings')
+			if smonitor.isAvailable(serial_port):
+				state = True
+		return state
 
 class SelectExampleCommand(sublime_plugin.WindowCommand):
 	def run(self, menu_str):
@@ -607,56 +679,8 @@ class AboutStinoCommand(sublime_plugin.WindowCommand):
 
 class NotEnableCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		pass
+		print 'HaHaHa'
 
 	def is_enabled(self):
 		return False
-
-class NotVisibleCommand(sublime_plugin.WindowCommand):
-	def run(self):
-		pass
-
-	def is_visible(self):
-		cur_menu.serialUpdate()
-		
-		no_board = True
-		board = Settings.get('board')
-		platform_list = arduino_info.getPlatformList()
-		for platform in platform_list:
-			board_list = arduino_info.getBoardList(platform)
-			for boards in board_list:
-				if board in boards:
-					no_board = False
-		if no_board:
-			board = arduino_info.getDefaultBoard()
-			Settings.set('board', board)
-
-		has_processor = arduino_info.hasProcessor(board)
-		if has_processor:
-			processor = Settings.get('processor')
-			processor_list = arduino_info.getProcessorList(board)
-			if not processor in processor_list:
-				processor = processor_list[0]
-				Settings.set('processor', processor)
-
-		no_programmer = True
-		has_programmer = arduino_info.hasProgrammer()
-		if has_programmer:
-			programmer = Settings.get('programmer')
-			programmer_list = arduino_info.getProgrammerList()
-			for programmers in programmer_list:
-				if programmer in programmers:
-					no_programmer = False
-			if no_programmer:
-				programmer = programmer_list[0][0]
-				Settings.set('programmer', programmer)
-		
-		serial_port = Settings.get('serial_port')
-		serial_port_list = utils.getSerialPortList()
-		if serial_port_list:
-			if not serial_port in serial_port_list:
-				serial_port = serial_port_list[0]
-				Settings.set('serial_port', serial_port)
-		return False
-
 ########## End ##########

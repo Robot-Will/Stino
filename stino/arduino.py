@@ -249,6 +249,8 @@ class ArduinoInfo:
 		self.board = self.Settings.get('board')
 		if not self.isBoard(self.board):
 			self.board = self.getDefaultBoard()
+			self.Settings.set('board', self.board)
+			sublime.save_settings('Stino.sublime-settings')
 		self.genLibList()
 		self.genProgrammerList()
 		self.genExampleList()

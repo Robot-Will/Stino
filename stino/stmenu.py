@@ -112,9 +112,6 @@ class STMenu:
 					if checkbox:
 						text += ', "checkbox": true'
 					text += '},\n'
-					if caption == '%(Serial_Port)s':
-						text += '\t'*5
-						text += '{"caption": "", "command": "not_visible"},\n'
 				text += '\t'*5
 				text += '{"caption": "-"},\n'
 			text = text[:-2] + '\n'
@@ -238,7 +235,6 @@ class STMenu:
 		temp_text = temp_text.replace('%(keyword)s', text)
 		utils.writeFile(self.syntax_file, temp_text)
 		
-
 	def genSketchbookMenuText(self):
 		sketch_list = self.arduino_info.getSketchList()
 		self.sketchbook_menu_text = self.getMenuText(sketch_list, '%(Sketchbook)s', 'select_sketch')
@@ -253,19 +249,37 @@ class STMenu:
 		for platform in platform_list:
 			caption = platform.replace('Boards', '%(Board)s')
 			board_list = self.arduino_info.getBoardList(platform)
-			self.board_menu_text += self.getMenuText(board_list, caption, 'select_board')
+			self.board_menu_text += self.getMenuText(board_list, caption, 'select_board', checkbox = True)
 
 	def genProcessorMenuText(self):
-		processor_list = [self.arduino_info.getProcessorList()]
-		self.processor_menu_text = self.getMenuText(processor_list, '%(Processor)s', 'select_processor')
+		processor_list = self.arduino_info.getProcessorList()
+		self.processor_menu_text = self.getMenuText([processor_list], '%(Processor)s', 'select_processor', checkbox = True)
+		if processor_list:
+			processor = self.Settings.get('processor')
+			if not processor in processor_list:
+				processor = processor_list[0]
+				self.Settings.set('processor', processor)
+				sublime.save_settings('Stino.sublime-settings')
 
 	def genSerialPortMenuText(self):
-		serial_list = [utils.getSerialPortList()]
-		self.serial_port_menu_text = self.getMenuText(serial_list, '%(Serial_Port)s', 'select_serial_port')
+		serial_list = utils.getSerialPortList()
+		self.serial_port_menu_text = self.getMenuText([serial_list], '%(Serial_Port)s', 'select_serial_port', checkbox = True)
 
 	def genProgrammerMenuText(self):
 		programmer_list = self.arduino_info.getProgrammerList()
-		self.programmer_menu_text = self.getMenuText(programmer_list, '%(Programmer)s', 'select_programmer')
+		self.programmer_menu_text = self.getMenuText(programmer_list, '%(Programmer)s', 'select_programmer', checkbox = True)
+		no_programmer = True
+		has_programmer = self.arduino_info.hasProgrammer()
+		if has_programmer:
+			programmer = self.Settings.get('programmer')
+			for programmers in programmer_list:
+				if programmer in programmers:
+					no_programmer = False
+					break
+			if no_programmer:
+				programmer = programmer_list[0][0]
+				self.Settings.set('programmer', programmer)
+				sublime.save_settings('Stino.sublime-settings')
 
 	def genExampleMenuText(self):
 		example_list = self.arduino_info.getExampleList()
