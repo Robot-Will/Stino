@@ -679,8 +679,9 @@ class AboutStinoCommand(sublime_plugin.WindowCommand):
 
 class NotEnableCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		print 'HaHaHa'
+		pass
 
 	def is_enabled(self):
 		return False
 ########## End ##########
+
