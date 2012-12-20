@@ -193,10 +193,17 @@ class AddToSketchCommand(sublime_plugin.WindowCommand):
 
 class ImportLibraryCommand(sublime_plugin.WindowCommand):
 	def run(self, menu_str):
+		self.window.active_view().run_command('save')
+		filename = self.window.active_view().file_name()
+		header_list_in_file = utils.getHeaderList(filename)
+		lib_list = utils.getLibList(arduino_info)
+		lib_paths = utils.getExtLibPaths(header_list_in_file, lib_list)
+		
 		lib = menu_str
-		lib_folder = arduino_info.getLibFolder(lib)
-		header_list = utils.getHeaderList(lib_folder)
-		utils.insertHeadList(self.window.active_view(), header_list)
+		lib_path = arduino_info.getLibFolder(lib)
+		if not lib_path.replace(os.path.sep, '/') in lib_paths:
+			header_list = utils.getLibHeaderList(lib_path)
+			utils.insertHeadList(self.window.active_view(), header_list)
 
 class ShowSketchFolderCommand(sublime_plugin.WindowCommand):
 	def run(self):

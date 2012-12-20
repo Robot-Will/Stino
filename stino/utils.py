@@ -227,7 +227,7 @@ def openSketch(sketch_folder):
 	new_window = sublime.windows()[-1]
 	view = new_window.open_file(sketch_file_path)
 
-def getHeaderList(lib_folder):
+def getLibHeaderList(lib_folder):
 	header_list = []
 	files = listDir(lib_folder)
 	for cur_file in files:

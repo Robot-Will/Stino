@@ -144,7 +144,7 @@ class STMenu:
 		if self.sketchbook_menu_text:
 			self.menu_text = self.menu_text.replace('{"caption": "%(Sketchbook)s", "command": "not_enable"},', self.sketchbook_menu_text)
 		if self.import_lib_menu_text:
-			self.menu_text = self.menu_text.replace('{"caption": "%(Import_Library)s", "command": "not_enable"},', self.import_lib_menu_text)
+			self.menu_text = self.menu_text.replace('{"caption": "%(Import_Library...)s", "command": "not_enable"},', self.import_lib_menu_text)
 		if self.board_menu_text:
 			self.menu_text = self.menu_text.replace('{"caption": "%(Board)s", "command": "not_enable"},', self.board_menu_text)
 		if self.processor_menu_text:
@@ -241,7 +241,7 @@ class STMenu:
 
 	def genImportLibMenuText(self):
 		lib_list = self.arduino_info.getLibList()
-		self.import_lib_menu_text = self.getMenuText(lib_list, '%(Import_Library)s', 'import_library')
+		self.import_lib_menu_text = self.getMenuText(lib_list, '%(Import_Library...)s', 'import_library')
 
 	def genBoardMenuText(self):
 		self.board_menu_text = ''
