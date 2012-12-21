@@ -123,6 +123,7 @@ class STMenu:
 
 	def genOriginalMenuText(self):
 		show_arduino_menu = self.Settings.get('show_Arduino_menu')
+		show_serial_menu = self.Settings.get('show_serial_menu')
 		arduino_root = self.Settings.get('Arduino_root')
 
 		header_menu_file = os.path.join(self.template_dir, 'menu_preference')
@@ -136,6 +137,10 @@ class STMenu:
 			else:
 				main_menu_file = os.path.join(self.template_dir, 'menu_mini')
 			text += utils.readFile(main_menu_file)
+		if show_serial_menu:
+			text += ',\n'
+			menu_file = os.path.join(self.template_dir, 'menu_serial')
+			text += utils.readFile(menu_file)
 		text += '\n]'
 		self.org_menu_text = text
 

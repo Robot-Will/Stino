@@ -2,20 +2,26 @@
 
 import sublime, sublime_plugin
 import os, zipfile, re
-from stino import stmenu, lang, utils, arduino, smonitor
+from stino import stmenu, lang, utils, arduino
+import threading
+import time
+import serial
 
 ##
 Setting_File = 'Stino.sublime-settings'
 Settings = sublime.load_settings(Setting_File)
 Settings.set('plugin_root', utils.genPluginRoot())
 sublime.save_settings(Setting_File)
-serial_monitor = None
+
+serial_listen = False
+opened_serial_list = []
+opened_serial_id_dict = {}
+serial_monitor_state_dict = {}
 
 ## 
 cur_lang = lang.Lang()
 arduino_info = arduino.ArduinoInfo()
 cur_menu = stmenu.STMenu(arduino_info, cur_lang)
-smonitor.SerialListener(cur_menu).start()
 ##
 
 def showInfoText(view):
@@ -37,14 +43,47 @@ def showInfoText(view):
 		text += ', %s' % serial_port
 	view.set_status('Arduino', text)
 
+class SerialListenerCommand(sublime_plugin.ApplicationCommand):
+	def run(self):
+		t = threading.Thread(target = self.startListener)
+		t.start()
+
+	def startListener(self):
+		global serial_listen
+		serial_listen = True
+		pre_serial_list = utils.getSerialPortList()
+		while serial_listen:
+			serial_list = utils.getSerialPortList()
+			if serial_list != pre_serial_list:
+				cur_menu.serialUpdate()
+				pre_serial_list = serial_list
+			time.sleep(0.5)
+
 class SketchListener(sublime_plugin.EventListener):
 	def on_activated(self, view):
+		global opened_serial_list
+		global serial_listen
+
 		state = False
 		file_name = view.file_name()
 		state = utils.isSketch(file_name)
 		pre_state = Settings.get('show_Arduino_menu')
+		pre_serial_menu_state = Settings.get('show_serial_menu')
+
+		serial_menu_state = False
+		if 'Serial Monitor' in view.name():
+			serial_port = view.name().split('-')[1].strip()
+			if serial_port in opened_serial_list:
+				serial_menu_state = True
+				view.window().run_command('serial_send')
+		
 		if state != pre_state:
 			Settings.set('show_Arduino_menu', state)
+			sublime.save_settings(Setting_File)
+			cur_menu.update()
+
+		if serial_menu_state != pre_serial_menu_state:
+			Settings.set('show_serial_menu', serial_menu_state)
 			sublime.save_settings(Setting_File)
 			cur_menu.update()
 
@@ -52,18 +91,20 @@ class SketchListener(sublime_plugin.EventListener):
 			arduino_root = Settings.get('Arduino_root')
 			if arduino.isArduinoFolder(arduino_root):
 				showInfoText(view)
+				sublime.run_command('serial_listener')
 			else:
 				text = 'Please select Arduino folder'
 				view.set_status('Arduino', text)
+				serial_listen = False
 		else:
 			view.erase_status('Arduino')
+			serial_listen = False
 
 	def on_close(self, view):
-		global serial_monitor
-		if serial_monitor:
-			if view.name() == 'Serial Monitor':
-				serial_monitor.stop()
-				serial_monitor = None
+		global serial_monitor_state_dict
+		if 'Serial Monitor' in view.name():
+			serial_port = view.name().split('-')[1].strip()
+			serial_monitor_state_dict[serial_port] = False
 
 class ShowArduinoMenuCommand(sublime_plugin.WindowCommand):
 	def run(self):
@@ -544,20 +585,20 @@ class SelectBaudrateCommand(sublime_plugin.WindowCommand):
 
 class SerialMonitorCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		global serial_monitor
-		serial_port = Settings.get('serial_port')
+		global opened_serial_list
+		self.serial_port = Settings.get('serial_port')
 		baudrate_list = ['300', '1200', '2400', '4800', '9600', '14400', '19200', '28800', '38400', '57600', '115200']
-		baudrate = Settings.get('baudrate')
-		if not baudrate in baudrate_list:
-			baudrate = '9600'
-		sublime.message_dialog('Serial Monitor is not finished yet.\nYou can Show Console (Ctrl+`) to see the messages from %s.' % serial_port)
-
+		self.baudrate = Settings.get('baudrate')
+		if not self.baudrate in baudrate_list:
+			self.baudrate = '9600'
+		
 		is_open = False
+		view_name = 'Serial Monitor-%s' % self.serial_port
 		windows = sublime.windows()
 		for window in windows:
 			views = window.views()
 			for view in views:
-				if view.name() == 'Serial Monitor':
+				if view.name() == view_name:
 					cur_view = view
 					window.focus_view(view)
 					is_open = True
@@ -566,10 +607,54 @@ class SerialMonitorCommand(sublime_plugin.WindowCommand):
 				break
 		if not is_open:
 			cur_view = self.window.new_file()
-			cur_view.set_name('Serial Monitor')
-		# sublime.run_command('show_panel', {'panel': 'console', 'toggle': True})
-		serial_monitor = smonitor.serialMonitor(cur_view, serial_port, baudrate)
-		serial_monitor.start()
+			cur_view.set_name(view_name)
+			Settings.set('show_serial_menu', True)
+			sublime.save_settings(Setting_File)
+			cur_menu.update()
+			cur_view.run_command('toggle_setting', {'setting': 'word_wrap'})
+		self.view = cur_view
+		
+		opened_serial_list.append(self.serial_port)
+		self.window.run_command('serial_send')
+
+		self.text_to_add = ''
+		t = threading.Thread(target = self.startMonitor)
+		t.start()
+
+	def startMonitor(self):
+		global opened_serial_list
+		global opened_serial_id_dict
+		global serial_monitor_state_dict
+
+		ser = serial.Serial()
+		ser.port = self.serial_port
+		ser.baudrate = int(self.baudrate)
+		ser.open()
+
+		opened_serial_id_dict[self.serial_port] = ser
+		serial_monitor_state_dict[self.serial_port] = True
+		while serial_monitor_state_dict[self.serial_port]:
+			number = ser.inWaiting()
+			text = ser.read(number)
+			self.text_to_add += text
+			sublime.set_timeout(self.update, 0)
+			time.sleep(0.1)
+		ser.close()
+		opened_serial_list.remove(self.serial_port)
+		opened_serial_id_dict[self.serial_port] = None
+
+	def update(self):
+		if len(self.text_to_add):
+			if self.view.size() > 10000:
+				view_edit = self.view.begin_edit()
+				self.view.replace(view_edit, self.view.size(), '')
+				self.view.end_edit(view_edit)
+			view_edit = self.view.begin_edit()
+			self.text_to_add= self.text_to_add.replace('\r', '')
+			self.view.insert(view_edit, self.view.size(), self.text_to_add)
+			self.view.end_edit(view_edit)
+			self.view.show(self.view.size())
+			self.text_to_add = ''
 
 	def is_enabled(self):
 		state = False
@@ -580,7 +665,66 @@ class SerialMonitorCommand(sublime_plugin.WindowCommand):
 				serial_port = serial_list[0]
 				Settings.set('serial_port', serial_port)
 				sublime.save_settings('Stino.sublime-settings')
-			if smonitor.isAvailable(serial_port):
+			if utils.isPortAvailable(serial_port):
+				state = True
+		return state
+
+class SerialSendCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		global opened_serial_list
+		name = self.window.active_view().name()
+		if 'Serial Monitor' in name:
+			serial_port = name.split('-')[1].strip()
+			if serial_port in opened_serial_list:
+				text = '%(Send)s'
+				caption = text % cur_lang.getDisplayTextDict()
+				self.window.show_input_panel(caption, '', self.on_done, None, self.on_cancel)
+
+	def on_done(self, input_text):
+		global opened_serial_list
+		global opened_serial_id_dict
+		name = self.window.active_view().name()
+		if 'Serial Monitor' in name:
+			serial_port = name.split('-')[1].strip()
+			if serial_port in opened_serial_list:
+				if input_text:
+					ser = opened_serial_id_dict[serial_port]
+					ser.write(input_text)
+					text = '\n%s: %s\n' % ('%(Send)s', input_text)
+					display_text = text % cur_lang.getDisplayTextDict()
+					view = self.window.active_view()
+					edit = view.begin_edit()
+					view.insert(edit, view.size(), display_text)
+					view.end_edit(edit)
+					view.show(view.size())
+				text = '%(Send)s'
+				caption = text % cur_lang.getDisplayTextDict()
+				self.window.show_input_panel(caption, '', self.on_done, None, self.on_cancel)
+
+	def on_cancel(self):
+		pass
+
+	def is_enabled(self):
+		global opened_serial_list
+		state = False
+		name = self.window.active_view().name()
+		if 'Serial Monitor' in name:
+			serial_port = name.split('-')[1].strip()
+			if serial_port in opened_serial_list:
+				state = True
+		return state
+
+class SerialStopCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		self.window.run_command('close')
+
+	def is_enabled(self):
+		global opened_serial_list
+		state = False
+		name = self.window.active_view().name()
+		if 'Serial Monitor' in name:
+			serial_port = name.split('-')[1].strip()
+			if serial_port in opened_serial_list:
 				state = True
 		return state
 
@@ -691,4 +835,3 @@ class NotEnableCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
 		return False
 ########## End ##########
-

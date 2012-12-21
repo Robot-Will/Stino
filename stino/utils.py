@@ -3,6 +3,7 @@ import sublime
 import locale, codecs
 import os, sys
 import re
+import serial
 
 if sys.platform == 'win32':
 	import _winreg
@@ -180,13 +181,6 @@ def removeEmptyItem(org_list):
 
 def getSerialPortList():
 	serial_port_list = []
-	# for i in range(16):
-	# 	try:
-	# 		s = serial.Serial(i)
-	# 		serial_port_list.append(s.portstr)
-	# 		s.close()
-	# 	except serial.SerialException:
-	# 		pass
 	has_ports = False
 	if sys.platform == "win32":
 		path = 'HARDWARE\\DEVICEMAP\\SERIALCOMM'
@@ -219,6 +213,18 @@ def has_serial_port():
 	if serial_port_list:
 		has_serial_port = True
 	return has_serial_port
+
+def isPortAvailable(port):
+	state = False
+	ser = None
+	try:
+		ser = serial.Serial(port)
+	except serial.serialutil.SerialException:
+		pass
+	if ser:
+		state = True
+		ser.close()
+	return state
 
 def openSketch(sketch_folder):
 	file_name = os.path.split(sketch_folder)[1] + '.ino'
