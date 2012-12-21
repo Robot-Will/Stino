@@ -689,7 +689,7 @@ class SerialSendCommand(sublime_plugin.WindowCommand):
 			if serial_port in opened_serial_list:
 				if input_text:
 					ser = opened_serial_id_dict[serial_port]
-					ser.write(input_text)
+					ser.write(input_text.encode('utf-8'))
 					text = '\n%s: %s\n' % ('%(Send)s', input_text)
 					display_text = text % cur_lang.getDisplayTextDict()
 					view = self.window.active_view()
