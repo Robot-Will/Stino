@@ -59,3 +59,8 @@ Maximum_Size = Maximum Size
 Cleaning = Cleaning
 Creating = Creating
 bytes = bytes
+
+Start = Start
+Stop = Stop
+Send = Send
+Baudrate = Baudrate
