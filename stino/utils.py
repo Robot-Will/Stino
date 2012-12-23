@@ -10,7 +10,7 @@ if sys.platform == 'win32':
 
 def getWinVol():
 	vol_list = []
-	for label in xrange(65, 91):
+	for label in xrange(67, 90):
 		vol = chr(label) + ':\\'
 		if os.path.isdir(vol):
 			vol_list.append(vol)
