@@ -822,7 +822,7 @@ class AboutStinoCommand(sublime_plugin.WindowCommand):
 			f.close()
 			encoding = codecs.lookup(locale.getpreferredencoding()).name
 			if not isinstance(text, unicode):
-				text = text.decode(encoding)
+				text = text.decode(encoding, 'replace')
 		except:
 			text = '%(Stino_Lic)s'
 			msg = text % cur_lang.getDisplayTextDict()

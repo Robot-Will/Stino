@@ -52,7 +52,7 @@ class Lang():
 				for line in lines:
 					(key, value) = utils.getKeyValue(line)
 					if key == 'LANG':
-						value = value.decode('utf-8')
+						value = value.decode('utf-8', 'replace')
 						pattern = re.compile(r'\([\S\s]+\)')
 						match = pattern.search(value)
 						if match:
@@ -78,7 +78,7 @@ class Lang():
 					line = line.strip()
 					if line and (not '#' in line):
 						(key, value) = utils.getKeyValue(line)
-						value = value.decode('utf-8')
+						value = value.decode('utf-8', 'replace')
 						self.trans_dict[key] = value
 
 	def update(self):

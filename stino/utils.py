@@ -44,7 +44,7 @@ def genPluginRoot():
 	encoding = codecs.lookup(locale.getpreferredencoding()).name
 	plugin_root = os.getcwd()
 	if not isinstance(plugin_root, unicode):
-		plugin_root = plugin_root.decode(encoding)
+		plugin_root = plugin_root.decode(encoding, 'replace')
 	return plugin_root
 
 def getPluginRoot():
@@ -82,7 +82,7 @@ def readFile(filename, mode = 'all'):
 
 	encoding = codecs.lookup(locale.getpreferredencoding()).name
 	if not isinstance(text, unicode):
-		text = text.decode(encoding)
+		text = text.decode(encoding, 'replace')
 	lines = text.split('\n')
 
 	if mode == 'lines':
@@ -105,12 +105,12 @@ def listDir(path, with_files = True):
 
 	encoding = codecs.lookup(locale.getpreferredencoding()).name
 	if not isinstance(path, unicode):
-			path = path.decode(encoding)
+			path = path.decode(encoding, 'replace')
 
 	for f in files:
 		is_access = False
 		if not isinstance(f, unicode):
-			f = f.decode(encoding)
+			f = f.decode(encoding, 'replace')
 
 		f_path = os.path.join(path, f)
 		if os.path.isdir(f_path):

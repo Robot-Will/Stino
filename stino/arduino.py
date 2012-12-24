@@ -299,7 +299,7 @@ class ArduinoInfo:
 		self.platform_list = []
 		self.platform_folder_dict = {}
 		for core_folder in self.core_folder_list:
-			platform = getPlatform(core_folder).decode('utf-8')
+			platform = getPlatform(core_folder).decode('utf-8', 'replace')
 			if not platform in self.platform_folder_dict:
 				self.platform_folder_dict[platform] = [core_folder]
 				self.platform_list.append(platform)
