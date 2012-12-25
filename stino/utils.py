@@ -749,7 +749,7 @@ def genBuildFiles(prj_file, arduino_info, cur_lang, mode):
 
 	if 'cmd_path' in compile_info:
 		if 'avrdude' in compile_info['cmd_path']:
-			if sys.platform != 'win32':
+			if 'linux' in sys.platform:
 				compile_info['cmd_path'] = compile_info['cmd_path_linux']
 				compile_info['config_path'] = compile_info['config_path_linux']
 			if not verify_code:
