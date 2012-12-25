@@ -60,12 +60,24 @@ class SerialListenerCommand(sublime_plugin.ApplicationCommand):
 			time.sleep(0.5)
 
 class SketchListener(sublime_plugin.EventListener):
+	def __init__(self):
+		sublime_plugin.EventListener.__init__(self)
+		self.new_view_list = []
+
+	def on_new(self, view):
+		if not view.id() in self.new_view_list:
+			self.new_view_list.append(view.id())
+
 	def on_activated(self, view):
+		file_name = view.file_name()
+		view_name = view.name()
+		if file_name == None and not view_name:
+			if not view.id() in self.new_view_list:
+				return
 		global opened_serial_list
 		global serial_listen
 
 		state = False
-		file_name = view.file_name()
 		state = utils.isSketch(file_name)
 		pre_state = Settings.get('show_Arduino_menu')
 		pre_serial_menu_state = Settings.get('show_serial_menu')
@@ -105,6 +117,8 @@ class SketchListener(sublime_plugin.EventListener):
 		if 'Serial Monitor' in view.name():
 			serial_port = view.name().split('-')[1].strip()
 			serial_monitor_state_dict[serial_port] = False
+		if view.id() in self.new_view_list:
+			self.new_view_list.remove(view.id())
 
 class ShowArduinoMenuCommand(sublime_plugin.WindowCommand):
 	def run(self):
