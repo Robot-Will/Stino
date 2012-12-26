@@ -597,13 +597,13 @@ def genScriptFile(prj_folder, path_list, mode):
 			path = path.replace('/', os.path.sep)
 			text += ';%s' % path
 		text+= '\n'
-	elif sys.platform == 'darwin':
-		text += '#!/bin/sh\n\n'
-		text += 'launchctl setenv PATH '
-		for path in path_list:
-			path = path.replace(' ', '\\ ')
-			text += '%s:' % path
-		text += '$PATH\n'
+	# elif sys.platform == 'darwin':
+	# 	text += '#!/bin/sh\n\n'
+	# 	text += 'launchctl setenv PATH '
+	# 	for path in path_list:
+	# 		path = path.replace(' ', '\\ ')
+	# 		text += '%s:' % path
+	# 	text += '$PATH\n'
 	else:
 		text += '#!/bin/sh\n\n'
 		text += 'export PATH='
