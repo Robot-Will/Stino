@@ -704,8 +704,8 @@ def genBuildFiles(prj_file, arduino_info, cur_lang, mode):
 	compile_info['source_file'] = '$<'
 	compile_info['archive_file'] = core_ar_file
 	compile_info['software'] = 'ARDUINO'
-	compile_info['runtime_ide_version'] = arduino_info.getVersionText()
-
+	compile_info['runtime_ide_version'] = str(int(arduino_info.getVersion()))
+	
 	(compile_info, key_list) = genCompileInfo(info_block, compile_info)
 	dict_key_list += key_list
 	(compile_info, key_list) = genPlatformInfo(platform_block, compile_info)
