@@ -94,6 +94,8 @@ def readFile(filename, mode = 'all'):
 	return content
 
 def writeFile(filename, text, encoding = 'utf-8'):
+	if sys.platform == 'darwin':
+		encoding = 'utf-8'
 	text = text.encode(encoding)
 	f = open(filename, 'w')
 	f.write(text)
@@ -293,6 +295,8 @@ def createBuildFile(prj_file):
 	template_file_path = os.path.join(template_dir, 'stino-build')
 	text = readFile(template_file_path)
 	encoding = codecs.lookup(locale.getpreferredencoding()).name
+	if sys.platform == 'darwin':
+		encoding = 'utf-8'
 	text = text.replace('%(encoding)s', encoding)
 	text = text.replace('%(working_dir)s', working_dir)
 
