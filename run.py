@@ -413,8 +413,12 @@ class SelectArduinoFolderCommand(sublime_plugin.WindowCommand):
 			return
 
 		sel_path = self.path_list[index]
-		if arduino.isArduinoFolder(sel_path):
-			(ver_text, ver) = arduino.genVersion(sel_path)
+		if sys.platform == 'darwin':
+			real_path = os.path.join(sel_path, 'Contents/Resources/JAVA')
+		else:
+			real_path = sel_path
+		if arduino.isArduinoFolder(real_path):
+			(ver_text, ver) = arduino.genVersion(real_path)
 			text = '%s: %s\n%s: %s' % ('%(Arduino)s', sel_path, '%(Version)s', ver_text)
 			msg = text % cur_lang.getDisplayTextDict()
 			sublime.message_dialog(msg)
@@ -426,7 +430,7 @@ class SelectArduinoFolderCommand(sublime_plugin.WindowCommand):
 			else:
 				pre_arduino_root = Settings.get('Arduino_root')
 				if sel_path != pre_arduino_root:
-					Settings.set('Arduino_root', sel_path)
+					Settings.set('Arduino_root', real_path)
 					Settings.set('full_compilation', True)
 					sublime.save_settings(Setting_File)
 					cur_menu.fullUpdate()
