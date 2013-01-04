@@ -1,7 +1,7 @@
 #-*- coding: utf-8 -*-
 
 import sublime, sublime_plugin
-import os, zipfile, re
+import os, zipfile, re, sys
 from stino import stmenu, lang, utils, arduino
 import threading
 import time

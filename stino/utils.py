@@ -360,6 +360,10 @@ def genCompileInfo(info_block, compile_info):
 		if not key in compile_info:
 			compile_info[key] = value
 			dict_key_list.append(key)
+	if 'build_vid' in compile_info:
+		if not 'build_extra_flags' in compile_info:
+			compile_info['build_extra_flags'] = '-DUSB_VID={build.vid} -DUSB_PID={build.pid}'
+			dict_key_list.append('build_extra_flags')
 	return (compile_info, dict_key_list)
 
 def genPlatformInfo(platform_block, compile_info):
@@ -713,7 +717,7 @@ def genBuildFiles(prj_file, arduino_info, cur_lang, mode):
 	(compile_info, key_list) = genCompileInfo(info_block, compile_info)
 	dict_key_list += key_list
 	(compile_info, key_list) = genPlatformInfo(platform_block, compile_info)
-	dict_key_list += key_list
+	dict_key_list += key_list	
 
 	variants_dir = os.path.join(board_dir_path, 'variants')
 	variant_dir = os.path.join(variants_dir, compile_info['build_variant'])
@@ -774,6 +778,8 @@ def genBuildFiles(prj_file, arduino_info, cur_lang, mode):
 	dict_key_list.append('gcc_root')
 	dict_key_list.append('uploader_root')
 	compile_info = strInfoDict(compile_info, dict_key_list)
+	print 'last:extra_flags: ', compile_info['build_extra_flags']
+
 	if 'config_path' in compile_info:
 		if not os.path.isfile(compile_info['config_path']):
 			compile_info['config_path'] = '/etc/avrdude.conf'
