@@ -4,6 +4,7 @@ import locale, codecs
 import os, sys
 import re
 import serial
+import time, datetime
 
 if sys.platform == 'win32':
 	import _winreg
@@ -679,15 +680,6 @@ def genBuildFiles(prj_file, arduino_info, cur_lang, mode):
 	platform_file_path = os.path.join(core_root, 'platform.txt')
 	if not os.path.isfile(platform_file_path):
 		platform_file_path = os.path.join(template_dir, 'platform.txt')
-
-	serial_list = getSerialPortList()
-	if serial_list:
-		if not serial_port in serial_list:
-			serial_port = serial_list[0]
-			Setting.set('serial_port', serial_port)
-			sublime.save_settings('Stino.sublime-settings')
-	else:
-		serial_port = 'serial_port'
 	build_system_path = os.path.join(core_root, 'system')
 
 	board_block = getBoardBlock(board_file_path, board, has_processor, processor)
@@ -716,6 +708,42 @@ def genBuildFiles(prj_file, arduino_info, cur_lang, mode):
 	
 	(compile_info, key_list) = genCompileInfo(info_block, compile_info)
 	dict_key_list += key_list
+	serial_list = getSerialPortList()
+	if serial_list:
+		if not serial_port in serial_list:
+			serial_port = serial_list[0]
+			Setting.set('serial_port', serial_port)
+			sublime.save_settings('Stino.sublime-settings')
+			if 'AVR' in platform:
+				if compile_info['build_vid']:
+					serial_list_before = serial_list
+					ser = serial.Serial()
+					ser.port = serial_port_before
+					ser.baudrate = 1200
+					ser.open()
+					time.sleep(0.01)
+					ser.close()
+					if sys.platform != 'darwin':
+						time.sleep(0.5)
+					serial_list_after = []
+					starttime = datetime.datetime.now()
+					while(not serial_list_after):
+						serial_list_after = getSerialPortList()
+						nowtime = datetime.datetime.now()
+						interval = (nowtime - starttime).seconds
+						if interval > 5:
+							break
+					for port in serial_list_before:
+						if port in serial_list_after:
+							serial_list_after.remove(port)
+					if serial_list_after:
+						serial_port = serial_list_after[0]
+					else:
+						serial_port = 'serial_port'
+	else:
+		serial_port = 'serial_port'
+	compile_info['serial_port'] = serial_port
+	compile_info['serial_port_file'] = serial_port
 	(compile_info, key_list) = genPlatformInfo(platform_block, compile_info)
 	dict_key_list += key_list	
 
@@ -778,7 +806,6 @@ def genBuildFiles(prj_file, arduino_info, cur_lang, mode):
 	dict_key_list.append('gcc_root')
 	dict_key_list.append('uploader_root')
 	compile_info = strInfoDict(compile_info, dict_key_list)
-	print 'last:extra_flags: ', compile_info['build_extra_flags']
 
 	if 'config_path' in compile_info:
 		if not os.path.isfile(compile_info['config_path']):
