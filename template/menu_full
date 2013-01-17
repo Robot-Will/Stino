@@ -17,6 +17,8 @@
 			{"caption": "-"},
 			{"caption": "%(Board)s", "command": "not_enable"},
 			{"caption": "%(Processor)s", "command": "not_enable"},
+			{"caption": "%(USB_Type)s", "command": "not_enable"},
+			{"caption": "%(Keyboard_Layout)s", "command": "not_enable"},
 			{"caption": "%(Serial_Port)s", "command": "not_enable"},
 			{"caption": "-"},
 			{"caption": "%(Programmer)s", "command": "not_enable"},

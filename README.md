@@ -1,6 +1,6 @@
 #Stino
 #####A Sublime Text 2 Plugin for Arduino
-Beta, not tested under OSX
+version 1.1
 
 Copyright (c) 2012 Robot-Will(robot.will.me (at) gmail.com). 
 
@@ -24,9 +24,14 @@ Stino is a Sublime Text 2 Plugin for Arduino. With this plugin, you can use Subl
 2. Multiple Selections.
 3. Hilighting Arduino keywords.
 4. Auto-completing Arduino keywors.
-5. Supporting Arduino version >= 1.0 (1.0, 1.0.1, 1.0.2, 1.0.3, 1.5.1, not including 1.5.0)
+5. Supporting Arduino version 0020-0023, 1.0-1.0.3, 1.5.0-1.5.1r2, Teensy(1.0-3.0).
 6. Multi-languages supported.
 7. Cross platform (Win/Linux/OSX).
+8. Supports multiple pde/ino/c++/c files per sketch.
+9. Compiles projects that contains multiple pde/ino/c++/c sources in the correct order.
+10. Fast compilation.
+11. Supports additional non-arduino cores.
+12. Reports SRAM size after compilation.
 
 ##Installation
 1. Dowload the plugin form the website.

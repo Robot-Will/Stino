@@ -6,6 +6,7 @@ from stino import stmenu, lang, utils, arduino
 import threading
 import time
 import serial
+import shutil
 
 ##
 Setting_File = 'Stino.sublime-settings'
@@ -116,7 +117,8 @@ class SketchListener(sublime_plugin.EventListener):
 		global serial_monitor_state_dict
 		if 'Serial Monitor' in view.name():
 			serial_port = view.name().split('-')[1].strip()
-			serial_monitor_state_dict[serial_port] = False
+			if serial_port in serial_monitor_state_dict:
+				serial_monitor_state_dict[serial_port] = False
 		if view.id() in self.new_view_list:
 			self.new_view_list.remove(view.id())
 
@@ -285,21 +287,24 @@ class ShowSketchFolderCommand(sublime_plugin.WindowCommand):
 
 class CompileSketchCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		utils.runBuild(self.window, arduino_info, cur_lang)
-		Settings.set('full_compilation', False)
-		sublime.save_settings(Setting_File)
+		state = utils.runBuild(self.window, arduino_info, cur_lang)
+		if state:
+			Settings.set('full_compilation', False)
+			sublime.save_settings(Setting_File)
 
 class UploadBinaryCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		utils.runBuild(self.window, arduino_info, cur_lang, mode = 'upload')
-		Settings.set('full_compilation', False)
-		sublime.save_settings(Setting_File)
+		state = utils.runBuild(self.window, arduino_info, cur_lang, mode = 'upload')
+		if state:
+			Settings.set('full_compilation', False)
+			sublime.save_settings(Setting_File)
 
 class UploadUsingProgrammerCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		utils.runBuild(self.window, arduino_info, cur_lang, mode = 'upload_using_programmer')
-		Settings.set('full_compilation', False)
-		sublime.save_settings(Setting_File)
+		state = utils.runBuild(self.window, arduino_info, cur_lang, mode = 'upload_using_programmer')
+		if state:
+			Settings.set('full_compilation', False)
+			sublime.save_settings(Setting_File)
 
 	def is_enabled(self):
 		state = arduino_info.hasProgrammer()
@@ -329,6 +334,7 @@ class SelectProcessorCommand(sublime_plugin.WindowCommand):
 		pre_processor = Settings.get('processor')
 		if processor != pre_processor:
 			Settings.set('processor', processor)
+			Settings.set('full_compilation', True)
 			sublime.save_settings(Setting_File)
 			showInfoText(self.window.active_view())
 
@@ -339,7 +345,41 @@ class SelectProcessorCommand(sublime_plugin.WindowCommand):
 			state = True
 		return state
 
-class NoProcessor(sublime_plugin.WindowCommand):
+class SelectUsbTypeCommand(sublime_plugin.WindowCommand):
+	def run(self, menu_str):
+		usb_type = menu_str
+		pre_usb_type = Settings.get('usb_type')
+		if usb_type != pre_usb_type:
+			Settings.set('usb_type', usb_type)
+			Settings.set('full_compilation', True)
+			sublime.save_settings(Setting_File)
+			showInfoText(self.window.active_view())
+
+	def is_checked(self, menu_str):
+		state = False
+		usb_type = Settings.get('usb_type')
+		if menu_str == usb_type:
+			state = True
+		return state
+
+class SelectKeyboardLayoutCommand(sublime_plugin.WindowCommand):
+	def run(self, menu_str):
+		keyboard_layout = menu_str
+		pre_keyboard_layout = Settings.get('keyboard_layout')
+		if keyboard_layout != pre_keyboard_layout:
+			Settings.set('keyboard_layout', keyboard_layout)
+			Settings.set('full_compilation', True)
+			sublime.save_settings(Setting_File)
+			showInfoText(self.window.active_view())
+
+	def is_checked(self, menu_str):
+		state = False
+		keyboard_layout = Settings.get('keyboard_layout')
+		if menu_str == keyboard_layout:
+			state = True
+		return state
+
+class NoItem(sublime_plugin.WindowCommand):
 	def is_visible(self):
 		return False
 
@@ -413,24 +453,23 @@ class SelectArduinoFolderCommand(sublime_plugin.WindowCommand):
 			return
 
 		sel_path = self.path_list[index]
-		if sys.platform == 'darwin':
-			real_path = os.path.join(sel_path, 'Contents/Resources/JAVA')
-		else:
+		if arduino.isArduinoFolder(sel_path):
 			real_path = sel_path
-		if arduino.isArduinoFolder(real_path):
+			if sys.platform == 'darwin':
+				real_path = os.path.join(sel_path, 'Contents/Resources/JAVA')
 			(ver_text, ver) = arduino.genVersion(real_path)
 			text = '%s: %s\n%s: %s' % ('%(Arduino)s', sel_path, '%(Version)s', ver_text)
 			msg = text % cur_lang.getDisplayTextDict()
 			sublime.message_dialog(msg)
 
-			if ver < 100 or ver == 150:
+			if ver < 10:
 				text = '%(Version_Not_Supported)s'
 				msg = text % cur_lang.getDisplayTextDict()
 				sublime.message_dialog(msg)
 			else:
 				pre_arduino_root = Settings.get('Arduino_root')
 				if sel_path != pre_arduino_root:
-					Settings.set('Arduino_root', real_path)
+					Settings.set('Arduino_root', sel_path)
 					Settings.set('full_compilation', True)
 					sublime.save_settings(Setting_File)
 					cur_menu.fullUpdate()
@@ -635,9 +674,13 @@ class SerialMonitorCommand(sublime_plugin.WindowCommand):
 		opened_serial_list.append(self.serial_port)
 		self.window.run_command('serial_send')
 
-		self.text_to_add = ''
-		t = threading.Thread(target = self.startMonitor)
-		t.start()
+		self.in_text = ''
+		self.show_text = ''
+		listener_thread = threading.Thread(target = self.startMonitor)
+		display_thread = threading.Thread(target = self.display)
+		listener_thread.start()
+		time.sleep(0.1)
+		display_thread.start()
 
 	def startMonitor(self):
 		global opened_serial_list
@@ -653,26 +696,35 @@ class SerialMonitorCommand(sublime_plugin.WindowCommand):
 		serial_monitor_state_dict[self.serial_port] = True
 		while serial_monitor_state_dict[self.serial_port]:
 			number = ser.inWaiting()
-			text = ser.read(number)
-			self.text_to_add += text
-			sublime.set_timeout(self.update, 0)
-			time.sleep(0.1)
+			if number > 0:
+				self.in_text += ser.read(number)
+			time.sleep(0.001)
 		ser.close()
 		opened_serial_list.remove(self.serial_port)
 		opened_serial_id_dict[self.serial_port] = None
 
+	def display(self):
+		global serial_monitor_state_dict
+		while True:
+			if self.serial_port in serial_monitor_state_dict:
+				if not serial_monitor_state_dict[self.serial_port]:
+					break
+			self.show_text = self.in_text
+			if self.show_text:
+				index = len(self.show_text)
+				self.in_text = self.in_text[index:]
+				sublime.set_timeout(self.update, 0)
+			time.sleep(0.1)
+
 	def update(self):
-		if len(self.text_to_add):
-			if self.view.size() > 10000:
-				view_edit = self.view.begin_edit()
-				self.view.replace(view_edit, self.view.size(), '')
-				self.view.end_edit(view_edit)
-			view_edit = self.view.begin_edit()
-			self.text_to_add= self.text_to_add.replace('\r', '')
-			self.view.insert(view_edit, self.view.size(), self.text_to_add)
-			self.view.end_edit(view_edit)
-			self.view.show(self.view.size())
-			self.text_to_add = ''
+		view_edit = self.view.begin_edit()			
+		self.show_text= self.show_text.replace('\r', '')
+		if self.view.size() > 65535:
+			region = sublime.Region(0, self.view.size())
+			self.view.replace(view_edit, region, '')
+		self.view.insert(view_edit, self.view.size(), self.show_text)
+		self.view.end_edit(view_edit)
+		self.view.show(self.view.size())
 
 	def is_enabled(self):
 		state = False
@@ -708,10 +760,16 @@ class SerialSendCommand(sublime_plugin.WindowCommand):
 				if input_text:
 					ser = opened_serial_id_dict[serial_port]
 					ser.write(input_text.encode('utf-8'))
-					text = '\n%s: %s\n' % ('%(Send)s', input_text)
-					display_text = text % cur_lang.getDisplayTextDict()
 					view = self.window.active_view()
 					edit = view.begin_edit()
+					region = sublime.Region(view.size()-1, view.size())
+					letter = view.substr(region)
+					if letter != '\n':
+						text = '\n'
+					else:
+						text = ''
+					text += '%s: %s\n' % ('%(Send)s', input_text)
+					display_text = text % cur_lang.getDisplayTextDict()
 					view.insert(edit, view.size(), display_text)
 					view.end_edit(edit)
 					view.show(view.size())
@@ -750,20 +808,57 @@ class SelectExampleCommand(sublime_plugin.WindowCommand):
 	def run(self, menu_str):
 		example = menu_str
 		example_path = arduino_info.getExampleFolder(example)
-		file_list = utils.listDir(example_path)
-
-		self.level = 0
-		self.top_path_list = [os.path.join(example_path, cur_file) for cur_file in file_list]
-		self.path_list = self.top_path_list
-		self.window.show_quick_panel(file_list, self.on_done)
+		
+		if arduino.isSketchFolder(example_path):
+			example_name = os.path.split(example_path)[1]
+			sketchbook_root = arduino_info.getSketchbookRoot()
+			new_path = os.path.join(sketchbook_root, example_name)
+			if os.path.exists(new_path):
+				org_msg = '%(Sketch_Exists)s'
+				msg = org_msg % cur_lang.getDisplayTextDict()
+				sublime.message_dialog(msg)
+				version = arduino_info.getVersion()
+				if version >= 100:
+					example_file = example_name + '.ino'
+				else:
+					example_file = example_name + '.pde'
+				file_path = os.path.join(example_path, example_file)
+				view = self.window.open_file(file_path)
+			else:
+				shutil.copytree(example_path, new_path, True)
+				cur_menu.sketchbookUpdate()
+				utils.openSketch(new_path)
+		else:
+			file_list = utils.listDir(example_path)
+			self.level = 0
+			self.top_path_list = [os.path.join(example_path, cur_file) for cur_file in file_list]
+			self.path_list = self.top_path_list
+			self.window.show_quick_panel(file_list, self.on_done)
 
 	def on_done(self, index):
 		if index == -1:
 			return
 
 		sel_path = self.path_list[index]
-		if os.path.isfile(sel_path):
-			view = self.window.open_file(sel_path)
+		if arduino.isSketchFolder(sel_path):
+			example_name = os.path.split(sel_path)[1]
+			sketchbook_root = arduino_info.getSketchbookRoot()
+			new_path = os.path.join(sketchbook_root, example_name)
+			if os.path.exists(new_path):
+				org_msg = '%(Sketch_Exists)s'
+				msg = org_msg % cur_lang.getDisplayTextDict()
+				sublime.message_dialog(msg)
+				version = arduino_info.getVersion()
+				if version >= 100:
+					example_file = example_name + '.ino'
+				else:
+					example_file = example_name + '.pde'
+				file_path = os.path.join(sel_path, example_file)
+				view = self.window.open_file(file_path)
+			else:
+				shutil.copytree(sel_path, new_path, True)
+				cur_menu.sketchbookUpdate()
+				utils.openSketch(new_path)
 		else:
 			(self.level, self.path_list) = utils.enterNext(index, self.level, self.top_path_list, sel_path)
 			file_list = utils.getFileList(self.path_list)

@@ -8,11 +8,14 @@ if sys.platform == 'win32':
 
 def isArduinoFolder(path):
 	state = False
-	if path and os.path.exists(path):
-		hardware_path = os.path.join(path, 'hardware')
-		lib_path = os.path.join(path, 'lib')
-		if os.path.isdir(hardware_path) and os.path.isdir(lib_path):
-			state = True
+	if path:
+		if sys.platform == 'darwin':
+			path = os.path.join(path, 'Contents/Resources/JAVA')
+		if os.path.exists(path):
+			hardware_path = os.path.join(path, 'hardware')
+			lib_path = os.path.join(path, 'lib')
+			if os.path.isdir(hardware_path) and os.path.isdir(lib_path):
+				state = True
 
 	if state:
 		lib_path = os.path.join(path, 'lib')
@@ -24,9 +27,10 @@ def isArduinoFolder(path):
 def isCoreFolder(path):
 	state = False
 	if os.path.exists(path):
+		cores_path = os.path.join(path, 'cores')
 		variants_path = os.path.join(path, 'variants')
 		boards_file = os.path.join(path, 'boards.txt')
-		if os.path.isdir(variants_path) and os.path.isfile(boards_file):
+		if os.path.isdir(variants_path) or os.path.isfile(boards_file) or os.path.isdir(cores_path):
 			state = True
 	return state
 
@@ -115,31 +119,118 @@ def getPlatform(path):
 			if key == 'name':
 				platform = value
 				break
+	elif os.path.split(path)[1] != 'arduino':
+		dirs = utils.listDir(path, with_files = False)
+		if 'cores' in dirs:
+			platform = os.path.split(path)[1]
+			platform += ' %(Board)s'
 	return platform
 
 def getBoardList(path):
 	board_list = []
 	board_file_dict = {}
 	processors_of_board = {}
+	usb_types_of_board = {}
+	keyboard_layouts_of_board = {}
 	info_file = os.path.join(path, 'boards.txt')
 	if os.path.isfile(info_file):
+		text = utils.readFile(info_file)
 		blocks = utils.readFile(info_file, mode = 'blocks')
-		for block in blocks:
-			if block:
-				line = block[0]
-				(key, board) = utils.getKeyValue(line)
-				board_list.append(board)
-
+		if '.container=' in text:
+			for block in blocks:
 				processor_list = []
-				processor_blocks = utils.getBlocks(block, sep = '## ')
-				for processor_block in processor_blocks:
-					if processor_block:
-						processor_line = processor_block[0]
-						(key, processor) = utils.getKeyValue(processor_line)
-						processor_list.append(processor)
-				processors_of_board[board] = processor_list
-				board_file_dict[board] = info_file
-	return (board_list, board_file_dict, processors_of_board)
+				has_processor = False
+				for line in block:
+					if '.name=' in line:
+						(key, board) = utils.getKeyValue(line)
+					if '.container=' in line:
+						(key, board) = utils.getKeyValue(line)
+						has_processor = True
+						break
+					if '.cpu=' in line:
+						(key, cpu) = utils.getKeyValue(line)
+				if not has_processor:
+					board_list.append(board)
+					board_file_dict[board] = info_file
+					processors_of_board[board] = processor_list
+				else:
+					if not board in board_list:
+						board_list.append(board)
+						board_file_dict[board] = info_file
+						processors_of_board[board] = processor_list
+					processors_of_board[board].append(cpu)
+		else:
+			for block in blocks:
+				if block:
+					line = block[0]
+					(key, board) = utils.getKeyValue(line)
+					board_list.append(board)
+
+					processor_list = []
+					usb_types = []
+					keyboard_layouts = []
+					processor_blocks = utils.getBlocks(block, sep = '## ')
+					for processor_block in processor_blocks:
+						if processor_block:
+							processor_line = processor_block[0]
+							(key, processor) = utils.getKeyValue(processor_line)
+							processor_list.append(processor)
+					processors_of_board[board] = processor_list
+					usb_types_of_board[board] = usb_types
+					keyboard_layouts_of_board[board] = keyboard_layouts
+					board_file_dict[board] = info_file
+	return (board_list, board_file_dict, processors_of_board, usb_types_of_board, keyboard_layouts_of_board)
+
+def getTeensyBoardList(path):
+	board_list = []
+	board_file_dict = {}
+	processors_of_board = {}
+	usb_types_of_board = {}
+	keyboard_layouts_of_board = {}
+	info_file = os.path.join(path, 'boards.txt')
+	if os.path.isfile(info_file):
+		text = utils.readFile(info_file)
+		lines = utils.readFile(info_file, mode = 'lines')
+		menu_lines = []
+		for line in lines:
+			if 'menu' in line:
+				menu_lines.append(line)
+			else:
+				break
+		menu_items = []
+		menu_item_caption_dict = {}
+		for line in menu_lines:
+			(key, value) = utils.getKeyValue(line)
+			menu_items.append(key)
+			menu_item_caption_dict[key] = value
+		
+		blocks = utils.readFile(info_file, mode = 'blocks')
+		
+		for block in blocks:
+			(key, board) = utils.getKeyValue(block[0])
+			board_list.append(board)	
+			board_file_dict[board] = info_file
+			usb_types = []
+			processors = []
+			keyboard_layouts = []
+			is_menu = False
+			for line in block:
+				if not is_menu:
+					if menu_items[0] in line:
+						is_menu = True
+				if is_menu:
+					if 'name' in line and not '#' in line:
+						(key, value) = utils.getKeyValue(line)
+						if 'usb' in key:
+							usb_types.append(value)
+						elif 'speed' in key:
+							processors.append(value)
+						elif 'keys' in key:
+							keyboard_layouts.append(value)
+			usb_types_of_board[board] = usb_types
+			processors_of_board[board] = processors
+			keyboard_layouts_of_board[board] = keyboard_layouts
+	return (board_list, board_file_dict, processors_of_board, usb_types_of_board, keyboard_layouts_of_board)
 
 def getKeywordList(path):
 	keyword_list = []
@@ -228,6 +319,8 @@ class ArduinoInfo:
 		self.arduino_root = self.Settings.get('Arduino_root')
 		if not isArduinoFolder(self.arduino_root):
 			return
+		if sys.platform == 'darwin':
+			self.arduino_root = os.path.join(self.arduino_root, 'Contents/Resources/JAVA')
 		(self.version_txt, self.version) = genVersion(self.arduino_root)
 		self.sketchbookUpdate()
 		self.genBoardList()
@@ -313,16 +406,23 @@ class ArduinoInfo:
 		self.platform_board_dict = {}
 		self.board_file_dict = {}
 		self.processors_of_board = {}
+		self.usb_types_of_board = {}
+		self.keyboard_layouts_of_board = {}
 		self.board_platform_dict = {}
 		for platform in self.platform_folder_dict:
 			self.platform_board_dict[platform] = []
 			for core_folder in self.platform_folder_dict[platform]:
-				(board_list, board_file_dict, processors_of_board) = getBoardList(core_folder)
+				if 'teensy' in platform:
+					(board_list, board_file_dict, processors_of_board, usb_types_of_board, keyboard_layouts_of_board) = getTeensyBoardList(core_folder)
+				else:
+					(board_list, board_file_dict, processors_of_board, usb_types_of_board, keyboard_layouts_of_board) = getBoardList(core_folder)
 				for board in board_list:
 					self.board_platform_dict[board] = platform
 				self.platform_board_dict[platform].append(board_list)
 				self.board_file_dict = dict(self.board_file_dict, **board_file_dict)
 				self.processors_of_board = dict(self.processors_of_board, **processors_of_board)
+				self.usb_types_of_board = dict(self.usb_types_of_board, **usb_types_of_board)
+				self.keyboard_layouts_of_board = dict(self.keyboard_layouts_of_board, **keyboard_layouts_of_board)
 			self.platform_board_dict[platform] = utils.removeEmptyItem(self.platform_board_dict[platform])
 
 	def genSketchList(self):
@@ -440,6 +540,16 @@ class ArduinoInfo:
 		if not board:
 			board = self.board
 		return self.processors_of_board[board]
+
+	def getUSBTypeList(self, board = ''):
+		if not board:
+			board = self.board
+		return self.usb_types_of_board[board]
+
+	def getKeyboardLayoutList(self, board = ''):
+		if not board:
+			board = self.board
+		return self.keyboard_layouts_of_board[board]
 
 	def getSketchList(self):
 		return self.sketch_list

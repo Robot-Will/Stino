@@ -9,5 +9,5 @@
     { "caption": "Stino: %(Visit_Arduino_Website)s", "command": "open_url", "args": {"menu_str": "http://arduino.cc"}},
     { "caption": "Stino: %(About_Stino)s", "command": "about_stino"},
     {"caption": "%(Stop)s", "command": "serial_stop"},
-	{"caption": "%(Send)s", "command": "serial_send"}
+    {"caption": "%(Send)s", "command": "serial_send"}
 ]

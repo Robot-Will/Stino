@@ -15,6 +15,8 @@ class STMenu:
 		self.import_lib_menu_text = ''
 		self.board_menu_text = ''
 		self.processor_menu_text = ''
+		self.usb_type_menu_text = ''
+		self.keyboard_layout_menu_text = ''
 		self.serial_port_menu_text = ''
 		self.programmer_menu_text = ''
 		self.lang_menu_text = ''
@@ -49,6 +51,8 @@ class STMenu:
 		self.genImportLibMenuText()
 		self.genBoardMenuText()
 		self.genProcessorMenuText()
+		self.genUSBTypeMenuText()
+		self.genKeyboardLayoutMenuText()
 		self.genSerialPortMenuText()
 		self.genProgrammerMenuText()
 		self.genLangMenuText()
@@ -75,6 +79,8 @@ class STMenu:
 		self.arduino_info.boardUpdate()
 		self.genImportLibMenuText()
 		self.genProcessorMenuText()
+		self.genUSBTypeMenuText()
+		self.genKeyboardLayoutMenuText()
 		self.genProgrammerMenuText()
 		self.genExampleMenuText()
 		self.genFullMenuText()
@@ -83,8 +89,8 @@ class STMenu:
 		self.genSyntexFile()
 
 	def getMenuText(self, itemlist, caption, command, checkbox = False):
-		if command == 'select_processor':
-			cmd_text = 'no_processor'
+		if command == 'select_board' or command == 'select_processor' or command == 'select_usb_type' or command == 'select_keyboard_layout':
+			cmd_text = 'no_item'
 		else:
 			cmd_text = 'not_enable'
 		text = '{"caption": "%s", "command": "%s"},' % (caption, cmd_text)
@@ -154,6 +160,10 @@ class STMenu:
 			self.menu_text = self.menu_text.replace('{"caption": "%(Board)s", "command": "not_enable"},', self.board_menu_text)
 		if self.processor_menu_text:
 			self.menu_text = self.menu_text.replace('{"caption": "%(Processor)s", "command": "not_enable"},', self.processor_menu_text)
+		if self.usb_type_menu_text:
+			self.menu_text = self.menu_text.replace('{"caption": "%(USB_Type)s", "command": "not_enable"},', self.usb_type_menu_text)
+		if self.keyboard_layout_menu_text:
+			self.menu_text = self.menu_text.replace('{"caption": "%(Keyboard_Layout)s", "command": "not_enable"},', self.keyboard_layout_menu_text)
 		if self.serial_port_menu_text:
 			self.menu_text = self.menu_text.replace('{"caption": "%(Serial_Port)s", "command": "not_enable"},', self.serial_port_menu_text)
 		if self.programmer_menu_text:
@@ -264,6 +274,26 @@ class STMenu:
 			if not processor in processor_list:
 				processor = processor_list[0]
 				self.Settings.set('processor', processor)
+				sublime.save_settings('Stino.sublime-settings')
+
+	def genUSBTypeMenuText(self):
+		usb_type_list = self.arduino_info.getUSBTypeList()
+		self.usb_type_menu_text = self.getMenuText([usb_type_list], '%(USB_Type)s', 'select_usb_type', checkbox = True)
+		if usb_type_list:
+			usb_type = self.Settings.get('usb_type')
+			if not usb_type in usb_type_list:
+				usb_type = usb_type_list[0]
+				self.Settings.set('usb_type', usb_type)
+				sublime.save_settings('Stino.sublime-settings')
+
+	def genKeyboardLayoutMenuText(self):
+		keyboard_layout_list = self.arduino_info.getKeyboardLayoutList()
+		self.keyboard_layout_menu_text = self.getMenuText([keyboard_layout_list], '%(Keyboard_Layout)s', 'select_keyboard_layout', checkbox = True)
+		if keyboard_layout_list:
+			keyboard_layout = self.Settings.get('keyboard_layout')
+			if not keyboard_layout in keyboard_layout_list:
+				keyboard_layout = keyboard_layout_list[0]
+				self.Settings.set('keyboard_layout', keyboard_layout)
 				sublime.save_settings('Stino.sublime-settings')
 
 	def genSerialPortMenuText(self):
