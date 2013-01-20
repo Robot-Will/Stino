@@ -4,6 +4,10 @@ version 1.1
 
 Copyright (c) 2012 Robot-Will(robot.will.me (at) gmail.com). 
 
+## To all users
+I am still working on this plugin, and if you meet some problems or have suggestions, leave messages to me.
+Link: https://github.com/Robot-Will/Stino/issues
+
 ## Website
 GitHub Page (http://robot-will.github.com/Stino/)
 
