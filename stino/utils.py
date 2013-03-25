@@ -2,6 +2,7 @@
 # stino/utils.py
 
 import re
+from chardet import universaldetector
 
 info_sep = '$@@$'
 
@@ -18,7 +19,6 @@ def convertAsciiToUtf8(txt):
 		try:
 			txt = txt.decode('utf-8')
 		except UnicodeDecodeError:
-			from chardet import universaldetector
 			detector = universaldetector.UniversalDetector()
 			detector.feed(txt)
 			detector.close()
