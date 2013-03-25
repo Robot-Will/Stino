@@ -1,0 +1,260 @@
+# LANGUAGE: 繁体中文 (Chinese Traditional)
+# Traditional Chinese translations for Stino Plugin.
+# Copyright (C) 2013 Robot-Will
+# This file is distributed under the same license as the Stino Plugin.
+# Will Robot <robot.will.me@gmail.com>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Stino 1.2\n"
+"POT-Creation-Date: 2013-02-27 11:34+0800\n"
+"PO-Revision-Date:2013-03-25 16:00+0800\n"
+"Last-Translator: Will Robot <robot.will.me@gmail.com>\n"
+"Language-Team: Chinese Traditional <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UNICODE\n"
+"Content-Transfer-Encoding: UTF-8\n"
+"Generated-By: pygettext.py 1.5\n"
+
+msgid "Sketchbook"
+msgstr "草稿碼簿"
+
+msgid "Start burning {1}...\n"
+msgstr "開始燒錄{1}...\n"
+
+msgid "Add_Extra_Flags"
+msgstr "添加額外編譯參數"
+
+msgid "Writing {1} completed.\n"
+msgstr "寫入{1}完成.\n"
+
+msgid "Arduino"
+msgstr "Arduino"
+
+msgid "[Stino - Uploading terminated with errors.]\n"
+msgstr "[Stino - 上傳發生錯誤而中斷.]\n"
+
+msgid "Serial_Port"
+msgstr "序列埠"
+
+msgid "Send"
+msgstr "發送"
+
+msgid "Full_Compilation"
+msgstr "完全編譯"
+
+msgid "New_File..."
+msgstr "新建檔案..."
+
+msgid "Start uploading {1}...\n"
+msgstr "開始上傳{1}...\n"
+
+msgid "Sketchbook folder have switched to {1}.\n"
+msgstr "草稿碼簿所在目錄切換到{1}.\n"
+
+msgid "Find_in_Reference"
+msgstr "在參考文件裡尋找"
+
+msgid "Fix_Encoding_&_Reload"
+msgstr "修正編碼並重新載入"
+
+msgid "[Stino - Bootloader burning terminated with errors.]\n"
+msgstr "[Stino - 燒錄Bootloader發生錯誤而中斷.]\n"
+
+msgid "Upload_Using_Programmer"
+msgstr "以燒錄器上傳"
+
+msgid "Preferences"
+msgstr "偏好設定"
+
+msgid "Sketch {1} exists, please use another file name.\n"
+msgstr "草稿碼{1}已存在, 請使用其它名稱.\n"
+
+msgid "Send:"
+msgstr "發送:"
+
+msgid "Baudrate"
+msgstr "Baudrate"
+
+msgid "Compilation"
+msgstr "編譯"
+
+msgid "Troubleshooting"
+msgstr "排除問題"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "Auto_Format"
+msgstr "自動格式化"
+
+msgid "[Stino - Compilation completed.]\n"
+msgstr "[Stino - 編譯完成.]\n"
+
+msgid "Change_Extra_Flags"
+msgstr "改變額外編譯參數"
+
+msgid "Extra compilation flags:"
+msgstr "額外編譯參數:"
+
+msgid "[Stino - Uploading completed.]\n"
+msgstr "[Stino - 上傳完成.]\n"
+
+msgid "Show_Sketch_Folder"
+msgstr "顯示草稿碼的所在目錄"
+
+msgid "Error: No main source file was found. A main source file should contain setup() and loop() functions.\n"
+msgstr "錯誤: 沒有搜索到主源文件. 主源文件應包含setup()和loop()函數.\n"
+
+msgid "Getting_Started"
+msgstr "入門手冊"
+
+msgid "Show_Arduino_Menu"
+msgstr "顯示Arduino菜單"
+
+msgid "Tools"
+msgstr "工具"
+
+msgid "Cleaning...\n"
+msgstr "清理目標文件...\n"
+
+msgid "Examples"
+msgstr "範例"
+
+msgid "Select Current Folder ({1})"
+msgstr "選擇當前目錄({1})"
+
+msgid "Verify_code_after_upload"
+msgstr "上傳后驗證代碼"
+
+msgid "OFF"
+msgstr "關閉"
+
+msgid "Language"
+msgstr "語言"
+
+msgid "Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n"
+msgstr "錯誤: 搜索到多於1({1})個主源文件. 主源文件包含setup()和loop()函數.\n"
+
+msgid "Parsing C++ source files is difficult and I do not finish it yet.\n"
+msgstr "解析C++源文件是一項艱巨的任務, 我還在努力中.\n"
+
+msgid "Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n"
+msgstr "二進制程序容量: {1}字節 (板載最大{2}字節, {3}%).\n"
+
+msgid "Frequently_Asked_Questions"
+msgstr "常見問答集"
+
+msgid "Upload"
+msgstr "上傳"
+
+msgid "Burn_Bootloader"
+msgstr "燒錄Bootloader"
+
+msgid "Select_Arduino_Folder..."
+msgstr "選擇Arduino目錄..."
+
+msgid "Arduino_Help"
+msgstr "Arduino幫助"
+
+msgid "Change_Sketchbook_Folder..."
+msgstr "改變草稿碼簿所在目錄..."
+
+msgid "File {1} exists, please use another file name.\n"
+msgstr "檔案{1}已存在, 請使用其它名稱.\n"
+
+msgid "Name_for_new_sketch:"
+msgstr "新程序名:"
+
+msgid "Start compilation...\n"
+msgstr "開始編譯...\n"
+
+msgid "Example"
+msgstr "範例"
+
+msgid "About_Stino"
+msgstr "關於Stino"
+
+msgid "ON"
+msgstr "打開"
+
+msgid "Reference"
+msgstr "參考文件"
+
+msgid "Stino"
+msgstr "Stino"
+
+msgid "Start"
+msgstr "開始"
+
+msgid "Arduino {1} is found at {2}.\n"
+msgstr "在{2}找到Arduino {1}.\n"
+
+msgid "Serial_Monitor"
+msgstr "序列埠監控視窗"
+
+msgid "[Stino - Bootloader burning completed.]\n"
+msgstr "[Stino - 燒錄Bootloader完成.]\n"
+
+msgid "Archive_Sketch"
+msgstr "封存草稿碼"
+
+msgid "Creating {1}...\n"
+msgstr "創建{1}...\n"
+
+msgid "[Stino - Compilation terminated with errors.]\n"
+msgstr "[Stino - 編譯發生錯誤而中斷.]\n"
+
+msgid "Verify / Compile"
+msgstr "驗證∕編譯"
+
+msgid "New_Sketch..."
+msgstr "新草稿碼..."
+
+msgid "Toggle"
+msgstr "將"
+
+msgid "Discard all changes and reload sketch?\n"
+msgstr "放棄所有變更並重新載入草稿碼?\n"
+
+msgid "Import_Library..."
+msgstr "匯入程式庫..."
+
+msgid "Open_Sketch"
+msgstr "打開檔案"
+
+msgid "Name_for_new_file:"
+msgstr "新檔案名:"
+
+msgid "Programmer"
+msgstr "燒錄器"
+
+msgid "Visit_Arduino_Website"
+msgstr "訪問Arduino網站"
+
+msgid "Open"
+msgstr "打開"
+
+msgid "Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n"
+msgstr "預計內存使用: {1}字節 (板載最大{2}字節, {3}%).\n"
+
+msgid "Select"
+msgstr "選擇"
+
+msgid "Show_Verbose_Output"
+msgstr "顯示詳細輸出"
+
+msgid "Board"
+msgstr "板子"
+
+msgid "Processor"
+msgstr "處理器"
+
+msgid "CPU_Speed"
+msgstr "CPU速度"
+
+msgid "USB_Type"
+msgstr "USB類型"
+
+msgid "Keyboard_Layout"
+msgstr "鍵盤佈局"
