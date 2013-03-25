@@ -147,7 +147,7 @@ class NewSketchCommand(sublime_plugin.WindowCommand):
 			filename = stino.osfile.regulariseFilename(input_text)
 			if stino.osfile.existsInSketchbook(filename):
 				display_text = 'Sketch {1} exists, please use another file name.\n'
-				msg = stino.language.translate(display_text)
+				msg = stino.cur_language.translate(display_text)
 				msg = msg.replace('{1}', filename)
 				stino.log_panel.addText(msg)
 			else:
@@ -173,7 +173,7 @@ class NewToSketchCommand(sublime_plugin.WindowCommand):
 			new_file_path = os.path.join(folder_path, filename)
 			if os.path.exists(new_file_path):
 				display_text = 'File {1} exists, please use another file name.\n'
-				msg = stino.language.translate(display_text)
+				msg = stino.cur_language.translate(display_text)
 				msg = msg.replace('{1}', filename)
 				stino.log_panel.addText(msg)
 			else:
@@ -514,7 +514,7 @@ class ToggleVerifyCodeCommand(sublime_plugin.WindowCommand):
 class AutoFormatCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		display_text = 'Parsing C++ source files is difficult and I do not finish it yet.\n'
-		msg = stino.language.translate(display_text)
+		msg = stino.cur_language.translate(display_text)
 		stino.log_panel.addText(msg)
 
 class ArchiveSketchCommand(sublime_plugin.WindowCommand):
@@ -536,7 +536,7 @@ class FixEncodingCommand(sublime_plugin.WindowCommand):
 			state = True
 			if view.is_dirty():
 				display_text = 'Discard all changes and reload sketch?\n'
-				msg = stino.language.translate(display_text)
+				msg = stino.cur_language.translate(display_text)
 				state = sublime.ok_cancel_dialog(msg)
 		
 			if state:
@@ -571,5 +571,5 @@ class FindInReferenceCommand(sublime_plugin.WindowCommand):
 class AboutStinoCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		display_text = 'Stino'
-		msg = stino.language.translate(display_text)
+		msg = stino.cur_language.translate(display_text)
 		sublime.message_dialog(msg)

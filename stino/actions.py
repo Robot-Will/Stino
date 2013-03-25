@@ -11,7 +11,7 @@ def changeArduinoRoot(arduino_root):
 	stino.arduino_info.genVersion()
 	version_text = stino.arduino_info.getVersionText()
 	display_text = 'Arduino {1} is found at {2}.\n'
-	msg = stino.language.translate(display_text)
+	msg = stino.cur_language.translate(display_text)
 	msg = msg.replace('{1}', version_text)
 	msg = msg.replace('{2}', arduino_root)
 	stino.log_panel.addText(msg)
@@ -27,7 +27,7 @@ def changeSketchbookRoot(sketchbook_root):
 	pre_sketchbook_root = stino.const.settings.get('sketchbook_root')
 	stino.arduino_info.setSketchbookRoot(sketchbook_root)
 	display_text = 'Sketchbook folder have switched to {1}.\n'
-	msg = stino.language.translate(display_text)
+	msg = stino.cur_language.translate(display_text)
 	msg = msg.replace('{1}', sketchbook_root)
 	stino.log_panel.addText(msg)
 
@@ -54,6 +54,6 @@ def getArchiveFolderPath(zip_folder_path, sketch_folder_path):
 	opened_zipfile.close()
 
 	display_text = 'Writing {1} completed.\n'
-	msg = stino.language.translate(display_text)
+	msg = stino.cur_language.translate(display_text)
 	msg = msg.replace('{1}', zip_file_path)
 	stino.log_panel.addText(msg)
