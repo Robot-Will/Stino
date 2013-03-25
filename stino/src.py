@@ -160,7 +160,7 @@ def openSketch(sketch):
 	file_list = []
 	for cur_file in full_file_list:
 		cur_file_ext = os.path.splitext(cur_file)[1]
-		if cur_file_ext in src_ext_list:
+		if cur_file_ext in src_ext_list or cur_file_ext in header_ext_list:
 			file_list.append(cur_file)
 
 	file_path_list = [os.path.join(folder_path, cur_file) for cur_file in file_list]
@@ -280,6 +280,6 @@ def openExample(path):
 	file_list = osfile.listDir(path, with_dirs = False)
 	for cur_file in file_list:
 		cur_file_ext = os.path.splitext(cur_file)[1]
-		if cur_file_ext in src_ext_list:
+		if cur_file_ext in src_ext_list or cur_file_ext in header_ext_list:
 			cur_file_path = os.path.join(path, cur_file)
 			window.open_file(cur_file_path)
