@@ -82,12 +82,15 @@ def regulariseFunctionName(function_name):
 
 def regulariseFuctionText(function_text):
 	text = function_text.split(')')[-2]
-	text_list = text.split('(')
-	function_name = text_list[0].strip()
-	function_name = regulariseFunctionName(function_name)
-	parameters = text_list[1].strip()
-	parameters = regulariseBlank(parameters)
-	function_text = function_name + ' (' + parameters + ')'
+	if '(' in text:
+		text_list = text.split('(')
+		function_name = text_list[0].strip()
+		function_name = regulariseFunctionName(function_name)
+		parameters = text_list[1].strip()
+		parameters = regulariseBlank(parameters)
+		function_text = function_name + ' (' + parameters + ')'
+	else:
+		function_text = ''
 	return function_text
 
 def genSrcDeclarationList(simple_src_text):
@@ -104,7 +107,8 @@ def genSrcFunctionList(simple_src_text):
 	for function_text in function_text_list:
 		function = function_text.split('{')[0].strip()
 		function = regulariseFuctionText(function)
-		src_function_list.append(function)
+		if function:
+			src_function_list.append(function)
 	return src_function_list
 
 def isMainSrcText(src_text):
