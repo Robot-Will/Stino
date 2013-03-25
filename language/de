@@ -1,0 +1,261 @@
+# LANGUAGE: Deutsch (German)
+# English translations for Stino Plugin.
+# Copyright (C) 2013 Robot-Will
+# This file is distributed under the same license as the Stino Plugin.
+# Marinho Tobolla <EMAIL@ADDRESS>, 2013.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Stino 1.2\n"
+"POT-Creation-Date: 2013-02-27 11:34+0800\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Marinho Tobolla <EMAIL@ADDRESS>\n"
+"Language-Team: German <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UNICODE\n"
+"Content-Transfer-Encoding: UTF-8\n"
+"Generated-By: pygettext.py 1.5\n"
+
+msgid "Sketchbook"
+msgstr "Skizzen"
+
+msgid "Start burning {1}...\n"
+msgstr "Start burning {1}...\n"
+
+msgid "Add_Extra_Flags"
+msgstr "Add Extra Flags"
+
+msgid "Writing {1} completed.\n"
+msgstr "Writing {1} completed.\n"
+
+msgid "Arduino"
+msgstr "Arduino"
+
+msgid "[Stino - Uploading terminated with errors.]\n"
+msgstr "[Stino - Uploading terminated with errors.]\n"
+
+msgid "Processor"
+msgstr "Prozessor"
+
+msgid "Serial_Port"
+msgstr "Serieller Port"
+
+msgid "Send"
+msgstr "Sende"
+
+msgid "Full_Compilation"
+msgstr "Komplett Kompilierung"
+
+msgid "New_File..."
+msgstr "Neue Datei..."
+
+msgid "Start uploading {1}...\n"
+msgstr "Start uploading {1}...\n"
+
+msgid "Sketchbook folder have switched to {1}.\n"
+msgstr "Sketchbook folder have switched to {1}.\n"
+
+msgid "Find_in_Reference"
+msgstr "In Referenz suchen"
+
+msgid "Board"
+msgstr "Board"
+
+msgid "Upload_Using_Programmer"
+msgstr "Upload mit Programmer"
+
+msgid "[Stino - Bootloader burning terminated with errors.]\n"
+msgstr "[Stino - Bootloader burning terminated with errors.]\n"
+
+msgid "USB_Type"
+msgstr "USB Type"
+
+msgid "Preferences"
+msgstr "Einstellungen"
+
+msgid "Sketch {1} exists, please use another file name.\n"
+msgstr "Sketch {1} exists, please use another file name.\n"
+
+msgid "Send:"
+msgstr "Sende:"
+
+msgid "Baudrate"
+msgstr "Baudrate"
+
+msgid "Compilation"
+msgstr "Kompilierung"
+
+msgid "Troubleshooting"
+msgstr "Fehlersuche"
+
+msgid "Stop"
+msgstr "Stop"
+
+msgid "Auto_Format"
+msgstr "Automatisch formatieren"
+
+msgid "[Stino - Compilation completed.]\n"
+msgstr "[Stino - Compilation completed.]\n"
+
+msgid "Change_Extra_Flags"
+msgstr "Change Extra Flags"
+
+msgid "Extra compilation flags:"
+msgstr "Extra compilation flags:"
+
+msgid "[Stino - Uploading completed.]\n"
+msgstr "[Stino - Uploading completed.]\n"
+
+msgid "Upload"
+msgstr "Upload"
+
+msgid "Show_Sketch_Folder"
+msgstr "Skizzen-Ordner anzeigen"
+
+msgid "Error: No main source file was found. A main source file should contain setup() and loop() functions.\n"
+msgstr "Error: No main source file was found. A main source file should contain setup() and loop() functions.\n"
+
+msgid "Fix_Encoding_&_Reload"
+msgstr "Kodierung reparieren & neu laden"
+
+msgid "About_Stino"
+msgstr "Über Stino"
+
+msgid "Show_Arduino_Menu"
+msgstr "Arduino Menü anzeigen"
+
+msgid "Tools"
+msgstr "Werkzeuge"
+
+msgid "Cleaning...\n"
+msgstr "Säubern...\n"
+
+msgid "Examples"
+msgstr "Beispiele"
+
+msgid "Select Current Folder ({1})"
+msgstr "Aktuellen Ordner wählen ({1})"
+
+msgid "Verify_code_after_upload"
+msgstr "Code nach Upload überprüfen"
+
+msgid "OFF"
+msgstr "OFF"
+
+msgid "Language"
+msgstr "Sprache"
+
+msgid "Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n"
+msgstr "Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n"
+
+msgid "Parsing C++ source files is difficult and I do not finish it yet.\n"
+msgstr "Parsing C++ source files is difficult and I do not finish it yet.\n"
+
+msgid "Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n"
+msgstr "Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n"
+
+msgid "Frequently_Asked_Questions"
+msgstr "Häufig gestellte Fragen"
+
+msgid "Keyboard_Layout"
+msgstr "Keyboard Layout"
+
+msgid "Burn_Bootloader"
+msgstr "Bootloader installieren"
+
+msgid "Select_Arduino_Folder..."
+msgstr "Wähle Arduino Ordner..."
+
+msgid "Arduino_Help"
+msgstr "Arduino Hilfe"
+
+msgid "Change_Sketchbook_Folder..."
+msgstr "Ändere Skizzen-Ordner..."
+
+msgid "CPU_Speed"
+msgstr "CPU Speed"
+
+msgid "File {1} exists, please use another file name.\n"
+msgstr "File {1} exists, please use another file name.\n"
+
+msgid "Name_for_new_sketch:"
+msgstr "Name für die neue Skizze:"
+
+msgid "Start compilation...\n"
+msgstr "Start compilation...\n"
+
+msgid "Example"
+msgstr "Beispiele"
+
+msgid "Getting_Started"
+msgstr "Erste Schritte"
+
+msgid "ON"
+msgstr "ON"
+
+msgid "Reference"
+msgstr "Referenz"
+
+msgid "Stino"
+msgstr "Stino"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Arduino {1} is found at {2}.\n"
+msgstr "Arduino {1} is found at {2}.\n"
+
+msgid "Serial_Monitor"
+msgstr "Serieller Monitor"
+
+msgid "[Stino - Bootloader burning completed.]\n"
+msgstr "[Stino - Bootloader burning completed.]\n"
+
+msgid "Archive_Sketch"
+msgstr "Skizze archivieren"
+
+msgid "Creating {1}...\n"
+msgstr "Erstellen {1}...\n"
+
+msgid "[Stino - Compilation terminated with errors.]\n"
+msgstr "[Stino - Compilation terminated with errors.]\n"
+
+msgid "Verify / Compile"
+msgstr "Überprüfen/Kompilieren"
+
+msgid "New_Sketch..."
+msgstr "Neue Skizze..."
+
+msgid "Toggle"
+msgstr "Toggle"
+
+msgid "Discard all changes and reload sketch?\n"
+msgstr "Alle Änderungen verwerfen und Skizze neu laden?\n"
+
+msgid "Import_Library..."
+msgstr "Bibliothek importieren..."
+
+msgid "Open_Sketch"
+msgstr "Open Sketch"
+
+msgid "Name_for_new_file:"
+msgstr "Name für neue Datei:"
+
+msgid "Programmer"
+msgstr "Programmer"
+
+msgid "Visit_Arduino_Website"
+msgstr "Arduino Website besuchen"
+
+msgid "Open"
+msgstr "Open"
+
+msgid "Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n"
+msgstr "Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n"
+
+msgid "Select"
+msgstr "Wählen"
+
+msgid "Show_Verbose_Output"
+msgstr "Zeige verbose Ausgabe"
+
