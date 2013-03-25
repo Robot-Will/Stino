@@ -1,326 +1,524 @@
 #-*- coding: utf-8 -*-
-import sublime
+# stino/stmenu.py
+
 import os
-from stino import utils, arduino
+
+from stino import utils
+from stino import const
+from stino import osfile
+from stino import smonitor
 
 class STMenu:
-	def __init__(self, arduino_info, lang):
-		self.Settings = sublime.load_settings('Stino.sublime-settings')
+	def __init__(self, language, arduino_info):
+		self.language = language
 		self.arduino_info = arduino_info
-		self.lang = lang
-		self.display_text_dict = lang.getDisplayTextDict()
-		self.plugin_root = utils.getPluginRoot()
 
-		self.sketchbook_menu_text = ''
-		self.import_lib_menu_text = ''
-		self.board_menu_text = ''
-		self.processor_menu_text = ''
-		self.usb_type_menu_text = ''
-		self.keyboard_layout_menu_text = ''
-		self.serial_port_menu_text = ''
-		self.programmer_menu_text = ''
-		self.lang_menu_text = ''
-		self.examples_menu_text = ''
+		self.plugin_root = const.plugin_root
+		self.template_root = const.template_root
 
-		self.file = os.path.join(self.plugin_root, 'Main.sublime-menu')
+		self.main_menu_file = os.path.join(self.plugin_root, 'Main.sublime-menu')
 		self.commands_file = os.path.join(self.plugin_root, 'Stino.sublime-commands')
 		self.completions_file = os.path.join(self.plugin_root, 'Stino.sublime-completions')
 		self.syntax_file = os.path.join(self.plugin_root, 'Arduino.tmLanguage')
-		self.template_dir = os.path.join(self.plugin_root, 'template')
-		self.update()		
+
+		self.original_menu_text = ''
+		self.full_menu_text = ''
+		self.commands_text = ''
+		self.completions_text = ''
+		self.syntax_text = ''
+		self.fullUpdate()
+
+	def commandUpdate(self):
+		self.genCommandsText()
+		self.writeCommandsFile()
 
 	def update(self):
-		arduino_root = self.Settings.get('Arduino_root')
-		if arduino.isArduinoFolder(arduino_root):
-			self.fullUpdate()
-		else:
-			self.miniUpdate()
-
-	def miniUpdate(self):
 		self.genOriginalMenuText()
-		self.genLangMenuText()
 		self.genFullMenuText()
-		self.genFile(self.display_text_dict)
-		self.genCompletionsFile(mode = 'mini')
-		self.genSyntexFile(mode = 'mini')
-	
-	def fullUpdate(self):
-		self.arduino_info.update()
-		self.genOriginalMenuText()
-		self.genSketchbookMenuText()
-		self.genImportLibMenuText()
-		self.genBoardMenuText()
-		self.genProcessorMenuText()
-		self.genUSBTypeMenuText()
-		self.genKeyboardLayoutMenuText()
-		self.genSerialPortMenuText()
-		self.genProgrammerMenuText()
-		self.genLangMenuText()
-		self.genExampleMenuText()
-		self.genFullMenuText()
-		self.genFile(self.display_text_dict)
-		self.genCompletionsFile()
-		self.genSyntexFile()
-
-	def sketchbookUpdate(self):
-		self.arduino_info.sketchbookUpdate()
-		self.genSketchbookMenuText()
-		self.genFullMenuText()
-		self.genFile(self.display_text_dict)
-		self.genCompletionsFile()
-		self.genSyntexFile()
-
-	def serialUpdate(self):
-		self.genSerialPortMenuText()
-		self.genFullMenuText()
-		self.genFile(self.display_text_dict)
-
-	def boardUpdate(self):
-		self.arduino_info.boardUpdate()
-		self.genImportLibMenuText()
-		self.genProcessorMenuText()
-		self.genUSBTypeMenuText()
-		self.genKeyboardLayoutMenuText()
-		self.genProgrammerMenuText()
-		self.genExampleMenuText()
-		self.genFullMenuText()
-		self.genFile(self.display_text_dict)
-		self.genCompletionsFile()
-		self.genSyntexFile()
-
-	def getMenuText(self, itemlist, caption, command, checkbox = False):
-		if command == 'select_board' or command == 'select_processor' or command == 'select_usb_type' or command == 'select_keyboard_layout':
-			cmd_text = 'no_item'
-		else:
-			cmd_text = 'not_enable'
-		text = '{"caption": "%s", "command": "%s"},' % (caption, cmd_text)
-
-		has_submenu = False
-		for sublist in itemlist:
-			if len(sublist) > 0:
-				has_submenu = True
+		self.writeMainMenuFile()
+		self.commandUpdate()
 		
-		if has_submenu:
-			text = ''
-			text += '{\n'
-			text += '\t'*4
-			text += '"caption": "%s",\n' % caption
-			text += '\t'*4
-			text += '"id": "%s",\n' % command
-			text += '\t'*4
-			text += '"children":\n'
-			text += '\t'*4
-			text += '[\n'
-			for sublist in itemlist:
-				for item in sublist:
-					text += '\t'*5
-					text += '{"caption": "%s", "command": "%s", "args": {"menu_str": "%s"}' % (item, command, item)
-					if checkbox:
-						text += ', "checkbox": true'
-					text += '},\n'
-				text += '\t'*5
-				text += '{"caption": "-"},\n'
-			text = text[:-2] + '\n'
-			text += '\t'*4
-			text += ']\n'
-			text += '\t'*3
-			text += '},\n'
-		return text
+	def fullUpdate(self):
+		self.update()
+		self.genCompletionsText()
+		self.writeCompletionsFile()
+		self.genSyntaxText()
+		self.writeSyntaxFile()
+
+	def languageUpdate(self):
+		self.writeMainMenuFile()
+		self.writeCommandsFile()
+		self.writeCompletionsFile()
+		self.writeSyntaxFile()
 
 	def genOriginalMenuText(self):
-		show_arduino_menu = self.Settings.get('show_Arduino_menu')
-		show_serial_menu = self.Settings.get('show_serial_menu')
-		arduino_root = self.Settings.get('Arduino_root')
+		show_arduino_menu = const.settings.get('show_arduino_menu')
+		show_serial_monitor_menu = const.settings.get('show_serial_monitor_menu')
 
-		header_menu_file = os.path.join(self.template_dir, 'menu_preference')
-		self.genCommandsFile(self.display_text_dict, mode = 'mini')
-		text = utils.readFile(header_menu_file)
+		preference_menu_file = os.path.join(self.template_root, 'menu_preference')
+		serial_monitor_menu_file = os.path.join(self.template_root, 'menu_serial')
+		menu_text = osfile.readFileText(preference_menu_file)
+
 		if show_arduino_menu:
-			text += ',\n'
-			if arduino.isArduinoFolder(arduino_root):
-				main_menu_file = os.path.join(self.template_dir, 'menu_full')
-				self.genCommandsFile(self.display_text_dict)
+			if self.arduino_info.isReady():
+				arduino_menu_file_name = 'menu_full'
 			else:
-				main_menu_file = os.path.join(self.template_dir, 'menu_mini')
-			text += utils.readFile(main_menu_file)
-		if show_serial_menu:
-			text += ',\n'
-			menu_file = os.path.join(self.template_dir, 'menu_serial')
-			text += utils.readFile(menu_file)
-		text += '\n]'
-		self.org_menu_text = text
+				arduino_menu_file_name = 'menu_mini'
+			arduino_menu_file = os.path.join(self.template_root, arduino_menu_file_name)
+			menu_text += ',\n'
+			menu_text += osfile.readFileText(arduino_menu_file)
+
+		if show_serial_monitor_menu:
+			menu_text += ',\n'
+			menu_text += osfile.readFileText(serial_monitor_menu_file)
+
+		menu_text += '\n]'
+		self.original_menu_text = menu_text
+
+	def genSubMenuBlock(self, menu_caption, item_lists, command, menu_base = None, checkbox = False):
+		submenu_text = '{"caption": "%s", "command": "not_enabled"},' % menu_caption
+		if item_lists:
+			submenu_text = ''
+			submenu_text += '{\n'
+			submenu_text += '\t'*4
+			submenu_text += '"caption": "%s",\n' % menu_caption
+			submenu_text += '\t'*4
+			submenu_text += '"id": "%s",\n' % command
+			submenu_text += '\t'*4
+			submenu_text += '"children":\n'
+			submenu_text += '\t'*4
+			submenu_text += '[\n'
+			for item_list in item_lists:
+				for item in item_list:
+					if menu_base:
+						menu_str = utils.genKey(item, menu_base)
+					else:
+						menu_str = item
+					submenu_text += '\t'*5
+					submenu_text += '{"caption": "%s", "command": "%s", "args": {"menu_str": "%s"}' \
+						% (item, command, menu_str)
+					if checkbox:
+						submenu_text += ', "checkbox": true'
+					submenu_text += '},\n'
+				submenu_text += '\t'*5
+				submenu_text += '{"caption": "-"},\n'
+			submenu_text = submenu_text[:-2] + '\n'
+			submenu_text += '\t'*4
+			submenu_text += ']\n'
+			submenu_text += '\t'*3
+			submenu_text += '},\n'
+		return submenu_text
+
+	def genDictBlock(self, info_list, description):
+		dict_text = ''
+		if info_list:
+			dict_text += '\t' * 2
+			dict_text += '<dict>\n'
+			dict_text += '\t' * 3
+			dict_text += '<key>match</key>\n'
+			dict_text += '\t' * 3
+			dict_text += '<string>\\b('
+			for item in info_list:
+				dict_text += item
+				dict_text += '|'
+			dict_text = dict_text[:-1]
+			dict_text += ')\\b</string>\n'
+			dict_text += '\t' * 3
+			dict_text += '<key>name</key>\n'
+			dict_text += '\t' * 3
+			dict_text += '<string>'
+			dict_text += description
+			dict_text += '</string>\n'
+			dict_text += '\t' * 2
+			dict_text += '</dict>'
+		return dict_text
+
+	def genSketchbookMenuText(self):
+		sketch_list = self.arduino_info.getSketchList()
+		menu_caption = '%(Sketchbook)s'
+		command = 'open_sketch'
+		menu_text = self.genSubMenuBlock(menu_caption, [sketch_list], command)
+		return menu_text
+
+	def genLibraryMenuText(self):
+		platform = self.getPlatform()
+		library_lists = self.arduino_info.getLibraryLists(platform)
+		menu_caption = '%(Import_Library...)s'
+		command = 'import_library'
+		menu_text = self.genSubMenuBlock(menu_caption, library_lists, command, menu_base = platform)
+		return menu_text
+
+	def genBoardMenuText(self):
+		menu_text = ''
+		command = 'select_board'
+		platform_list = self.arduino_info.getPlatformList()
+		for platform in platform_list:
+			board_lists = self.arduino_info.getBoardLists(platform)
+			menu_caption = platform.replace('Boards', '%(Board)s')
+			menu_text += self.genSubMenuBlock(menu_caption, board_lists, command, menu_base = platform, checkbox = True)
+		return menu_text
+
+	def genBoardOptionMenuText(self):
+		menu_text = ''
+		command = 'select_board_type'
+		platform = self.getPlatform()
+		board = self.getBoard()
+		board_type_list = self.arduino_info.getBoardTypeList(platform, board)
+		for board_type in board_type_list:
+			item_list = self.arduino_info.getBoardItemList(platform, board, board_type)
+			menu_caption = self.arduino_info.getPlatformTypeCaption(platform, board_type)
+			menu_caption = menu_caption.replace('Processor', '%(Processor)s')
+			menu_caption = menu_caption.replace('USB Type', '%(USB_Type)s')
+			menu_caption = menu_caption.replace('CPU Speed', '%(CPU_Speed)s')
+			menu_caption = menu_caption.replace('Keyboard Layout', '%(Keyboard_Layout)s')
+			board_key = utils.genKey(board, platform)
+			type_key = utils.genKey(board_type, board_key)
+			menu_text += self.genSubMenuBlock(menu_caption, [item_list], command, menu_base = type_key, checkbox = True)
+
+			type_value = const.settings.get(menu_caption)
+			if not type_value in item_list:
+				type_value = item_list[0]
+				const.settings.set(menu_caption, type_value)
+				const.save_settings()
+		return menu_text
+
+	def genSerialMenuText(self):
+		serial_port_list = smonitor.genSerialPortList()
+		menu_caption = '%(Serial_Port)s'
+		command = 'select_serial_port'
+		serial_port_lists = []
+		if serial_port_list:
+			serial_port_lists.append(serial_port_list)
+		menu_text = self.genSubMenuBlock(menu_caption, serial_port_lists, command, checkbox = True)
+		serial_port = const.settings.get('serial_port')
+		if not serial_port in serial_port_list:
+			if serial_port_list:
+				serial_port = serial_port_list[0]
+			else:
+				serial_port = 'No_Serial_Port'
+			const.settings.set('serial_port', serial_port)
+			const.save_settings()
+		return menu_text
+
+	def genBaudrateMenuText(self):
+		baudrate_list = smonitor.getBaudrateList()
+		menu_caption = '%(Baudrate)s'
+		command = 'select_baudrate'
+		menu_text = self.genSubMenuBlock(menu_caption, [baudrate_list], command, checkbox = True)
+		baudrate = const.settings.get('baudrate')
+		if not baudrate in baudrate_list:
+			baudrate = '9600'
+			const.settings.set('baudrate', baudrate)
+			const.save_settings()
+		return menu_text
+
+	def genProgrammerMenuText(self):
+		platform = self.getPlatform()
+		programmer_lists = self.arduino_info.getProgrammerLists(platform)
+		menu_caption = '%(Programmer)s'
+		command = 'select_programmer'
+		menu_text = self.genSubMenuBlock(menu_caption, programmer_lists, command, menu_base = platform, checkbox = True)
+		if programmer_lists:
+			all_programer_list = utils.simplifyLists(programmer_lists)
+			programmer = const.settings.get('programmer')
+			if not programmer in all_programer_list:
+				programmer = all_programer_list[0]
+				const.settings.set('programmer', programmer)
+				const.save_settings()
+		return menu_text
+
+	def genLanguageMenuText(self):
+		language_list = self.language.getLanguageTextList()
+		menu_caption = '%(Language)s'
+		command = 'select_language'
+		menu_text = self.genSubMenuBlock(menu_caption, [language_list], command, checkbox = True)
+		return menu_text
+
+	def genExampleMenuText(self):
+		platform = self.getPlatform()
+		example_lists = self.arduino_info.getExampleLists(platform)
+		menu_caption = '%(Examples)s'
+		command = 'select_example'
+		menu_text = self.genSubMenuBlock(menu_caption, example_lists, command, menu_base = platform)
+		return menu_text
 
 	def genFullMenuText(self):
-		self.menu_text = self.org_menu_text
-		if self.sketchbook_menu_text:
-			self.menu_text = self.menu_text.replace('{"caption": "%(Sketchbook)s", "command": "not_enable"},', self.sketchbook_menu_text)
-		if self.import_lib_menu_text:
-			self.menu_text = self.menu_text.replace('{"caption": "%(Import_Library...)s", "command": "not_enable"},', self.import_lib_menu_text)
-		if self.board_menu_text:
-			self.menu_text = self.menu_text.replace('{"caption": "%(Board)s", "command": "not_enable"},', self.board_menu_text)
-		if self.processor_menu_text:
-			self.menu_text = self.menu_text.replace('{"caption": "%(Processor)s", "command": "not_enable"},', self.processor_menu_text)
-		if self.usb_type_menu_text:
-			self.menu_text = self.menu_text.replace('{"caption": "%(USB_Type)s", "command": "not_enable"},', self.usb_type_menu_text)
-		if self.keyboard_layout_menu_text:
-			self.menu_text = self.menu_text.replace('{"caption": "%(Keyboard_Layout)s", "command": "not_enable"},', self.keyboard_layout_menu_text)
-		if self.serial_port_menu_text:
-			self.menu_text = self.menu_text.replace('{"caption": "%(Serial_Port)s", "command": "not_enable"},', self.serial_port_menu_text)
-		if self.programmer_menu_text:
-			self.menu_text = self.menu_text.replace('{"caption": "%(Programmer)s", "command": "not_enable"},', self.programmer_menu_text)
-		if self.lang_menu_text:
-			self.menu_text = self.menu_text.replace('{"caption": "%(Language)s", "command": "not_enable"},', self.lang_menu_text)
-		if self.examples_menu_text:
-			self.menu_text = self.menu_text.replace('{"caption": "%(Examples)s", "command": "not_enable"},', self.examples_menu_text)
-		
-	def genFile(self, display_text_dict):
-		self.display_text_dict = display_text_dict
-		menu_text = self.menu_text % display_text_dict
-		utils.writeFile(self.file, menu_text)
+		self.full_menu_text = self.getOriginMenuText()
 
-	def genCommandsFile(self, display_text_dict, mode = 'full'):
-		if mode == 'full':
-			filename = 'commands_full'
+		language_menu_text = self.genLanguageMenuText()
+		serial_menu_text = self.genSerialMenuText()
+		baudrate_menu_text = self.genBaudrateMenuText()
+		sketchbook_menu_text = self.genSketchbookMenuText()
+
+		self.full_menu_text = self.full_menu_text.replace('{"caption": "Sketchbook->"},', sketchbook_menu_text)
+		self.full_menu_text = self.full_menu_text.replace('{"caption": "Serial_Port->"},', serial_menu_text)
+		self.full_menu_text = self.full_menu_text.replace('{"caption": "Baudrate->"},', baudrate_menu_text)
+		self.full_menu_text = self.full_menu_text.replace('{"caption": "Language->"},', language_menu_text)
+
+		if self.arduino_info.isReady():
+			library_menu_text = self.genLibraryMenuText()
+			board_menu_text = self.genBoardMenuText()
+			board_option_menu_text = self.genBoardOptionMenuText()
+			programmer_menu_text = self.genProgrammerMenuText()
+			example_menu_text = self.genExampleMenuText()
+
+			self.full_menu_text = self.full_menu_text.replace('{"caption": "Import_Library->"},', library_menu_text)
+			self.full_menu_text = self.full_menu_text.replace('{"caption": "Board->"},', board_menu_text)
+			self.full_menu_text = self.full_menu_text.replace('{"caption": "Board_Option->"},', board_option_menu_text)
+			self.full_menu_text = self.full_menu_text.replace('{"caption": "Programmer->"},', programmer_menu_text)
+			self.full_menu_text = self.full_menu_text.replace('{"caption": "Examples->"},', example_menu_text)
+
+	def writeMainMenuFile(self):
+		menu_text = self.getFullMneuText() % self.language.getTransDict()
+		osfile.writeFile(self.main_menu_file, menu_text)
+
+	def genSelectItemText(self, caption, command, parent_mod, list_func, parameter1 = '', parameter2 = '', parameter3 = ''):
+		command_text = '    { "caption": "Stino: %s", "command": "select_item", "args": {"command": "%s", "parent_mod": "%s", "list_func": "%s", "parameter1": "%s", "parameter2": "%s", "parameter3": "%s"}},\n' \
+			% (caption, command, parent_mod, list_func, parameter1, parameter2, parameter3)
+		return command_text
+
+	def genOpenSketchCommandText(self):
+		command_text = ''
+		sketch_list = self.arduino_info.getSketchList()
+		if sketch_list:
+			command_caption = '%(Open_Sketch)s'
+			command = 'open_sketch'
+			parent_mod = 'arduino_info'
+			list_func = 'getSketchList'
+			command_text = self.genSelectItemText(command_caption, command, parent_mod, list_func)
+		return command_text
+
+	def genImportLibraryCommandText(self):
+		command_text = ''
+		platform = self.getPlatform()
+		library_lists = self.arduino_info.getLibraryLists(platform)
+		if library_lists:
+			command_caption = '%(Import_Library...)s'
+			command = 'import_library'
+			parent_mod = 'arduino_info'
+			list_func = 'getLibraryLists'
+			command_text = self.genSelectItemText(command_caption, command, parent_mod, list_func, parameter1 = platform)
+		return command_text
+
+	def genSelectBoardCommandText(self):
+		command_text = ''
+		command = 'select_board'
+		parent_mod = 'arduino_info'
+		list_func = 'getBoardLists'
+		platform_list = self.arduino_info.getPlatformList()
+		for platform in platform_list:
+			command_caption = '%(Select)s ' + platform.replace('Boards', '%(Board)s')
+			command_text += self.genSelectItemText(command_caption, command, parent_mod, list_func, parameter1 = platform)
+		return command_text
+
+	def genSelectBoardTypeCommandText(self):
+		command_text = ''
+		command = 'select_board_type'
+		parent_mod = 'arduino_info'
+		list_func = 'getBoardItemList'
+
+		platform = self.getPlatform()
+		board = self.getBoard()
+		board_type_list = self.arduino_info.getBoardTypeList(platform, board)
+		for board_type in board_type_list:
+			board_type_caption = self.arduino_info.getPlatformTypeCaption(platform, board_type)
+			board_type_caption = board_type_caption.replace('Processor', '%(Processor)s')
+			board_type_caption = board_type_caption.replace('USB Type', '%(USB_Type)s')
+			board_type_caption = board_type_caption.replace('CPU Speed', '%(CPU_Speed)s')
+			board_type_caption = board_type_caption.replace('Keyboard Layout', '%(Keyboard_Layout)s')
+			command_caption = '%(Select)s ' + board_type_caption
+			command_text += self.genSelectItemText(command_caption, command, parent_mod, list_func, parameter1 = platform, parameter2 = board, parameter3 = board_type)
+		return command_text
+
+	def genSelectSerialPortCommandText(self):
+		command_text = ''
+		serial_port_list = smonitor.genSerialPortList()
+		if serial_port_list:
+			command_caption = '%(Select)s ' + '%(Serial_Port)s'
+			command = 'select_serial_port'
+			parent_mod = 'smonitor'
+			list_func = 'genSerialPortList'
+			command_text = self.genSelectItemText(command_caption, command, parent_mod, list_func)
+		return command_text
+
+	def genSelectBaudrateCommandText(self):
+		command_caption = '%(Select)s ' + '%(Baudrate)s'
+		command = 'select_baudrate'
+		parent_mod = 'smonitor'
+		list_func = 'getBaudrateList'
+		command_text = self.genSelectItemText(command_caption, command, parent_mod, list_func)
+		return command_text
+
+	def genSelectProgrammerCommandText(self):
+		command_text = ''
+		platform = self.getPlatform()
+		programmer_lists = self.arduino_info.getProgrammerLists(platform)
+		if programmer_lists:
+			command_caption = '%(Select)s ' + '%(Programmer)s'
+			command = 'select_programmer'
+			parent_mod = 'arduino_info'
+			list_func = 'getProgrammerLists'
+			command_text = self.genSelectItemText(command_caption, command, parent_mod, list_func, parameter1 = platform)
+		return command_text
+
+	def genSelectLanguageCommandText(self):
+		command_text = ''
+		language_list = self.language.getLanguageTextList()
+		if language_list:
+			command_caption = '%(Select)s ' + '%(Language)s'
+			command = 'select_language'
+			parent_mod = 'cur_language'
+			list_func = 'getLanguageList'
+			command_text = self.genSelectItemText(command_caption, command, parent_mod, list_func)
+		return command_text
+
+	def genSelectExampleCommandText(self):
+		command_text = ''
+		platform = self.getPlatform()
+		example_lists = self.arduino_info.getExampleLists(platform)
+		if example_lists:
+			command_caption = '%(Open)s ' + '%(Example)s'
+			command = 'select_example'
+			parent_mod = 'arduino_info'
+			list_func = 'getExampleLists'
+			command_text = self.genSelectItemText(command_caption, command, parent_mod, list_func, parameter1 = platform)
+		return command_text
+
+	def genToggleCommandText(self, caption, setting_text):
+		state = const.settings.get(setting_text)
+		if state:
+			state_text = '%(OFF)s'
 		else:
-			filename = 'commands_mini'
-		template_file_path = os.path.join(self.template_dir, filename)
-		temp_text = utils.readFile(template_file_path)
-		text = temp_text % display_text_dict
-		utils.writeFile(self.commands_file, text)
+			state_text = '%(ON)s'
+		command = 'toggle_' + setting_text
+		command_caption = '%(Toggle)s ' + caption
+		command_text = '	{ "caption": "Stino: %s %s", "command": "%s" },\n' % (command_caption, state_text, command)
+		return command_text
 
-	def genCompletionsFile(self, mode = 'full'):
-		text = '{\n'
-		text += '\t"scope": "source.arduino",\n'
-		text += '\t"completions":\n'
-		text += '\t[\n'
-		if mode == 'full':
-			for keyword in self.arduino_info.getKeywordList():
-				if self.arduino_info.getKeywordType(keyword):
-					text += '\t\t"%s",\n' % keyword
-			text = text[:-2] + '\n'
-		text += '\t]\n'
-		text += '}'
-		utils.writeFile(self.completions_file, text)
-
-	def genDictText(self, l, description):
-		text = ''
-		if l:
-			text += '\t' * 2
-			text += '<dict>\n'
-			text += '\t' * 3
-			text += '<key>match</key>\n'
-			text += '\t' * 3
-			text += '<string>\\b('
-			for item in l:
-				text += item
-				text += '|'
-			text = text[:-1]
-			text += ')\\b</string>\n'
-			text += '\t' * 3
-			text += '<key>name</key>\n'
-			text += '\t' * 3
-			text += '<string>'
-			text += description
-			text += '</string>\n'
-			text += '\t' * 2
-			text += '</dict>'
+	def genSelectCommandsText(self):
+		text = self.genOpenSketchCommandText()
+		text += self.genImportLibraryCommandText()
+		text += self.genSelectBoardCommandText()
+		text += self.genSelectBoardTypeCommandText()
+		text += self.genSelectSerialPortCommandText()
+		text += self.genSelectBaudrateCommandText()
+		text += self.genSelectProgrammerCommandText()
+		text += self.genSelectLanguageCommandText()
+		text += self.genSelectExampleCommandText()
+		text += self.genToggleCommandText('%(Full_Compilation)s', 'full_compilation')
+		text += self.genToggleCommandText('%(Show_Verbose_Output)s-%(Compilation)s', 'verbose_compilation')
+		text += self.genToggleCommandText('%(Show_Verbose_Output)s-%(Upload)s', 'verbose_upload')
+		text += self.genToggleCommandText('%(Verify_code_after_upload)s', 'verify_code')
 		return text
 
-	def genSyntexFile(self, mode = 'full'):
+	def genCommandsText(self):
+		temp_filename = 'commands_mini'
+		if self.arduino_info.isReady():
+			show_arduino_menu = const.settings.get('show_arduino_menu')
+			if show_arduino_menu:
+				temp_filename = 'commands_full'
+			
+		temp_file_path = os.path.join(self.template_root, temp_filename)
+		temp_file_text = osfile.readFileText(temp_file_path)
+
+		if temp_filename == 'commands_full':
+			select_commands_text = self.genSelectCommandsText()
+			temp_file_text = temp_file_text.replace('(_$item$_)', select_commands_text)
+		self.commands_text = temp_file_text
+
+	def writeCommandsFile(self):
+		commands_text = self.getCommandsText() % self.language.getTransDict()
+		osfile.writeFile(self.commands_file, commands_text)
+
+	def genCompletionsText(self):
+		self.completions_text = '{\n'
+		self.completions_text += '\t"scope": "source.arduino",\n'
+		self.completions_text += '\t"completions":\n'
+		self.completions_text += '\t[\n'
+		if self.arduino_info.isReady():
+			platform = self.getPlatform()
+			for keyword in self.arduino_info.getKeywordList(platform):
+				if self.arduino_info.getKeywordType(platform, keyword):
+					self.completions_text += '\t\t"%s",\n' % keyword
+			self.completions_text = self.completions_text[:-2] + '\n'
+		self.completions_text += '\t]\n'
+		self.completions_text += '}'
+
+	def writeCompletionsFile(self):
+		completions_text = self.getCompletionsText() % self.language.getTransDict()
+		osfile.writeFile(self.completions_file, completions_text)
+
+	def genSyntaxText(self):
 		constant_list = []
 		keyword_list = []
 		function_list = []
-		if mode == 'full':
-			for keyword in self.arduino_info.getKeywordList():
-				if self.arduino_info.getKeywordType(keyword):
-					if 'LITERAL' in self.arduino_info.getKeywordType(keyword):
-						constant_list.append(keyword)
-					elif self.arduino_info.getKeywordType(keyword) == 'KEYWORD1':
-						keyword_list.append(keyword)
-					else:
-						function_list.append(keyword)
+		if self.arduino_info.isReady():
+			platform = self.getPlatform()
+			for keyword in self.arduino_info.getKeywordList(platform):
+				if len(keyword) > 1:
+					keyword_type = self.arduino_info.getKeywordType(platform, keyword)
+					if keyword_type:
+						if 'LITERAL' in keyword_type:
+							constant_list.append(keyword)
+						elif keyword_type == 'KEYWORD1':
+							keyword_list.append(keyword)
+						else:
+							function_list.append(keyword)
 
 		text = ''
-		text += self.genDictText(constant_list, 'constant.arduino')
-		text += self.genDictText(keyword_list, 'keyword.arduino')
-		text += self.genDictText(function_list, 'entity.name.function.arduino')
+		text += self.genDictBlock(constant_list, 'constant.arduino')
+		text += self.genDictBlock(keyword_list, 'keyword.arduino')
+		text += self.genDictBlock(function_list, 'entity.name.function.arduino')
 
-		temp_file_path = os.path.join(self.template_dir, 'syntax')
-		temp_text = utils.readFile(temp_file_path)
-		temp_text = temp_text.replace('%(keyword)s', text)
-		utils.writeFile(self.syntax_file, temp_text)
-		
-	def genSketchbookMenuText(self):
-		sketch_list = self.arduino_info.getSketchList()
-		self.sketchbook_menu_text = self.getMenuText(sketch_list, '%(Sketchbook)s', 'select_sketch')
+		temp_file = os.path.join(self.template_root, 'syntax')
+		self.syntax_text = osfile.readFileText(temp_file)
+		self.syntax_text = self.syntax_text.replace('(_$dict$_)', text)
 
-	def genImportLibMenuText(self):
-		lib_list = self.arduino_info.getLibList()
-		self.import_lib_menu_text = self.getMenuText(lib_list, '%(Import_Library...)s', 'import_library')
+	def writeSyntaxFile(self):
+		syntax_text = self.getSyntaxText() % self.language.getTransDict()
+		osfile.writeFile(self.syntax_file, syntax_text)
 
-	def genBoardMenuText(self):
-		self.board_menu_text = ''
+	def getPlatform(self):
+		platform = const.settings.get('platform')
 		platform_list = self.arduino_info.getPlatformList()
-		for platform in platform_list:
-			caption = platform.replace('Boards', '%(Board)s')
-			board_list = self.arduino_info.getBoardList(platform)
-			self.board_menu_text += self.getMenuText(board_list, caption, 'select_board', checkbox = True)
+		if not platform in platform_list:
+			platform = platform_list[0]
+			const.settings.set('platform', platform)
+			const.save_settings()
+		return platform
 
-	def genProcessorMenuText(self):
-		processor_list = self.arduino_info.getProcessorList()
-		self.processor_menu_text = self.getMenuText([processor_list], '%(Processor)s', 'select_processor', checkbox = True)
-		if processor_list:
-			processor = self.Settings.get('processor')
-			if not processor in processor_list:
-				processor = processor_list[0]
-				self.Settings.set('processor', processor)
-				sublime.save_settings('Stino.sublime-settings')
+	def getBoard(self):
+		board = const.settings.get('board')
+		platform = self.getPlatform()
+		board_lists = self.arduino_info.getBoardLists(platform)
+		all_board_list = utils.simplifyLists(board_lists)
+		if not board in all_board_list:
+			board = all_board_list[0]
+			const.settings.set('board', board)
+			const.save_settings()
+		return board
 
-	def genUSBTypeMenuText(self):
-		usb_type_list = self.arduino_info.getUSBTypeList()
-		self.usb_type_menu_text = self.getMenuText([usb_type_list], '%(USB_Type)s', 'select_usb_type', checkbox = True)
-		if usb_type_list:
-			usb_type = self.Settings.get('usb_type')
-			if not usb_type in usb_type_list:
-				usb_type = usb_type_list[0]
-				self.Settings.set('usb_type', usb_type)
-				sublime.save_settings('Stino.sublime-settings')
+	def getOriginMenuText(self):
+		if not self.original_menu_text:
+			self.genOriginalMenuText()
+		return self.original_menu_text
 
-	def genKeyboardLayoutMenuText(self):
-		keyboard_layout_list = self.arduino_info.getKeyboardLayoutList()
-		self.keyboard_layout_menu_text = self.getMenuText([keyboard_layout_list], '%(Keyboard_Layout)s', 'select_keyboard_layout', checkbox = True)
-		if keyboard_layout_list:
-			keyboard_layout = self.Settings.get('keyboard_layout')
-			if not keyboard_layout in keyboard_layout_list:
-				keyboard_layout = keyboard_layout_list[0]
-				self.Settings.set('keyboard_layout', keyboard_layout)
-				sublime.save_settings('Stino.sublime-settings')
+	def getFullMneuText(self):
+		if not self.full_menu_text:
+			self.genFullMenuText()
+		return self.full_menu_text
 
-	def genSerialPortMenuText(self):
-		serial_list = utils.getSerialPortList()
-		self.serial_port_menu_text = self.getMenuText([serial_list], '%(Serial_Port)s', 'select_serial_port', checkbox = True)
+	def getCommandsText(self):
+		if not self.commands_text:
+			self.genCommandsText()
+		return self.commands_text
 
-	def genProgrammerMenuText(self):
-		programmer_list = self.arduino_info.getProgrammerList()
-		self.programmer_menu_text = self.getMenuText(programmer_list, '%(Programmer)s', 'select_programmer', checkbox = True)
-		no_programmer = True
-		has_programmer = self.arduino_info.hasProgrammer()
-		if has_programmer:
-			programmer = self.Settings.get('programmer')
-			for programmers in programmer_list:
-				if programmer in programmers:
-					no_programmer = False
-					break
-			if no_programmer:
-				programmer = programmer_list[0][0]
-				self.Settings.set('programmer', programmer)
-				sublime.save_settings('Stino.sublime-settings')
+	def getCompletionsText(self):
+		if not self.completions_text:
+			self.genCompletionsText()
+		return self.completions_text
 
-	def genExampleMenuText(self):
-		example_list = self.arduino_info.getExampleList()
-		self.examples_menu_text = self.getMenuText(example_list, '%(Examples)s', 'select_example')
-
-	def genLangMenuText(self):
-		lang_list = [self.lang.lang_text_dict[language] for language in self.lang.getLangList()]
-		lang_list = [lang_list]
-		self.lang_menu_text = self.getMenuText(lang_list, '%(Language)s', 'select_language', checkbox = True)
+	def getSyntaxText(self):
+		if not self.syntax_text:
+			self.genSyntaxText()
+		return self.syntax_text

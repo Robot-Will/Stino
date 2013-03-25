@@ -1,12 +1,19 @@
 #Stino
-#####A Sublime Text 2 Plugin for Arduino
-version 1.1
-
-Copyright (c) 2012 Robot-Will(robot.will.me (at) gmail.com). 
+####A Sublime Text 2 Plugin for Arduino, Version 1.2
+Copyright (c) 2012-2013 Robot-Will(robot.will.me (at) gmail.com). 
 
 ## To all users
 I am still working on this plugin, and if you meet some problems or have suggestions, leave messages to me.
 Link: https://github.com/Robot-Will/Stino/issues
+
+####Attention:
+If you met problems, please leave detailed information to me, including OS, board, etc.. You can find the error message in ST2 output panel. Use Ctrl+` to show the panel. If the commands in Arduino menu are gray, you may find error messages under the following line:
+
+>Reloading plugin G:\test dir\ST-1.2\Data\Packages\stino\stcommands.py
+
+Or you run commands and no response, maybe something wrong and you can also find error messages.
+
+
 
 ## Website
 GitHub Page (http://robot-will.github.com/Stino/)
@@ -28,7 +35,7 @@ Stino is a Sublime Text 2 Plugin for Arduino. With this plugin, you can use Subl
 2. Multiple Selections.
 3. Hilighting Arduino keywords.
 4. Auto-completing Arduino keywors.
-5. Supporting Arduino version 0020-0023, 1.0-1.0.3, 1.5.0-1.5.1r2, Teensy(1.0-3.0).
+5. Supporting all Arduino versions, Teensy(1.0-3.0).
 6. Multi-languages supported.
 7. Cross platform (Win/Linux/OSX).
 8. Supports multiple pde/ino/c++/c files per sketch.
@@ -49,5 +56,5 @@ Stino is a Sublime Text 2 Plugin for Arduino. With this plugin, you can use Subl
 5. Compilating or uploading your sketch.
 
 ##Translation
-In the __lang__ directory, there are translation files. Currently, all these files are generated from Arduino Translations (http://playground.arduino.cc/Main/LanguagesIDE). The translation files' name is the abbravation of the language according  to the ISO standard (http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes). Each file contains a line started with "LANG =", and the Plugin will look for this line to generate language list. As the translation files are automatically generated, the translations are not complete. If you want to make the tranlation better, you can revise the translation and email the file to me.
+In the __language__ directory, there are translation files. Currently, all these files are generated from Arduino Translations (http://playground.arduino.cc/Main/LanguagesIDE). The translation files' name is the abbravation of the language according  to the ISO standard (http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes). Each file contains a line started with "LANG =", and the Plugin will look for this line to generate language list. As the translation files are automatically generated, the translations are not complete. If you want to make the tranlation better, you can revise the translations and email the file to me or pull request to me.
 

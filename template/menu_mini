@@ -8,7 +8,7 @@
 				"caption": "%(Preferences)s",
 				"children":
 				[
-					{"caption": "%(Language)s", "command": "not_enable"},
+					{"caption": "Language->"},
 					{"caption": "%(Select_Arduino_Folder...)s", "command": "select_arduino_folder"}
 				]
 			},

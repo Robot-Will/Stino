@@ -5,7 +5,7 @@
    <key>name</key>
    <string>Comments</string>
    <key>scope</key>
-   <string>source.arduino</string>
+   <string>source.cs</string>
    <key>settings</key>
    <dict>
       <key>shellVariables</key>

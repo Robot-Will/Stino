@@ -4,24 +4,32 @@
 		"children":
 		[
 			{"caption": "%(New_Sketch...)s", "command": "new_sketch"},
-			{"caption": "%(Sketchbook)s", "command": "not_enable"},
+			{"caption": "Sketchbook->"},
 			{"caption": "-"},
 			{"caption": "%(New_File...)s", "command": "new_to_sketch"},
-			{"caption": "%(Add_File...)s", "command": "add_to_sketch"},
-			{"caption": "%(Import_Library...)s", "command": "not_enable"},
+			{"caption": "Import_Library->"},
 			{"caption": "%(Show_Sketch_Folder)s", "command": "show_sketch_folder"},
 			{"caption": "-"},
+			{"command": "change_extra_flags"},
 			{"caption": "%(Verify / Compile)s", "command": "compile_sketch"},
 			{"caption": "%(Upload)s", "command": "upload_binary"},
 			{"caption": "%(Upload_Using_Programmer)s", "command": "upload_using_programmer"},
 			{"caption": "-"},
-			{"caption": "%(Board)s", "command": "not_enable"},
-			{"caption": "%(Processor)s", "command": "not_enable"},
-			{"caption": "%(USB_Type)s", "command": "not_enable"},
-			{"caption": "%(Keyboard_Layout)s", "command": "not_enable"},
-			{"caption": "%(Serial_Port)s", "command": "not_enable"},
+			{"caption": "Board->"},
+			{"caption": "Board_Option->"},
 			{"caption": "-"},
-			{"caption": "%(Programmer)s", "command": "not_enable"},
+			{"caption": "Serial_Port->"},
+			{
+				"caption": "%(Serial_Monitor)s",
+				"id": "serial_monitor",
+				"children":
+				[
+					{"caption": "Baudrate->"},
+					{"caption": "%(Start)s", "command": "start_serial_monitor"}
+				]
+			},
+			{"caption": "-"},
+			{"caption": "Programmer->"},
 			{"caption": "%(Burn_Bootloader)s", "command": "burn_bootloader"},
 			{"caption": "-"},
 			{
@@ -29,16 +37,16 @@
 				"id": "arduino_preferences",
 				"children":
 				[
-					{"caption": "%(Language)s", "command": "not_enable"},
+					{"caption": "Language->"},
 					{"caption": "%(Select_Arduino_Folder...)s", "command": "select_arduino_folder"},
-					{"caption": "%(Change_Sketchbook_Folder...)s", "command": "add_sketchbook_folder"},
+					{"caption": "%(Change_Sketchbook_Folder...)s", "command": "change_sketchbook_folder"},
 					{"caption": "%(Full_Compilation)s", "command": "toggle_full_compilation", "checkbox": true},
 					{
 						"caption": "%(Show_Verbose_Output)s",
 						"id": "show_verbose_output",
 						"children":
 						[
-							{"caption": "%(compilation)s", "command": "toggle_verbose_compilation", "checkbox": true},
+							{"caption": "%(Compilation)s", "command": "toggle_verbose_compilation", "checkbox": true},
 							{"caption": "%(Upload)s", "command": "toggle_verbose_upload", "checkbox": true}
 						]
 					},
@@ -53,37 +61,11 @@
 				[
 					{"caption": "%(Auto_Format)s", "command": "auto_format"},
 					{"caption": "%(Archive_Sketch)s", "command": "archive_sketch"},
-					{"caption": "%(Fix_Encoding_&_Reload)s", "command": "fix_encoding"},
-					{
-						"caption": "%(Serial_Monitor)s",
-						"id": "serial_monitor",
-						"children":
-						[
-							{"caption": "%(Start)s", "command": "serial_monitor"},
-							{
-								"caption": "%(Baudrate)s",
-								"id": "baudrate",
-								"children":
-								[
-									{"caption": "300", "command": "select_baudrate", "args": {"menu_str": "300"}, "checkbox": true},
-									{"caption": "1200", "command": "select_baudrate", "args": {"menu_str": "1200"}, "checkbox": true},
-									{"caption": "2400", "command": "select_baudrate", "args": {"menu_str": "2400"}, "checkbox": true},
-									{"caption": "4800", "command": "select_baudrate", "args": {"menu_str": "4800"}, "checkbox": true},
-									{"caption": "9600", "command": "select_baudrate", "args": {"menu_str": "9600"}, "checkbox": true},
-									{"caption": "14400", "command": "select_baudrate", "args": {"menu_str": "14400"}, "checkbox": true},
-									{"caption": "19200", "command": "select_baudrate", "args": {"menu_str": "19200"}, "checkbox": true},
-									{"caption": "28800", "command": "select_baudrate", "args": {"menu_str": "28800"}, "checkbox": true},
-									{"caption": "38400", "command": "select_baudrate", "args": {"menu_str": "38400"}, "checkbox": true},
-									{"caption": "57600", "command": "select_baudrate", "args": {"menu_str": "57600"}, "checkbox": true},
-									{"caption": "115200", "command": "select_baudrate", "args": {"menu_str": "115200"}, "checkbox": true}
-								]
-							}
-						]
-					}
+					{"caption": "%(Fix_Encoding_&_Reload)s", "command": "fix_encoding"}
 				]
 			},
 			{"caption": "-"},
-			{"caption": "%(Examples)s", "command": "not_enable"},
+			{"caption": "Examples->"},
 			{
 				"caption": "%(Arduino_Help)s",
 				"id": "arduino_help",
@@ -94,7 +76,7 @@
 					{"caption": "%(Reference)s", "command": "open_ref", "args": {"menu_str": "index"}},
 					{"caption": "%(Find_in_Reference)s", "command": "find_in_reference"},
 					{"caption": "%(Frequently_Asked_Questions)s", "command": "open_ref", "args": {"menu_str": "FAQ"}},
-					{"caption": "%(Visit_Arduino_Website)s", "command": "open_url", "args": {"menu_str": "http://arduino.cc"}}
+					{"caption": "%(Visit_Arduino_Website)s", "command": "open_url", "args": {"url": "http://arduino.cc"}}
 				]
 			},			
 			{"caption" : "-"},
