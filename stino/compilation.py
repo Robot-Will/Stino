@@ -471,6 +471,9 @@ class Compilation:
 		self.is_finished = True
 
 	def postCompilationProcess(self):
+		display_text = 'Gathering compilation infomation...\n'
+		msg = self.language.translate(display_text)
+		self.output_panel.addText(msg)
 		(main_src_number, self.main_src_path) = self.genMainSrcFileInfo()
 		if main_src_number == 0:
 			self.error_code = 2

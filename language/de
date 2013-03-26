@@ -259,3 +259,5 @@ msgstr "Wählen"
 msgid "Show_Verbose_Output"
 msgstr "Zeige verbose Ausgabe"
 
+msgid "Gathering compilation infomation...\n"
+msgstr "Gathering compilation infomation...\n"

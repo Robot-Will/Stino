@@ -259,3 +259,6 @@ msgstr "Select"
 msgid "Show_Verbose_Output"
 msgstr "Show Verbose Output"
 
+msgid "Gathering compilation infomation...\n"
+msgstr "Gathering compilation infomation...\n"
+

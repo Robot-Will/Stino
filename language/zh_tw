@@ -258,3 +258,6 @@ msgstr "USB類型"
 
 msgid "Keyboard_Layout"
 msgstr "鍵盤佈局"
+
+msgid "Gathering compilation infomation...\n"
+msgstr "收集編譯信息...\n"

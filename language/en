@@ -22,6 +22,9 @@ msgstr "Sketchbook"
 msgid "Start burning {1}...\n"
 msgstr "Start burning {1}...\n"
 
+msgid "Gathering compilation infomation...\n"
+msgstr "Gathering compilation infomation...\n"
+
 msgid "Add_Extra_Flags"
 msgstr "Add Extra Flags"
 

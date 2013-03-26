@@ -259,3 +259,5 @@ msgstr "Selecteer"
 msgid "Show_Verbose_Output"
 msgstr "Toon uitgebreide uitvoer"
 
+msgid "Gathering compilation infomation...\n"
+msgstr "Gathering compilation infomation...\n"
