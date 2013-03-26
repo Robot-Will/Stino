@@ -1,0 +1,261 @@
+# LANGUAGE: latviešu valoda (Latvian)
+# Latvian translations for Stino Plugin.
+# Copyright (C) 2013 Robot-Will
+# This file is distributed under the same license as the Stino Plugin.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: Stino 1.2\n"
+"POT-Creation-Date: 2013-02-27 11:34+0800\n"
+"PO-Revision-Date: 2013-03-26 13:00+0800\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: Latvian <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UNICODE\n"
+"Content-Transfer-Encoding: UTF-8\n"
+"Generated-By: pygettext.py 1.5\n"
+
+msgid "Sketchbook"
+msgstr "Skiču burtnīca"
+
+msgid "Start burning {1}...\n"
+msgstr "Start burning {1}...\n"
+
+msgid "Add_Extra_Flags"
+msgstr "Add Extra Flags"
+
+msgid "Writing {1} completed.\n"
+msgstr "Writing {1} completed.\n"
+
+msgid "Arduino"
+msgstr "Arduino"
+
+msgid "[Stino - Uploading terminated with errors.]\n"
+msgstr "[Stino - Uploading terminated with errors.]\n"
+
+msgid "Processor"
+msgstr "Processor"
+
+msgid "Serial_Port"
+msgstr "Seriālais ports"
+
+msgid "Send"
+msgstr "Sūtīt"
+
+msgid "Full_Compilation"
+msgstr "Full Compilation"
+
+msgid "New_File..."
+msgstr "New File..."
+
+msgid "Start uploading {1}...\n"
+msgstr "Start uploading {1}...\n"
+
+msgid "Sketchbook folder have switched to {1}.\n"
+msgstr "Sketchbook folder have switched to {1}.\n"
+
+msgid "Find_in_Reference"
+msgstr "Meklēt atsaucē"
+
+msgid "Board"
+msgstr "Plate"
+
+msgid "Upload_Using_Programmer"
+msgstr "Augšupielādēt, izmantojot programmatoru"
+
+msgid "[Stino - Bootloader burning terminated with errors.]\n"
+msgstr "[Stino - Bootloader burning terminated with errors.]\n"
+
+msgid "USB_Type"
+msgstr "USB Type"
+
+msgid "Preferences"
+msgstr "Iestatījumi"
+
+msgid "Sketch {1} exists, please use another file name.\n"
+msgstr "Sketch {1} exists, please use another file name.\n"
+
+msgid "Send:"
+msgstr "Send:"
+
+msgid "Baudrate"
+msgstr "Baudrate"
+
+msgid "Compilation"
+msgstr "Compilation"
+
+msgid "Troubleshooting"
+msgstr "Traucējummeklēšana"
+
+msgid "Stop"
+msgstr "Stop"
+
+msgid "Auto_Format"
+msgstr "Automātiskā formatēšana"
+
+msgid "[Stino - Compilation completed.]\n"
+msgstr "[Stino - Compilation completed.]\n"
+
+msgid "Change_Extra_Flags"
+msgstr "Change Extra Flags"
+
+msgid "Extra compilation flags:"
+msgstr "Extra compilation flags:"
+
+msgid "[Stino - Uploading completed.]\n"
+msgstr "[Stino - Uploading completed.]\n"
+
+msgid "Upload"
+msgstr "Augšupielādēt"
+
+msgid "Show_Sketch_Folder"
+msgstr "Parādīt skiču mapi"
+
+msgid "Error: No main source file was found. A main source file should contain setup() and loop() functions.\n"
+msgstr "Error: No main source file was found. A main source file should contain setup() and loop() functions.\n"
+
+msgid "Fix_Encoding_&_Reload"
+msgstr "Salabot kodējumu un pārlādēt"
+
+msgid "About_Stino"
+msgstr "About Stino"
+
+msgid "Show_Arduino_Menu"
+msgstr "Show Arduino Menu"
+
+msgid "Tools"
+msgstr "Rīki"
+
+msgid "Cleaning...\n"
+msgstr "Cleaning...\n"
+
+msgid "Examples"
+msgstr "Piemēri"
+
+msgid "Select Current Folder ({1})"
+msgstr "Select Current Folder ({1})"
+
+msgid "Verify_code_after_upload"
+msgstr "Pārbaudīt kodu pēc augšupielādes"
+
+msgid "OFF"
+msgstr "OFF"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n"
+msgstr "Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n"
+
+msgid "Parsing C++ source files is difficult and I do not finish it yet.\n"
+msgstr "Parsing C++ source files is difficult and I do not finish it yet.\n"
+
+msgid "Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n"
+msgstr "Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n"
+
+msgid "Frequently_Asked_Questions"
+msgstr "Bieži uzdotie jautājumi"
+
+msgid "Keyboard_Layout"
+msgstr "Keyboard Layout"
+
+msgid "Burn_Bootloader"
+msgstr "Iededzināt sāknēšanas ielādētāju"
+
+msgid "Select_Arduino_Folder..."
+msgstr "Select Arduino Folder..."
+
+msgid "Arduino_Help"
+msgstr "Arduino Help"
+
+msgid "Change_Sketchbook_Folder..."
+msgstr "Change Sketchbook Folder..."
+
+msgid "CPU_Speed"
+msgstr "CPU Speed"
+
+msgid "File {1} exists, please use another file name.\n"
+msgstr "File {1} exists, please use another file name.\n"
+
+msgid "Name_for_new_sketch:"
+msgstr "Name for new sketch:"
+
+msgid "Start compilation...\n"
+msgstr "Start compilation...\n"
+
+msgid "Example"
+msgstr "Example"
+
+msgid "Getting_Started"
+msgstr "Pirmie soļi"
+
+msgid "ON"
+msgstr "ON"
+
+msgid "Reference"
+msgstr "Atsauce"
+
+msgid "Stino"
+msgstr "Stino"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Arduino {1} is found at {2}.\n"
+msgstr "Arduino {1} is found at {2}.\n"
+
+msgid "Serial_Monitor"
+msgstr "Seriālā porta monitors"
+
+msgid "[Stino - Bootloader burning completed.]\n"
+msgstr "[Stino - Bootloader burning completed.]\n"
+
+msgid "Archive_Sketch"
+msgstr "Arhivēt skici"
+
+msgid "Creating {1}...\n"
+msgstr "Creating {1}...\n"
+
+msgid "[Stino - Compilation terminated with errors.]\n"
+msgstr "[Stino - Compilation terminated with errors.]\n"
+
+msgid "Verify / Compile"
+msgstr "Pārbaudīt un kompilēt"
+
+msgid "New_Sketch..."
+msgstr "New Sketch..."
+
+msgid "Toggle"
+msgstr "Toggle"
+
+msgid "Discard all changes and reload sketch?\n"
+msgstr "Discard all changes and reload sketch?\n"
+
+msgid "Import_Library..."
+msgstr "Importēt bibliotēku..."
+
+msgid "Open_Sketch"
+msgstr "Open Sketch"
+
+msgid "Name_for_new_file:"
+msgstr "Jaunā faila nosaukums:"
+
+msgid "Programmer"
+msgstr "Programmators"
+
+msgid "Visit_Arduino_Website"
+msgstr "Visit Arduino Website"
+
+msgid "Open"
+msgstr "Atvērt"
+
+msgid "Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n"
+msgstr "Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n"
+
+msgid "Select"
+msgstr "Select"
+
+msgid "Show_Verbose_Output"
+msgstr "Show Verbose Output"
+
