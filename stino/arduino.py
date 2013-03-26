@@ -606,7 +606,7 @@ class Arduino:
 			sketchbook_root = os.path.join(home_root, 'sketchbook')
 		elif const.sys_platform == 'osx':
 			home_root = os.getenv('HOME')
-			document_root = os.path.join(home_path, 'Documents')
+			document_root = os.path.join(home_root, 'Documents')
 			sketchbook_root = os.path.join(document_root, 'Arduino')
 		return sketchbook_root
 
