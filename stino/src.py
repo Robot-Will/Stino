@@ -34,12 +34,12 @@ def getTextFromSketch(sketch):
 def genSimpleSrcText(src_text):
 	simple_src_text = ''
 
-	pattern_text = r'/\*[\S\s]*?\*/'
-	src_text = re.sub(pattern_text, '\n', src_text)
-	pattern_text = r'//[\S\s]*?\n'
-	src_text = re.sub(pattern_text, '\n', src_text)
+	pattern_list = [r'/\*[\S\s]*?\*/', r'//[\S\s]*?\n', r'\\\s*?\n', r'#[\S\s]*?\n']
+	replace_text_list = ['\n', '\n', ' ', '\n']
+	replace_list = zip(pattern_list, replace_text_list)
+	for (pattern_text, replace_text) in replace_list:
+		src_text = re.sub(pattern_text, replace_text, src_text)
 
-	src_text = src_text.replace('#', '\n#')
 	src_text = src_text.replace('{', '\n{\n')
 	src_text = src_text.replace('}', '\n}\n')
 	src_lines = utils.convertTextToLines(src_text)
@@ -56,6 +56,7 @@ def genSimpleSrcText(src_text):
 			if '{' in line:
 				level += 1
 	simple_src_text = simple_src_text.replace(';', ';\n')
+	simple_src_text = simple_src_text.replace('\n', ' ')
 	return simple_src_text
 
 def regulariseBlank(text):
@@ -94,7 +95,7 @@ def regulariseFuctionText(function_text):
 	return function_text
 
 def genSrcDeclarationList(simple_src_text):
-	pattern_text = r'\S+?\s+?\S+?\s*?\([\S\s]*?\)\s*?;'
+	pattern_text = r'[\w*]+?\s+?[\w]+?\s*?\([\w\s,=*]*?\)\s*?;'
 	declaration_list = re.findall(pattern_text, simple_src_text)
 	src_declaration_list = [declaration[:-1].strip() for declaration in declaration_list]
 	src_declaration_list = [regulariseFuctionText(declaration) for declaration in src_declaration_list]
@@ -102,11 +103,10 @@ def genSrcDeclarationList(simple_src_text):
 
 def genSrcFunctionList(simple_src_text):
 	src_function_list = []
-	pattern_text = r'\S+?\s+?\S+?\s*?\([\S\s]*?\)\s*?\{\s*?}'
+	pattern_text = r'[\w*]+?\s+?[\w]+?\s*?\([\w\s,=*]*?\)\s*?\{ }'
 	function_text_list = re.findall(pattern_text, simple_src_text)
 	for function_text in function_text_list:
-		function = function_text.split('{')[0].strip()
-		function = regulariseFuctionText(function)
+		function = regulariseFuctionText(function_text)
 		if function:
 			src_function_list.append(function)
 	return src_function_list
