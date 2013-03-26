@@ -131,7 +131,7 @@ def isSketch(sketch):
 		if os.path.isfile(sketch):
 			sketch_ext = os.path.splitext(sketch)[1]		
 	
-	if sketch_ext in arduino_ext_list:
+	if sketch_ext in src_ext_list or sketch_ext in header_ext_list:
 		state = True
 	else:
 		state = isMainSketch(sketch)
