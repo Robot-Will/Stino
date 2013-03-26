@@ -8,18 +8,6 @@ from stino import const
 from stino import osfile
 from stino import utils
 
-def parseLanguageFromFile(file_path):
-	language = ''
-	language_text = ''
-	lines = osfile.readFileLines(file_path)
-	for line in lines:
-		if '#' in line and 'LANGUAGE:' in line:
-			language_text = line.split(':')[1].strip()
-			language = language_text.split('(')[1]
-			language = language.split(')')[0].strip()
-			break
-	return (language, language_text)
-
 class Language:
 	def __init__(self):
 		self.genAbvDict()
@@ -34,16 +22,19 @@ class Language:
 
 	def genAbvDict(self):
 		self.abv_language_dict = {}
-		self.language_abv_dict = {}
+		self.abv_text_dict = {}
 		template_root = const.template_root
 		iso_file_path = os.path.join(template_root, 'ISO639_1')
 		lines = osfile.readFileLines(iso_file_path)
 		for line in lines:
 			line = line.strip()
 			if line:
-				(abv, language) = utils.getKeyValue(line)
-				self.abv_language_dict[abv] = language
-				self.language_abv_dict[language] = abv
+				info_list = line.split('=')
+				lang_abv = info_list[0].strip()
+				lang = info_list[1].strip()
+				lang_text = info_list[2].strip()
+				self.abv_language_dict[lang_abv] = lang
+				self.abv_text_dict[lang_abv] = '%s (%s)' % (lang_text, lang)
 
 	def genLanguageList(self):
 		self.language_list = []
@@ -54,11 +45,12 @@ class Language:
 		language_root = const.language_root
 		file_list = osfile.listDir(language_root, with_dirs = False)
 		for cur_file in file_list:
-			if cur_file == 'default':
-				continue
 			cur_file_path = os.path.join(language_root, cur_file)
-			(language, language_text) = parseLanguageFromFile(cur_file_path)
-			if language:
+			if cur_file in self.abv_language_dict:
+				language_abv = cur_file
+				language = self.abv_language_dict[language_abv]
+				language_text = self.abv_text_dict[language_abv]
+				
 				if not language in self.language_list:
 					self.language_list.append(language)
 					self.language_file_dict[language] = cur_file_path
@@ -129,9 +121,7 @@ class Language:
 
 	def genTransDict(self):
 		language = const.settings.get('language')
-		abv = self.language_abv_dict[language]
-		language_root = const.language_root
-		language_file_path = os.path.join(language_root, abv)
+		language_file_path = self.getLanguageFile(language)
 		if os.path.isfile(language_file_path):
 			trans_block = []
 			lines = osfile.readFileLines(language_file_path)
