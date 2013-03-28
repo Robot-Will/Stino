@@ -33,8 +33,8 @@ def getTextFromSketch(sketch):
 
 def genSimpleSrcText(src_text):
 	simple_src_text = ''
-
-	pattern_list = [r'/\*[\S\s]*?\*/', r'//[\S\s]*?\n', r'\\\s*?\n', r'#[\S\s]*?\n']
+	
+	pattern_list = [r'//[\S\s]*?\n', r'/\*[\S\s]*?\*/']
 	replace_text_list = ['\n', '\n', ' ', '\n']
 	replace_list = zip(pattern_list, replace_text_list)
 	for (pattern_text, replace_text) in replace_list:
