@@ -286,6 +286,8 @@ def genCommandArgs(command):
 		command = command.replace('/"', '"')
 		command = command.replace('/', os.path.sep)
 		std_args = '"' + command + '"'
+	elif const.sys_platform == 'osx':
+		std_args = command
 	else:
 		args = shlex.split(command)
 		std_args = []
