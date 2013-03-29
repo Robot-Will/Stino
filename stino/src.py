@@ -33,7 +33,7 @@ def getTextFromSketch(sketch):
 
 def genSimpleSrcText(src_text):
 	simple_src_text = ''
-	
+
 	pattern_list = [r'//[\S\s]*?\n', r'/\*[\S\s]*?\*/']
 	replace_text_list = ['\n', '\n', ' ', '\n']
 	replace_list = zip(pattern_list, replace_text_list)
@@ -185,8 +185,12 @@ def getSketchFolderPathFromSketchbook(file_path):
 	sketchbook_root = const.settings.get('sketchbook_root')
 	file_path = file_path.replace(sketchbook_root, '')
 	file_path = file_path[1:]
-	folder = file_path.split(os.path.sep)[0]
-	folder_path = os.path.join(sketchbook_root, folder)
+	info_list = file_path.split(os.path.sep)
+	if len(info_list) > 1:
+		folder = info_list[0]
+		folder_path = os.path.join(sketchbook_root, folder)
+	else:
+		folder_path = sketchbook_root
 	return folder_path
 
 def hasMainSketchInFolder(folder_path):
