@@ -38,7 +38,7 @@ def genSerialPortList():
 					pass
 	else:
 		if const.sys_platform == 'osx':
-			dev_names = ['tty.*']
+			dev_names = ['tty.*', 'cu.*']
 		else:
 			dev_names = ['ttyACM*', 'ttyUSB*']
 		for dev_name in dev_names:
