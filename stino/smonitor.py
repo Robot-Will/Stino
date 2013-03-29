@@ -38,12 +38,18 @@ def genSerialPortList():
 					pass
 	else:
 		if const.sys_platform == 'osx':
-			dev_names = ['tty.*', 'cu.*']
+			dev_names = ['tty.', 'cu.']
 		else:
-			dev_names = ['ttyACM*', 'ttyUSB*']
-		for dev_name in dev_names:
-			cmd = 'ls /dev/%s' % dev_name
-			serial_port_list += [f.strip() for f in os.popen(cmd).readlines()]
+			dev_names = ['ttyACM', 'ttyUSB']
+		
+		serial_port_list = []
+		dev_path = '/dev'
+		dev_file_list = os.listdir(dev_path)
+		for dev_file in dev_file_list:
+			for dev_name in dev_names:
+				if dev_name in dev_file:
+					dev_file_path = os.path.join(dev_path, dev_file)
+					serial_port_list.append(dev_file_path)
 	return serial_port_list
 
 def isSerialPortAvailable(serial_port):
