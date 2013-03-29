@@ -461,7 +461,7 @@ class Compilation:
 		display_text = 'Gathering compilation infomation...\n'
 		msg = self.language.translate(display_text)
 		self.output_panel.addText(msg)
-		self.postCompilationProcess()
+		self.preCompilationProcess()
 		if self.is_run_cmd:
 			display_text = 'Start compilation...\n'
 			msg = self.language.translate(display_text)
@@ -469,13 +469,14 @@ class Compilation:
 			self.runCompile()
 		self.is_finished = True
 
-	def postCompilationProcess(self):
+	def preCompilationProcess(self):
 		(main_src_number, self.main_src_path) = self.genMainSrcFileInfo()
 		if main_src_number == 0:
 			self.error_code = 2
 			display_text = 'Error: No main source file was found. A main source file should contain setup() and loop() functions.\n'
 			msg = self.language.translate(display_text)
 			self.output_panel.addText(msg)
+			self.is_run_cmd = False
 			self.is_finished = True
 		elif main_src_number > 1:
 			self.error_code = 3
@@ -483,6 +484,7 @@ class Compilation:
 			msg = self.language.translate(display_text)
 			msg = msg.replace('{1}', '%d' % main_src_number)
 			self.output_panel.addText(msg)
+			self.is_run_cmd = False
 			self.is_finished = True
 		else:
 			self.checkBuildPath()
@@ -887,10 +889,20 @@ class Compilation:
 			self.output_panel.addText(msg)
 			sublime.set_timeout(self.TurnFullCompilationOff, 0)
 
+		self.removeBuildSourceFiles()
+
 	def TurnFullCompilationOff(self):
 		const.settings.set('full_compilation', False)
 		const.save_settings()
 		self.menu.commandUpdate()
+
+	def removeBuildSourceFiles(self):
+		file_list = osfile.listDir(self.build_path)
+		for cur_file in file_list:
+			cur_file_ext = os.path.splitext(cur_file)[1]
+			if cur_file_ext in src.src_ext_list or cur_file_ext in src.header_ext_list:
+				cur_file_path = os.path.join(self.build_path, cur_file)
+				os.remove(cur_file_path)
 
 	def getHexFilePath(self):
 		return self.hex_file_path
