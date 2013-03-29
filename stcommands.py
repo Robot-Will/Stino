@@ -539,6 +539,7 @@ class ToggleVerifyCodeCommand(sublime_plugin.WindowCommand):
 
 class AutoFormatCommand(sublime_plugin.WindowCommand):
 	def run(self):
+		self.window.run_command('reindent', {'single_line': False})
 		display_text = 'Parsing C++ source files is difficult and I do not finish it yet.\n'
 		msg = stino.cur_language.translate(display_text)
 		stino.log_panel.addText(msg)
