@@ -286,14 +286,8 @@ def genCommandArgs(command):
 		command = command.replace('/"', '"')
 		command = command.replace('/', os.path.sep)
 		std_args = '"' + command + '"'
-	elif const.sys_platform == 'osx':
-		std_args = command
 	else:
-		args = shlex.split(command)
-		std_args = []
-		for arg in args:
-			arg = arg.replace(' ', '\ ')
-			std_args.append(arg)
+		std_args = command
 	return std_args
 
 def getSizeInfo(size_text):
