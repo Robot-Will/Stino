@@ -79,8 +79,10 @@ class Language:
 	def genDefaultTransDict(self):
 		self.trans_dict = {}
 
-		pattern_text = r'%\([\S\s]+?\)s'
-		display_pattern_text = r"display_text\s*?=\s*?'[\S\s]+?'"
+		pattern_text = r'%\(([\S\s]+?)\)s'
+		pattern = re.compile(pattern_text)
+		display_pattern_text = r"display_text\s*?=\s*?'([\S\s]+?)'"
+		display_pattern = re.compile(display_pattern_text)
 
 		plugin_root = const.plugin_root
 		script_root = const.script_root
@@ -94,16 +96,13 @@ class Language:
 					or (os.path.splitext(cur_file)[1] == '.py'):
 					cur_file_path = os.path.join(cur_dir, cur_file)
 					text = osfile.readFileText(cur_file_path)
-					key_list = re.findall(pattern_text, text)
+					key_list = pattern.findall(text)
 					for key in key_list:
-						key = key[2:-2]
 						if not key in self.trans_dict:
 							value = key.replace('_', ' ')
 							self.trans_dict[key] = value
-					key_list = re.findall(display_pattern_text, text)
+					key_list = display_pattern.findall(text)
 					for key in key_list:
-						index = key.index("'")
-						key = key[index+1:-1]
 						if not key in self.trans_dict:
 							self.trans_dict[key] = key
 

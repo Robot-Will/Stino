@@ -31,15 +31,22 @@ def getTextFromSketch(sketch):
 			sketch_text = sketch
 	return sketch_text
 
+def removeComments(src_text):
+	pattern_list = []
+	pattern_list += [r"'.'"] # single-quoted character
+	pattern_list += [r'"(?:[^"\\"]|\\.)*?"'] # double-quoted string
+	pattern_list += [r'//.*?$'] # single-line comment
+	pattern_list += [r'/\*.*?\*/'] # multi-line comment r'/\*[^*]*(?:\*(?!/)[^*]*)*\*/'
+	pattern_list += [r'^\s*#.*?$'] # pre-processor directive
+	for pattern_text in pattern_list:
+		pattern = re.compile(pattern_text, re.M|re.S)
+		src_text = pattern.sub('', src_text)
+	return src_text
+
 def genSimpleSrcText(src_text):
 	simple_src_text = ''
-
-	pattern_list = [r'//[\S\s]*?\n', r'/\*[\S\s]*?\*/']
-	replace_text_list = ['\n', '\n', ' ', '\n']
-	replace_list = zip(pattern_list, replace_text_list)
-	for (pattern_text, replace_text) in replace_list:
-		src_text = re.sub(pattern_text, replace_text, src_text)
-
+	src_text = removeComments(src_text)
+	
 	src_text = src_text.replace('{', '\n{\n')
 	src_text = src_text.replace('}', '\n}\n')
 	src_lines = utils.convertTextToLines(src_text)
@@ -82,6 +89,7 @@ def regulariseFunctionName(function_name):
 	return function_name
 
 def regulariseFuctionText(function_text):
+	print function_text
 	text = function_text.split(')')[-2]
 	if '(' in text:
 		text_list = text.split('(')
@@ -95,15 +103,14 @@ def regulariseFuctionText(function_text):
 	return function_text
 
 def genSrcDeclarationList(simple_src_text):
-	pattern_text = r'[\w*]+?\s+?[\w]+?\s*?\([\w\s,=*]*?\)\s*?;'
+	pattern_text = r'[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*;)'
 	declaration_list = re.findall(pattern_text, simple_src_text)
-	src_declaration_list = [declaration[:-1].strip() for declaration in declaration_list]
-	src_declaration_list = [regulariseFuctionText(declaration) for declaration in src_declaration_list]
+	src_declaration_list = [regulariseFuctionText(declaration) for declaration in declaration_list]
 	return src_declaration_list
 
 def genSrcFunctionList(simple_src_text):
 	src_function_list = []
-	pattern_text = r'[\w*]+?\s+?[\w]+?\s*?\([\w\s,=*]*?\)\s*?\{ }'
+	pattern_text = r'[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*\{)'
 	function_text_list = re.findall(pattern_text, simple_src_text)
 	for function_text in function_text_list:
 		function = regulariseFuctionText(function_text)
@@ -113,9 +120,13 @@ def genSrcFunctionList(simple_src_text):
 
 def isMainSrcText(src_text):
 	state = False
-	simple_src_text = genSimpleSrcText(src_text)
-	src_function_list = genSrcFunctionList(simple_src_text)
-	if 'void setup ()' in src_function_list and 'void loop ()' in src_function_list:
+	pattern_text = r'void\s+?setup\(\s*?\)(?=\s*\{)'
+	setup_pattern = re.compile(pattern_text)
+	setup_match = setup_pattern.search(src_text)
+	pattern_text = r'void\s+?loop\(\s*?\)(?=\s*\{)'
+	loop_pattern = re.compile(pattern_text)
+	loop_match = loop_pattern.search(src_text)
+	if setup_match and loop_match:
 		state = True
 	return state
 
@@ -133,8 +144,8 @@ def isSketch(sketch):
 	
 	if sketch_ext in src_ext_list or sketch_ext in header_ext_list:
 		state = True
-	else:
-		state = isMainSketch(sketch)
+	# else:
+	# 	state = isMainSketch(sketch)
 	return state
 
 def isMainSketch(sketch):
@@ -232,14 +243,8 @@ def getSketchNameFromFolder(sketch_folder_path):
 	return sketch_name
 
 def genHeaderListFromSketchText(sketch_text):
-	header_list = []
-	simple_src_text = genSimpleSrcText(sketch_text)
-	pattern_text = r'#include\s+?["<]\S+?[>"]'
-	include_header_list = re.findall(pattern_text, simple_src_text)
-	for include_header in include_header_list:
-		header = include_header.replace('#include', '').strip()
-		header = header[1:-1]
-		header_list.append(header)
+	pattern_text = r'#include\s+?["<](\S+?)[>"]'
+	header_list = re.findall(pattern_text, sketch_text)
 	return header_list
 
 def genHeaderListFromSketch(sketch):

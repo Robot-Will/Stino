@@ -30,6 +30,13 @@ if sys_language:
 else:
 	sys_language = 'en'
 
+# Stino plugin root directory
+plugin_root = utils.convertAsciiToUtf8(os.getcwd())
+script_root = os.path.join(plugin_root, 'stino')
+template_root = os.path.join(plugin_root, 'template')
+language_root = os.path.join(plugin_root, 'language')
+compilation_script_root = os.path.join(plugin_root, 'compilation')
+
 # Stino settings file
 # $packages/User/Stino.sublime-settings
 settings_file = 'Stino.sublime-settings'
@@ -37,10 +44,3 @@ settings = sublime.load_settings(settings_file)
 
 def save_settings():
 	sublime.save_settings(settings_file)
-
-# Stino plugin root directory
-plugin_root = utils.convertAsciiToUtf8(os.getcwd())
-script_root = os.path.join(plugin_root, 'stino')
-template_root = os.path.join(plugin_root, 'template')
-language_root = os.path.join(plugin_root, 'language')
-compilation_script_root = os.path.join(plugin_root, 'compilation')
