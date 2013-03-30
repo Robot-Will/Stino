@@ -33,10 +33,10 @@ def getTextFromSketch(sketch):
 
 def removeComments(src_text):
 	pattern_list = []
-	pattern_list += [r"'.'"] # single-quoted character
-	pattern_list += [r'"(?:[^"\\"]|\\.)*?"'] # double-quoted string
 	pattern_list += [r'//.*?$'] # single-line comment
 	pattern_list += [r'/\*.*?\*/'] # multi-line comment r'/\*[^*]*(?:\*(?!/)[^*]*)*\*/'
+	pattern_list += [r"'.'"] # single-quoted character
+	pattern_list += [r'"(?:[^"\\"]|\\.)*?"'] # double-quoted string
 	pattern_list += [r'^\s*#.*?$'] # pre-processor directive
 	for pattern_text in pattern_list:
 		pattern = re.compile(pattern_text, re.M|re.S)
