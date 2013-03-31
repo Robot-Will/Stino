@@ -379,7 +379,8 @@ class Compilation:
 		self.arduino_info = arduino_info
 		self.menu = menu
 		self.is_run_cmd = is_run_cmd
-		self.sketch_folder_path = src.getSketchFolderPath(file_path)
+		# self.sketch_folder_path = src.getSketchFolderPath(file_path)
+		self.sketch_folder_path = os.path.split(file_path)[0]
 		self.sketch_name = src.getSketchNameFromFolder(self.sketch_folder_path)
 		now_time = datetime.datetime.now()
 		time_str = str(now_time.microsecond)
@@ -488,6 +489,7 @@ class Compilation:
 			self.is_finished = True
 		else:
 			self.checkBuildPath()
+			self.header_path_list = self.genHeaderPathList()
 			self.info_dict = self.genInfoDict()
 			self.core_src_path_list = self.genCoreSrcPathList()
 			self.completeInfoDict()
@@ -501,7 +503,8 @@ class Compilation:
 			self.runCompilationCommands()
 
 	def checkBuildPath(self):
-		self.build_path = os.path.join(self.sketchbook_root, 'build')
+		document_root = os.path.split(self.arduino_info.getDefaultSketchbookRoot())[0]
+		self.build_path = os.path.join(document_root, 'Arduino_Build')
 		self.build_path = os.path.join(self.build_path, self.sketch_name)
 		self.build_path =self.build_path.replace(os.path.sep, '/')
 		self.base_info_dict['build.path'] = self.build_path
@@ -628,9 +631,12 @@ class Compilation:
 		return (platform_info_key_list, platform_info_dict)
 
 	def genSketchSrcPathList(self):
-		os.chdir(self.sketch_folder_path)
-		sketch_src_path_list = findSrcFiles('.')
+		sketch_src_path_list = src.findSrcFileList(self.sketch_folder_path)
 		return sketch_src_path_list
+
+	def genHeaderPathList(self):
+		header_path_list = src.findHeaderFileList(self.sketch_folder_path)
+		return header_path_list
 
 	def genCoreSrcPathList(self):
 		core_folder = self.info_dict['build.core']
@@ -641,24 +647,27 @@ class Compilation:
 
 	def genMainSrcFileInfo(self):
 		self.sketch_src_path_list = self.genSketchSrcPathList()
-		os.chdir(self.sketch_folder_path)
 		(main_src_number, main_src_path) = findMainSrcFile(self.sketch_src_path_list)
 		return (main_src_number, main_src_path)
 
 	def genHeaderList(self):
 		src_header_list = []
-		os.chdir(self.sketch_folder_path)
 		for sketch_src_path in self.sketch_src_path_list:
 			src_text = osfile.readFileText(sketch_src_path)
 			header_list = src.genHeaderListFromSketchText(src_text)
+			print sketch_src_path
+			print header_list
 			src_header_list += header_list
 		src_header_list = utils.removeRepeatItemFromList(src_header_list)
 		self.src_header_list = src_header_list
+		print 'header_list'
+		print self.src_header_list
 
 	def genIncludeLibraryPath(self):
 		self.genHeaderList()
 
-		include_library_path_list = ['.', self.core_folder_path]
+		# include_library_path_list = ['.', self.core_folder_path]
+		include_library_path_list = [self.build_path, self.core_folder_path]
 		if 'build.variant' in self.info_dict:
 			include_library_path_list.append(self.variant_folder_path)
 
@@ -692,22 +701,46 @@ class Compilation:
 			self.info_dict[pattern] = command
 
 	def genBuildMainSrcFile(self):
-		filename = os.path.split(self.main_src_path)[1]
-		filename += '.cpp'
-		self.build_main_src_path = os.path.join(self.build_path, filename)
-		self.build_main_src_path = self.build_main_src_path.replace(os.path.sep, '/')
-		sketch_text = osfile.readFileText(self.main_src_path)
+		# filename = os.path.split(self.main_src_path)[1]
+		# filename += '.cpp'
+		# self.build_main_src_path = os.path.join(self.build_path, filename)
+		# self.build_main_src_path = self.build_main_src_path.replace(os.path.sep, '/')
+		filename = '%s.cpp' % self.sketch_name
+		self.build_src_path = os.path.join(self.build_path, filename)
+		self.build_src_path = self.build_src_path.replace(os.path.sep, '/')
+
+		# sketch_text = osfile.readFileText(self.main_src_path)
+		sketch_text = ''
+		sketch_text += '// %s\n' % self.main_src_path
+		sketch_text += osfile.readFileText(self.main_src_path)
+		sketch_src_path_list = self.sketch_src_path_list
+		sketch_src_path_list.remove(self.main_src_path)
+		for sketch_src_path in sketch_src_path_list:
+			sketch_text += '\n'
+			sketch_text += '// %s\n' % sketch_src_path
+			sketch_text += osfile.readFileText(sketch_src_path)
+
 		simple_sketch_text = src.genSimpleSrcText(sketch_text)
 		declaration_list = src.genSrcDeclarationList(simple_sketch_text)
 		function_list = src.genSrcFunctionList(simple_sketch_text)
-		function_list.remove('void setup ()')
-		function_list.remove('void loop ()')
+		print 'declaration list'
+		print declaration_list
+		print 'function list'
+		print function_list
+
+		main_function_list = ['void setup ()', 'void setup (void)', 'void loop ()', 'void loop (void)']
+		for main_function in main_function_list:
+			if main_function in function_list:
+				function_list.remove(main_function)
+		print function_list
 		
 		new_declaration_list = []
 		for function in function_list:
 			if not function in declaration_list:
 				if not function in new_declaration_list:
 					new_declaration_list.append(function)
+		print 'new declaration list'
+		print new_declaration_list
 
 		header_text = '#include <Arduino.h>\n'
 		for declaration in new_declaration_list:
@@ -715,10 +748,14 @@ class Compilation:
 			header_text += ';\n'
 
 		build_src_text = header_text + sketch_text
-		osfile.writeFile(self.build_main_src_path, build_src_text)
+		osfile.writeFile(self.build_src_path, build_src_text)
 
-		self.sketch_src_path_list.remove(self.main_src_path)
-		self.sketch_src_path_list.append(self.build_main_src_path)
+		# self.sketch_src_path_list.remove(self.main_src_path)
+		# self.sketch_src_path_list.append(self.build_main_src_path)
+		self.sketch_src_path_list = [self.build_src_path]
+
+		for header_path in self.header_path_list:
+			osfile.copyFile(header_path, self.build_path)
 
 	def genLibrarySrcPathList(self):
 		library_src_path_list = []
@@ -824,6 +861,9 @@ class Compilation:
 		(hex_file_path_list, hex_command_list) = self.genHexCommandInfo()
 		size_command_list = self.genSizeCommandList()
 
+		print sketch_obj_path_list
+		print sketch_command_list
+
 		ar_file_path = ar_file_path_list[0]
 		if not os.path.isfile(ar_file_path):
 			self.full_compilation = True
@@ -858,7 +898,6 @@ class Compilation:
 
 	def runCompilationCommands(self):
 		termination_with_error = False
-		os.chdir(self.sketch_folder_path)
 		compilation_info = zip(self.created_file_list, self.compilation_command_list)
 		for (created_file, compilation_command) in compilation_info:
 			isSizeCommand = False
@@ -889,7 +928,7 @@ class Compilation:
 			self.output_panel.addText(msg)
 			sublime.set_timeout(self.TurnFullCompilationOff, 0)
 
-		self.removeBuildSourceFiles()
+		# self.removeBuildSourceFiles()
 
 	def TurnFullCompilationOff(self):
 		const.settings.set('full_compilation', False)

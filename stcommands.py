@@ -202,7 +202,8 @@ class ShowSketchFolderCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		filename = self.window.active_view().file_name()
 		if filename:
-			sketch_folder_path = stino.src.getSketchFolderPath(filename)
+			# sketch_folder_path = stino.src.getSketchFolderPath(filename)
+			sketch_folder_path = os.path.split(filename)[0]
 			self.window.run_command('show_file_explorer_panel', {'top_path_list':[sketch_folder_path], \
 				'condition_mod':'osfile', 'condition_func':'isFile', 'function_mod':'osfile', \
 				'function_func':'openFile'})

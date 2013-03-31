@@ -7,6 +7,30 @@ import os
 from stino import utils
 from stino import const
 
+def isPlainTextFile(file_path):
+	state = False
+	opened_file = open(file_path, 'rb')
+	text = opened_file.read(512)
+	opened_file.close()
+	
+	length = len(text)
+	if length > 0:
+		white_list_char_count = 0
+		black_list_char_count = 0
+		for character in text:
+			char_value = ord(character)
+			if (char_value == 9) or (char_value == 10) or (char_value == 13) or \
+				((char_value >= 32) and (char_value <= 255)):
+				white_list_char_count += 1
+			elif (char_value <= 6) or ((char_value >= 14) and (char_value <= 31)):
+				black_list_char_count += 1
+		if black_list_char_count == 0:
+			if white_list_char_count > 0:
+				state = True
+	else:
+		state = True
+	return state
+
 def getWinVolumeList():
 	vol_list = []
 	for label in xrange(67, 90):
@@ -187,11 +211,20 @@ def isFile(path):
 	return os.path.isfile(path)
 
 def openFile(file_path):
-	window = sublime.active_window()
-	window.open_file(file_path)
+	if isPlainTextFile(file_path):
+		window = sublime.active_window()
+		window.open_file(file_path)
+	else:
+		os.popen(file_path)
 
 def findAllFiles(path = '.'):
 	file_path_list = []
 	for (cur_path, sub_dirs, files) in os.walk(path):
 		file_path_list += [os.path.join(cur_path, cur_file) for cur_file in files]
 	return file_path_list
+
+def copyFile(src_file_path, des_dir_path):
+	src_filename = os.path.split(src_file_path)[1]
+	des_file_path = os.path.join(des_dir_path, src_filename)
+	text = readFileText(src_file_path)
+	writeFile(des_file_path, text)
