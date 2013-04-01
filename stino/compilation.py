@@ -81,8 +81,6 @@ def findMainSrcFile(src_path_list):
 		if src.isMainSrcText(src_text):
 			main_src_path = src_path
 			main_src_number += 1
-	if not main_src_path:
-		main_src_path = src_path_list[0]
 	return (main_src_number, main_src_path)
 
 def getPlatformFilePath(platform, board):
@@ -447,11 +445,11 @@ def genInsertionHeaderFileList(src_header_list, header_path_list):
 			header_file_list.append(header_file) 
 	return header_file_list
 
-def insertArduinoHeader(main_src_text, arduino_version, header_file_list, declaration_list):
+def genInsertionText(arduino_version, header_file_list, declaration_list):
 	if arduino_version < 100:
-		header_text = '\n#include <WProgram.h>\n'
+		header_text = '#include <WProgram.h>\n'
 	else:
-		header_text = '\n#include <Arduino.h>\n'
+		header_text = '#include <Arduino.h>\n'
 
 	for header_file in header_file_list:
 		header_text += '#include "%s"\n' % header_file
@@ -462,24 +460,8 @@ def insertArduinoHeader(main_src_text, arduino_version, header_file_list, declar
 
 	insertion_text = header_text + declaration_text
 	insertion_text += '\n'
+	return insertion_text
 	
-	# postition = src.getHeaderInsertionPosition(main_src_text)
-	postition = 0
-
-	if postition == 0:
-		upper_text = ''
-		lower_text = main_src_text
-	else:
-		if main_src_text[postition+1] == '#':
-			index = postition + 1
-		else:
-			index = postition
-		upper_text = main_src_text[:index]
-		lower_text = main_src_text[index:]
-	main_src_text = upper_text + insertion_text + lower_text
-	return main_src_text
-	
-
 def insertDelarationList(src_text, declaration_list):
 	declaration_text = '\n'
 	for declaration in declaration_list:
@@ -491,11 +473,12 @@ def insertDelarationList(src_text, declaration_list):
 	src_text = upper_text + declaration_text + lower_text
 	return src_text
 
-def genBuildSrcText(main_build_src_text, src_path_list, main_src_path):
-	build_src_text = '// %s\n' % main_src_path
-	build_src_text += main_build_src_text
+def genBuildSrcText(insertion_src_text, src_path_list, main_src_path):
+	if main_src_path:
+		src_path_list.remove(main_src_path)
+		src_path_list.append(main_src_path)
 
-	src_path_list.remove(main_src_path)
+	build_src_text = insertion_src_text
 	for src_path in src_path_list:
 		build_src_text += '\n// %s\n' % src_path
 		build_src_text += osfile.readFileText(src_path)
@@ -852,8 +835,8 @@ class Compilation:
 		main_src_text = osfile.readFileText(self.main_src_path)
 		insertion_header_file_list = genInsertionHeaderFileList(self.src_header_list, self.header_path_list)
 		insertion_declaration_list = genInsertionDelarationList(self.sketch_src_path_list)
-		main_build_src_text = insertArduinoHeader(main_src_text, arduino_version, insertion_header_file_list, insertion_declaration_list)
-		build_src_text = genBuildSrcText(main_build_src_text, self.sketch_src_path_list, self.main_src_path)
+		insertion_src_text = genInsertionText(arduino_version, insertion_header_file_list, insertion_declaration_list)
+		build_src_text = genBuildSrcText(insertion_src_text, self.sketch_src_path_list, self.main_src_path)
 		
 		self.build_src_path = self.getBuildSketchPath()
 		osfile.writeFile(self.build_src_path, build_src_text)
