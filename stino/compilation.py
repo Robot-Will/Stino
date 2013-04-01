@@ -373,6 +373,111 @@ def getNewSerialPort(serial_port, serial_port_list):
 	new_serial_port = new_serial_port_list[0]
 	return new_serial_port
 
+def insertArduinoHeader(arduino_version, main_src_text):
+	if arduino_version < 100:
+		header_text = '\n#include <WProgram.h>\n'
+	else:
+		header_text = '\n#include <Arduino.h>\n'
+	postition = src.getHeaderInsertionPosition(main_src_text)
+
+	if postition == 0:
+		upper_text = ''
+		lower_text = main_src_text
+	else:
+		if main_src_text[postition+1] == '#':
+			index = postition + 1
+		else:
+			index = postition
+		upper_text = main_src_text[:index]
+		lower_text = main_src_text[index:]
+	main_src_text = upper_text + header_text + lower_text
+	return main_src_text
+	
+def removeMainFunctionsFromList(function_list):
+	main_function_list = ['void setup ()', 'void setup (void)', 'void loop ()', 'void loop (void)']
+	for main_function in main_function_list:
+		if main_function in function_list:
+			function_list.remove(main_function)
+	return function_list
+
+def genInsertionDelarationList(src_path_list):
+	declaration_list = []
+	function_list = []
+	for src_path in src_path_list:
+		src_text = osfile.readFileText(src_path)
+		(header_text, body_text) = src.splitSrcByFisrtFunction(src_text)
+		declaration_list += src.genSrcDeclarationList(header_text)
+		function_list += src.genSrcFunctionList(body_text)
+
+	print 'declaration list'
+	print declaration_list
+	print 'function list'
+	print function_list
+
+	function_list = removeMainFunctionsFromList(function_list)
+	print function_list
+	
+	new_declaration_list = []
+	for function in function_list:
+		if not function in declaration_list:
+			if not function in new_declaration_list:
+				new_declaration_list.append(function)
+	print 'new declaration list'
+	print new_declaration_list
+	return new_declaration_list
+
+def findDeclarationInsertionPosition(src_text):
+	(header_text, body_text) = src.splitSrcByFisrtFunction(src_text)
+
+	pattern_text = r'^\s*?[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*;)'
+	pattern = re.compile(pattern_text, re.M|re.S)
+	match = pattern.search(header_text)
+	if match:
+		first_declaration_text = match.group()
+		index = src_text.index(first_declaration_text)
+	else:
+		pattern_text = r'^\s*#.*?$'
+		pattern = re.compile(pattern_text, re.M|re.S)
+		macro_text_list = pattern.findall(header_text)
+		if macro_text_list:
+			last_macro_text = macro_text_list[-1]
+			index = src_text.index(last_macro_text)
+			length = len(last_macro_text)
+			index += length
+		else:
+			pattern_text = r'/\*.*?\*/'
+			pattern = re.compile(pattern_text, re.M|re.S)
+			match = pattern.search(header_text)
+			if match:
+				fisrt_comment_text = match.group()
+				index = src_text.index(fisrt_comment_text)
+				length = len(fisrt_comment_text)
+				index += length
+			else:
+				index = 0
+	return index
+
+def insertDelarationList(src_text, declaration_list):
+	declaration_text = '\n'
+	for declaration in declaration_list:
+		declaration_text += '%s;\n' % declaration
+	
+	index = findDeclarationInsertionPosition(src_text)
+	upper_text = src_text[:index]
+	lower_text = src_text[index:]
+	src_text = upper_text + declaration_text + lower_text
+	return src_text
+
+def genBuildSrcText(main_build_src_text, src_path_list, main_src_path):
+	build_src_text = '// %s\n' % main_src_path
+	build_src_text += main_build_src_text
+
+	src_path_list.remove(main_src_path)
+	for src_path in src_path_list:
+		build_src_text += '\n// %s\n' % src_path
+		build_src_text += osfile.readFileText(src_path)
+	return build_src_text
+
 class Compilation:
 	def __init__(self, language, arduino_info, menu, file_path, is_run_cmd = True):
 		self.language = language
@@ -490,6 +595,7 @@ class Compilation:
 		else:
 			self.checkBuildPath()
 			self.header_path_list = self.genHeaderPathList()
+			self.copyHeaderSrcFiles()
 			self.info_dict = self.genInfoDict()
 			self.core_src_path_list = self.genCoreSrcPathList()
 			self.completeInfoDict()
@@ -700,60 +806,26 @@ class Compilation:
 			command = command.replace('{includes}', self.includes_text)
 			self.info_dict[pattern] = command
 
-	def genBuildMainSrcFile(self):
-		# filename = os.path.split(self.main_src_path)[1]
-		# filename += '.cpp'
-		# self.build_main_src_path = os.path.join(self.build_path, filename)
-		# self.build_main_src_path = self.build_main_src_path.replace(os.path.sep, '/')
+	def getBuildSketchPath(self):
 		filename = '%s.cpp' % self.sketch_name
-		self.build_src_path = os.path.join(self.build_path, filename)
-		self.build_src_path = self.build_src_path.replace(os.path.sep, '/')
+		build_src_path = os.path.join(self.build_path, filename)
+		build_src_path = build_src_path.replace(os.path.sep, '/')
+		return build_src_path
 
-		# sketch_text = osfile.readFileText(self.main_src_path)
-		sketch_text = ''
-		sketch_text += '// %s\n' % self.main_src_path
-		sketch_text += osfile.readFileText(self.main_src_path)
-		sketch_src_path_list = self.sketch_src_path_list
-		sketch_src_path_list.remove(self.main_src_path)
-		for sketch_src_path in sketch_src_path_list:
-			sketch_text += '\n'
-			sketch_text += '// %s\n' % sketch_src_path
-			sketch_text += osfile.readFileText(sketch_src_path)
-
-		simple_sketch_text = src.genSimpleSrcText(sketch_text)
-		declaration_list = src.genSrcDeclarationList(simple_sketch_text)
-		function_list = src.genSrcFunctionList(simple_sketch_text)
-		print 'declaration list'
-		print declaration_list
-		print 'function list'
-		print function_list
-
-		main_function_list = ['void setup ()', 'void setup (void)', 'void loop ()', 'void loop (void)']
-		for main_function in main_function_list:
-			if main_function in function_list:
-				function_list.remove(main_function)
-		print function_list
+	def genBuildMainSrcFile(self):
+		arduino_version = self.arduino_info.getVersion()
+		main_src_text = osfile.readFileText(self.main_src_path)
+		main_build_src_text = insertArduinoHeader(arduino_version, main_src_text)
+		print 'main_src_text done'
+		insertion_declaration_list = genInsertionDelarationList(self.sketch_src_path_list)
+		main_build_src_text = insertDelarationList(main_build_src_text, insertion_declaration_list)
+		build_src_text = genBuildSrcText(main_build_src_text, self.sketch_src_path_list, self.main_src_path)
 		
-		new_declaration_list = []
-		for function in function_list:
-			if not function in declaration_list:
-				if not function in new_declaration_list:
-					new_declaration_list.append(function)
-		print 'new declaration list'
-		print new_declaration_list
-
-		header_text = '#include <Arduino.h>\n'
-		for declaration in new_declaration_list:
-			header_text += declaration
-			header_text += ';\n'
-
-		build_src_text = header_text + sketch_text
+		self.build_src_path = self.getBuildSketchPath()
 		osfile.writeFile(self.build_src_path, build_src_text)
-
-		# self.sketch_src_path_list.remove(self.main_src_path)
-		# self.sketch_src_path_list.append(self.build_main_src_path)
 		self.sketch_src_path_list = [self.build_src_path]
 
+	def copyHeaderSrcFiles(self):
 		for header_path in self.header_path_list:
 			osfile.copyFile(header_path, self.build_path)
 

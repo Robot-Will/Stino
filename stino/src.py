@@ -97,22 +97,11 @@ def regulariseBlank(text):
 	text = text[:-1]
 	return text
 
-def regulariseFunctionName(function_name):
-	pattern_text = r'\S+'
-	word_list = re.findall(pattern_text, function_name)[-2:]
-
-	function_name = ''
-	for word in word_list:
-		function_name += word
-		function_name += ' '
-	function_name = function_name[:-1]
-	return function_name
-
 def regulariseFuctionText(function_text):
 	function_text = function_text[:-1]
 	text_list = function_text.split('(')
 	function_name = text_list[0].strip()
-	function_name = regulariseFunctionName(function_name)
+	function_name = regulariseBlank(function_name)
 	parameters = text_list[1].strip()
 	parameters = regulariseBlank(parameters)
 	function_text = function_name + ' (' + parameters + ')'
@@ -305,10 +294,25 @@ def getIncludeHeaderText(folder_path, view):
 		include_text = '\n'
 		for include_header in include_header_list:
 			include_text += include_header
-		include_text += '\n'
 	return include_text
 
+def splitSrcByFisrtFunction(src_text):
+	pattern_text = r'^\s*?[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*\{)'
+	pattern = re.compile(pattern_text, re.M|re.S)
+	match = pattern.search(src_text)
+	if match:
+		first_function = match.group()
+		index = src_text.index(first_function)
+		header_text = src_text[:index]
+		body_text = src_text[index:]
+	else:
+		header_text = src_text
+		body_text = ''
+	return (header_text, body_text)
+
 def getHeaderInsertionPosition(text):
+	(header_text, body_text) = splitSrcByFisrtFunction(text)
+
 	pattern_list = []
 	pattern_list += [r'^\s*#include.*?$'] # include
 	pattern_list += [r'^\s*#.*?$'] # pre-processor directive
@@ -318,7 +322,7 @@ def getHeaderInsertionPosition(text):
 	match = None
 	for pattern_text in pattern_list:
 		pattern = re.compile(pattern_text, re.M|re.S)
-		match = pattern.search(text)
+		match = pattern.search(header_text)
 		if match:
 			break
 
@@ -331,7 +335,7 @@ def getHeaderInsertionPosition(text):
 	else:
 		pattern_text = r'/\*.*?\*/'
 		pattern = re.compile(pattern_text, re.M|re.S)
-		match = pattern.search(text)
+		match = pattern.search(header_text)
 		if match:
 			found_text = match.group()
 			length = len(found_text)
@@ -356,3 +360,4 @@ def openExample(path):
 		if cur_file_ext in src_ext_list or cur_file_ext in header_ext_list:
 			cur_file_path = os.path.join(path, cur_file)
 			window.open_file(cur_file_path)
+
