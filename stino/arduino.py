@@ -40,7 +40,7 @@ def convertTextToVersion(version_text):
 	return int(version)
 
 def parseVersionInfo(arduino_root):
-	version = 0
+	version = 1000
 	version_text = 'unknown'
 	lib_path = os.path.join(arduino_root, 'lib')
 	version_file_path = os.path.join(lib_path, 'version.txt')

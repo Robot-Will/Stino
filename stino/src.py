@@ -57,7 +57,7 @@ def removeComments(src_text):
 	pattern_list += [r'/\*.*?\*/'] # multi-line comment r'/\*[^*]*(?:\*(?!/)[^*]*)*\*/'
 	pattern_list += [r"'.'"] # single-quoted character
 	pattern_list += [r'"(?:[^"\\"]|\\.)*?"'] # double-quoted string
-	pattern_list += [r'^\s*#.*?$'] # pre-processor directive
+	pattern_list += [r'^\s*?#.*?$'] # pre-processor directive
 	for pattern_text in pattern_list:
 		pattern = re.compile(pattern_text, re.M|re.S)
 		src_text = pattern.sub('', src_text)
@@ -108,7 +108,7 @@ def regulariseFuctionText(function_text):
 	return function_text
 
 def genSrcDeclarationList(simple_src_text):
-	pattern_text = r'^\s*?[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*;)'
+	pattern_text = r'^\s*?[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*?;)'
 	pattern = re.compile(pattern_text, re.M|re.S)
 	declaration_list = pattern.findall(simple_src_text)
 	src_declaration_list = [regulariseFuctionText(declaration) for declaration in declaration_list]
@@ -117,7 +117,7 @@ def genSrcDeclarationList(simple_src_text):
 
 def genSrcFunctionList(simple_src_text):
 	src_function_list = []
-	pattern_text = r'^\s*?[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*\{)'
+	pattern_text = r'^\s*?[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*?\{)'
 	pattern = re.compile(pattern_text, re.M|re.S)
 	function_text_list = pattern.findall(simple_src_text)
 	for function_text in function_text_list:
@@ -128,22 +128,22 @@ def genSrcFunctionList(simple_src_text):
 
 def isMainSrcText(src_text):
 	state = False
-	pattern_list = [r'void\s+?setup\(\s*?\)(?=\s*\{)']
-	pattern_list += [r'void\s+?setup\(\s*?void\s*?\)(?=\s*\{)']
+	pattern_list = [r'^\s*?void\s+?setup\(\s*?\)(?=\s*?\{)']
+	pattern_list += [r'^\s*?void\s+?setup\(\s*?void\s*?\)(?=\s*?\{)']
 	
 	setup_match = None
 	for pattern_text in pattern_list:
-		setup_pattern = re.compile(pattern_text)
+		setup_pattern = re.compile(pattern_text, re.M|re.S)
 		setup_match = setup_pattern.search(src_text)
 		if setup_match:
 			break
 
-	pattern_list = [r'void\s+?loop\(\s*?\)(?=\s*\{)']
-	pattern_list += [r'void\s+?loop\(\s*?void\s*?\)(?=\s*\{)']
+	pattern_list = [r'^\s*?void\s+?loop\(\s*?\)(?=\s*?\{)']
+	pattern_list += [r'^\s*?void\s+?loop\(\s*?void\s*?\)(?=\s*?\{)']
 
 	loop_match = None
 	for pattern_text in pattern_list:
-		loop_pattern = re.compile(pattern_text)
+		loop_pattern = re.compile(pattern_text, re.M|re.S)
 		loop_match = loop_pattern.search(src_text)
 		if loop_match:
 			break
@@ -258,7 +258,7 @@ def getSketchNameFromFolder(sketch_folder_path):
 	return sketch_name
 
 def genHeaderListFromSketchText(sketch_text):
-	pattern_text = r'^\s*#include\s+?["<](\S+?)[>"]'
+	pattern_text = r'^\s*?#include\s+?["<](\S+?)[>"]'
 	pattern = re.compile(pattern_text, re.M|re.S)
 	header_list = pattern.findall(sketch_text)
 	return header_list
@@ -297,7 +297,7 @@ def getIncludeHeaderText(folder_path, view):
 	return include_text
 
 def splitSrcByFisrtFunction(src_text):
-	pattern_text = r'^\s*?[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*\{)'
+	pattern_text = r'^\s*?[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*?\{)'
 	pattern = re.compile(pattern_text, re.M|re.S)
 	match = pattern.search(src_text)
 	if match:
@@ -314,8 +314,8 @@ def getHeaderInsertionPosition(text):
 	(header_text, body_text) = splitSrcByFisrtFunction(text)
 
 	pattern_list = []
-	pattern_list += [r'^\s*#include.*?$'] # include
-	pattern_list += [r'^\s*#.*?$'] # pre-processor directive
+	pattern_list += [r'^\s*?#include.*?$'] # include
+	pattern_list += [r'^\s*?#.*?$'] # pre-processor directive
 	# pattern_list += [r'[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*;)'] # delaration
 	# pattern_list += [r'[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*\{)'] # function
 	

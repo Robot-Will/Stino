@@ -81,6 +81,8 @@ def findMainSrcFile(src_path_list):
 		if src.isMainSrcText(src_text):
 			main_src_path = src_path
 			main_src_number += 1
+	if not main_src_path:
+		main_src_path = src_path_list[0]
 	return (main_src_number, main_src_path)
 
 def getPlatformFilePath(platform, board):
@@ -373,26 +375,6 @@ def getNewSerialPort(serial_port, serial_port_list):
 	new_serial_port = new_serial_port_list[0]
 	return new_serial_port
 
-def insertArduinoHeader(arduino_version, main_src_text):
-	if arduino_version < 100:
-		header_text = '\n#include <WProgram.h>\n'
-	else:
-		header_text = '\n#include <Arduino.h>\n'
-	postition = src.getHeaderInsertionPosition(main_src_text)
-
-	if postition == 0:
-		upper_text = ''
-		lower_text = main_src_text
-	else:
-		if main_src_text[postition+1] == '#':
-			index = postition + 1
-		else:
-			index = postition
-		upper_text = main_src_text[:index]
-		lower_text = main_src_text[index:]
-	main_src_text = upper_text + header_text + lower_text
-	return main_src_text
-	
 def removeMainFunctionsFromList(function_list):
 	main_function_list = ['void setup ()', 'void setup (void)', 'void loop ()', 'void loop (void)']
 	for main_function in main_function_list:
@@ -456,6 +438,47 @@ def findDeclarationInsertionPosition(src_text):
 			else:
 				index = 0
 	return index
+
+def genInsertionHeaderFileList(src_header_list, header_path_list):
+	header_file_list = []
+	for header_path in header_path_list:
+		header_file = os.path.split(header_path)[1]
+		if not header_file in src_header_list:
+			header_file_list.append(header_file) 
+	return header_file_list
+
+def insertArduinoHeader(main_src_text, arduino_version, header_file_list, declaration_list):
+	if arduino_version < 100:
+		header_text = '\n#include <WProgram.h>\n'
+	else:
+		header_text = '\n#include <Arduino.h>\n'
+
+	for header_file in header_file_list:
+		header_text += '#include "%s"\n' % header_file
+
+	declaration_text = '\n'
+	for declaration in declaration_list:
+		declaration_text += '%s;\n' % declaration
+
+	insertion_text = header_text + declaration_text
+	insertion_text += '\n'
+	
+	# postition = src.getHeaderInsertionPosition(main_src_text)
+	postition = 0
+
+	if postition == 0:
+		upper_text = ''
+		lower_text = main_src_text
+	else:
+		if main_src_text[postition+1] == '#':
+			index = postition + 1
+		else:
+			index = postition
+		upper_text = main_src_text[:index]
+		lower_text = main_src_text[index:]
+	main_src_text = upper_text + insertion_text + lower_text
+	return main_src_text
+	
 
 def insertDelarationList(src_text, declaration_list):
 	declaration_text = '\n'
@@ -577,31 +600,31 @@ class Compilation:
 
 	def preCompilationProcess(self):
 		(main_src_number, self.main_src_path) = self.genMainSrcFileInfo()
-		if main_src_number == 0:
-			self.error_code = 2
-			display_text = 'Error: No main source file was found. A main source file should contain setup() and loop() functions.\n'
-			msg = self.language.translate(display_text)
-			self.output_panel.addText(msg)
-			self.is_run_cmd = False
-			self.is_finished = True
-		elif main_src_number > 1:
-			self.error_code = 3
-			display_text = 'Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n'
-			msg = self.language.translate(display_text)
-			msg = msg.replace('{1}', '%d' % main_src_number)
-			self.output_panel.addText(msg)
-			self.is_run_cmd = False
-			self.is_finished = True
-		else:
-			self.checkBuildPath()
-			self.header_path_list = self.genHeaderPathList()
-			self.copyHeaderSrcFiles()
-			self.info_dict = self.genInfoDict()
-			self.core_src_path_list = self.genCoreSrcPathList()
-			self.completeInfoDict()
-			self.genBuildMainSrcFile()
-			self.library_src_path_list = self.genLibrarySrcPathList()
-			self.genCompilationCommandList()
+		# if main_src_number == 0:
+		# 	self.error_code = 2
+		# 	display_text = 'Error: No main source file was found. A main source file should contain setup() and loop() functions.\n'
+		# 	msg = self.language.translate(display_text)
+		# 	self.output_panel.addText(msg)
+		# 	self.is_run_cmd = False
+		# 	self.is_finished = True
+		# elif main_src_number > 1:
+		# 	self.error_code = 3
+		# 	display_text = 'Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n'
+		# 	msg = self.language.translate(display_text)
+		# 	msg = msg.replace('{1}', '%d' % main_src_number)
+		# 	self.output_panel.addText(msg)
+		# 	self.is_run_cmd = False
+		# 	self.is_finished = True
+		# else:
+		self.checkBuildPath()
+		self.header_path_list = self.genHeaderPathList()
+		self.copyHeaderSrcFiles()
+		self.info_dict = self.genInfoDict()
+		self.core_src_path_list = self.genCoreSrcPathList()
+		self.completeInfoDict()
+		self.genBuildMainSrcFile()
+		self.library_src_path_list = self.genLibrarySrcPathList()
+		self.genCompilationCommandList()
 
 	def runCompile(self):
 		if self.error_code == 0:
@@ -786,8 +809,20 @@ class Compilation:
 					library_path = library_path.replace(os.path.sep, '/')
 					lib_path_list.append(library_path)
 					break
+
+		lib_sub_path_list = []
+		for lib_path in lib_path_list:
+			folder_list = osfile.listDir(lib_path, with_files = False)
+			for folder in folder_list:
+				if folder == 'examples':
+					continue
+				folder_path = os.path.join(lib_path, folder)
+				folder_path = folder_path.replace(os.path.sep, '/')
+				lib_sub_path_list.append(folder_path)
+		print 'sub folder'
+		print lib_sub_path_list
 		self.lib_path_list = lib_path_list
-		self.include_library_path_list = include_library_path_list + lib_path_list
+		self.include_library_path_list = include_library_path_list + lib_path_list + lib_sub_path_list
 
 	def genIncludesText(self):
 		self.genIncludeLibraryPath()
@@ -815,10 +850,9 @@ class Compilation:
 	def genBuildMainSrcFile(self):
 		arduino_version = self.arduino_info.getVersion()
 		main_src_text = osfile.readFileText(self.main_src_path)
-		main_build_src_text = insertArduinoHeader(arduino_version, main_src_text)
-		print 'main_src_text done'
+		insertion_header_file_list = genInsertionHeaderFileList(self.src_header_list, self.header_path_list)
 		insertion_declaration_list = genInsertionDelarationList(self.sketch_src_path_list)
-		main_build_src_text = insertDelarationList(main_build_src_text, insertion_declaration_list)
+		main_build_src_text = insertArduinoHeader(main_src_text, arduino_version, insertion_header_file_list, insertion_declaration_list)
 		build_src_text = genBuildSrcText(main_build_src_text, self.sketch_src_path_list, self.main_src_path)
 		
 		self.build_src_path = self.getBuildSketchPath()
