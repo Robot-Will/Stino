@@ -21,22 +21,40 @@ def isArduinoRoot(path):
 	return state
 
 def convertTextToVersion(version_text):
-	version = 0
 	if not '.' in version_text:
 		version = int(version_text)
 	else:
-		number_list = version_text.split('.')
-		power = 0
-		for number in number_list:
-			for n in number:
-				if not (n in '0123456789'):
-					index = number.index(n)
-					number = number[:index]
-					break
-			number = int(number)
-			version += number * (10 ** power)
-			power -= 1
-		version *= 100
+		number_patter_text = r'[\d.]+'
+		number_pattern = re.compile(number_patter_text)
+		match = number_pattern.search(version_text)
+		if match:
+			version_text = match.group()
+			number_list = version_text.split('.')
+			
+			version = 0
+			power = 0
+			for number in number_list:
+				number = int(number)
+				version += number * (10 ** power)
+				power -= 1
+			version *= 100
+		else:
+			version = 1000
+	# if not '.' in version_text:
+	# 	version = int(version_text)
+	# else:
+	# 	number_list = version_text.split('.')
+	# 	power = 0
+	# 	for number in number_list:
+	# 		for n in number:
+	# 			if not (n in '0123456789'):
+	# 				index = number.index(n)
+	# 				number = number[:index]
+	# 				break
+	# 		number = int(number)
+	# 		version += number * (10 ** power)
+	# 		power -= 1
+	# 	version *= 100
 	return int(version)
 
 def parseVersionInfo(arduino_root):
@@ -464,10 +482,10 @@ class Arduino:
 				(board_list, board_file_dict, board_type_list_dict, board_item_list_dict, type_caption_dict) = parseBoardInfo(platform, core_root)
 				if board_list:
 					self.platform_board_lists_dict[platform].append(board_list)
-					self.board_file_dict = dict(self.board_file_dict, **board_file_dict)
-					self.board_type_list_dict = dict(self.board_type_list_dict, **board_type_list_dict)
-					self.board_item_list_dict = dict(self.board_item_list_dict, **board_item_list_dict)
-					self.type_caption_dict = dict(self.type_caption_dict, **type_caption_dict)
+					self.board_file_dict.update(board_file_dict)
+					self.board_type_list_dict.update(board_type_list_dict)
+					self.board_item_list_dict.update(board_item_list_dict)
+					self.type_caption_dict.update(type_caption_dict)
 
 	def genPlatformProgrammerLists(self):
 		self.platform_programmer_lists_dict = {}
@@ -480,7 +498,7 @@ class Arduino:
 				(programmer_list, programmer_file_dict) = parseProgrammerInfo(platform, core_root)
 				if programmer_list:
 					self.platform_programmer_lists_dict[platform].append(programmer_list)
-					self.programmer_file_dict = dict(self.programmer_file_dict, **programmer_file_dict)
+					self.programmer_file_dict.update(programmer_file_dict)
 
 	def genPlatformLibraryLists(self):
 		self.platform_library_lists_dict = {}
@@ -499,7 +517,7 @@ class Arduino:
 				(library_list, library_path_dict) = parseLibraryInfo(platform, root)
 				if library_list:
 					self.platform_library_lists_dict[platform].append(library_list)
-					self.library_path_dict = dict(self.library_path_dict, **library_path_dict)
+					self.library_path_dict.update(library_path_dict)
 
 	def genPlatformExampleLists(self):
 		self.platform_example_lists_dict = {}
@@ -512,7 +530,7 @@ class Arduino:
 			(example_list, example_path_dict) = parseExampleInfo(platform, arduino_root)
 			if example_list:
 				self.platform_example_lists_dict[platform].append(example_list)
-				self.example_path_dict = dict(self.example_path_dict, **example_path_dict)
+				self.example_path_dict.update(example_path_dict)
 			
 			library_lists = self.getLibraryLists(platform)
 			for library_list in library_lists:
@@ -520,7 +538,7 @@ class Arduino:
 				(example_list, example_path_dict) = parseLibraryExampleInfo(platform, library_path_list)
 				if example_list:
 					self.platform_example_lists_dict[platform].append(example_list)
-					self.example_path_dict = dict(self.example_path_dict, **example_path_dict)
+					self.example_path_dict.update(example_path_dict)
 
 	def genKeywordList(self):
 		self.platform_keyword_list_dict = {}
@@ -539,8 +557,8 @@ class Arduino:
 				lib_path_list += library_path_list
 			(keyword_list, keyword_type_dict, keyword_ref_dict) = parseKeywordList(platform, lib_path_list)
 			self.platform_keyword_list_dict[platform] = keyword_list
-			self.keyword_type_dict = dict(self.keyword_type_dict, **keyword_type_dict)
-			self.keyword_ref_dict = dict(self.keyword_ref_dict, **keyword_ref_dict)
+			self.keyword_type_dict.update(keyword_type_dict)
+			self.keyword_ref_dict.update(keyword_ref_dict)
 
 	def genOperatorList(self):
 		self.platform_operator_list_dict = {}
