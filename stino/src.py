@@ -55,9 +55,9 @@ def removeComments(src_text):
 	pattern_list = []
 	pattern_list += [r'//.*?$'] # single-line comment
 	pattern_list += [r'/\*.*?\*/'] # multi-line comment r'/\*[^*]*(?:\*(?!/)[^*]*)*\*/'
-	pattern_list += [r"'.'"] # single-quoted character
-	pattern_list += [r'"(?:[^"\\"]|\\.)*?"'] # double-quoted string
-	pattern_list += [r'^\s*?#.*?$'] # pre-processor directive
+	# pattern_list += [r"'.'"] # single-quoted character
+	# pattern_list += [r'"(?:[^"\\"]|\\.)*?"'] # double-quoted string
+	# pattern_list += [r'^\s*?#.*?$'] # pre-processor directive
 	for pattern_text in pattern_list:
 		pattern = re.compile(pattern_text, re.M|re.S)
 		src_text = pattern.sub('', src_text)
@@ -112,7 +112,7 @@ def genSrcDeclarationList(simple_src_text):
 	pattern = re.compile(pattern_text, re.M|re.S)
 	declaration_list = pattern.findall(simple_src_text)
 	src_declaration_list = [regulariseFuctionText(declaration) for declaration in declaration_list]
-	print src_declaration_list
+	# print src_declaration_list
 	return src_declaration_list
 
 def genSrcFunctionList(simple_src_text):
@@ -123,31 +123,22 @@ def genSrcFunctionList(simple_src_text):
 	for function_text in function_text_list:
 		function = regulariseFuctionText(function_text)
 		src_function_list.append(function)
-	print src_function_list
+	# print src_function_list
 	return src_function_list
 
 def isMainSrcText(src_text):
 	state = False
-	pattern_list = [r'^\s*?void\s+?setup\(\s*?\)(?=\s*?\{)']
-	pattern_list += [r'^\s*?void\s+?setup\(\s*?void\s*?\)(?=\s*?\{)']
+	pattern_text = r'void\s+?setup\s*?\(.*?\)(?=\s*?\{)'
 	
 	setup_match = None
-	for pattern_text in pattern_list:
-		setup_pattern = re.compile(pattern_text, re.M|re.S)
-		setup_match = setup_pattern.search(src_text)
-		if setup_match:
-			break
+	setup_pattern = re.compile(pattern_text, re.M|re.S)
+	setup_match = setup_pattern.search(src_text)
 
-	pattern_list = [r'^\s*?void\s+?loop\(\s*?\)(?=\s*?\{)']
-	pattern_list += [r'^\s*?void\s+?loop\(\s*?void\s*?\)(?=\s*?\{)']
+	pattern_text = r'void\s+?loop\s*?\(.*?\)(?=\s*?\{)'
 
-	loop_match = None
-	for pattern_text in pattern_list:
-		loop_pattern = re.compile(pattern_text, re.M|re.S)
-		loop_match = loop_pattern.search(src_text)
-		if loop_match:
-			break
-	
+	loop_pattern = re.compile(pattern_text, re.M|re.S)
+	loop_match = loop_pattern.search(src_text)
+
 	if setup_match and loop_match:
 		state = True
 	return state
