@@ -389,21 +389,13 @@ def genInsertionDelarationList(src_path_list):
 		declaration_list += src.genSrcDeclarationList(header_text)
 		function_list += src.genSrcFunctionList(body_text)
 
-	print 'declaration list'
-	print declaration_list
-	print 'function list'
-	print function_list
-
 	function_list = removeMainFunctionsFromList(function_list)
-	print function_list
 	
 	new_declaration_list = []
 	for function in function_list:
 		if not function in declaration_list:
 			if not function in new_declaration_list:
 				new_declaration_list.append(function)
-	print 'new declaration list'
-	print new_declaration_list
 	return new_declaration_list
 
 def findDeclarationInsertionPosition(src_text):
@@ -767,13 +759,9 @@ class Compilation:
 		for sketch_src_path in self.sketch_src_path_list:
 			src_text = osfile.readFileText(sketch_src_path)
 			header_list = src.genHeaderListFromSketchText(src_text)
-			print sketch_src_path
-			print header_list
 			src_header_list += header_list
 		src_header_list = utils.removeRepeatItemFromList(src_header_list)
 		self.src_header_list = src_header_list
-		print 'header_list'
-		print self.src_header_list
 
 	def genIncludeLibraryPath(self):
 		self.genHeaderList()
@@ -802,8 +790,6 @@ class Compilation:
 				folder_path = os.path.join(lib_path, folder)
 				folder_path = folder_path.replace(os.path.sep, '/')
 				lib_sub_path_list.append(folder_path)
-		print 'sub folder'
-		print lib_sub_path_list
 		self.lib_path_list = lib_path_list
 		self.include_library_path_list = include_library_path_list + lib_path_list + lib_sub_path_list
 
@@ -949,9 +935,6 @@ class Compilation:
 		(eep_file_path_list, eep_command_list) = self.genEepCommandInfo()
 		(hex_file_path_list, hex_command_list) = self.genHexCommandInfo()
 		size_command_list = self.genSizeCommandList()
-
-		print sketch_obj_path_list
-		print sketch_command_list
 
 		ar_file_path = ar_file_path_list[0]
 		if not os.path.isfile(ar_file_path):

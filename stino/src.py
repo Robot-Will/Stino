@@ -112,7 +112,6 @@ def genSrcDeclarationList(simple_src_text):
 	pattern = re.compile(pattern_text, re.M|re.S)
 	declaration_list = pattern.findall(simple_src_text)
 	src_declaration_list = [regulariseFuctionText(declaration) for declaration in declaration_list]
-	# print src_declaration_list
 	return src_declaration_list
 
 def genSrcFunctionList(simple_src_text):
@@ -123,7 +122,6 @@ def genSrcFunctionList(simple_src_text):
 	for function_text in function_text_list:
 		function = regulariseFuctionText(function_text)
 		src_function_list.append(function)
-	# print src_function_list
 	return src_function_list
 
 def isMainSrcText(src_text):
