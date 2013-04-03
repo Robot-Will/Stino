@@ -176,14 +176,12 @@ def createNewSketch(filename):
 	os.mkdir(folder_path)
 	text = osfile.readFileText(template_file_path)
 	osfile.writeFile(file_path, text)
-	openSketch(filename)
+	openSketch(folder_path)
 
-def openSketch(sketch):
-	sketchbook_root = const.settings.get('sketchbook_root')
-	folder_path = os.path.join(sketchbook_root, sketch)
+def openSketch(folder_path):
 	file_path_list = findSrcFileList(folder_path)
 	file_path_list += findHeaderFileList(folder_path)
-	
+
 	sublime.run_command('new_window')
 	window = sublime.windows()[-1]
 
@@ -339,14 +337,3 @@ def insertLibraries(folder_path, view):
 	position = getHeaderInsertionPosition(view_text)
 	view.insert(edit, position, include_text)
 	view.end_edit(edit)
-
-def openExample(path):
-	sublime.run_command('new_window')
-	window = sublime.windows()[-1]
-	file_list = osfile.listDir(path, with_dirs = False)
-	for cur_file in file_list:
-		cur_file_ext = os.path.splitext(cur_file)[1]
-		if cur_file_ext in src_ext_list or cur_file_ext in header_ext_list:
-			cur_file_path = os.path.join(path, cur_file)
-			window.open_file(cur_file_path)
-

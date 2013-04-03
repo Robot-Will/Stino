@@ -146,7 +146,7 @@ class NewSketchCommand(sublime_plugin.WindowCommand):
 		if input_text:
 			filename = stino.osfile.regulariseFilename(input_text)
 			if stino.osfile.existsInSketchbook(filename):
-				display_text = 'Sketch {1} exists, please use another file name.\n'
+				display_text = 'A sketch (or folder) named "{1}" already exists. Could not create the sketch.\n'
 				msg = stino.cur_language.translate(display_text)
 				msg = msg.replace('{1}', filename)
 				stino.log_panel.addText(msg)
@@ -157,7 +157,14 @@ class NewSketchCommand(sublime_plugin.WindowCommand):
 
 class OpenSketchCommand(sublime_plugin.WindowCommand):
 	def run(self, menu_str):
-		stino.src.openSketch(menu_str)
+		sketchbook_root = stino.const.settings.get('sketchbook_root')
+		folder_path = os.path.join(sketchbook_root, menu_str)
+		if os.path.isdir(folder_path):
+			stino.src.openSketch(folder_path)
+		else:
+			display_text = 'The selected sketch no longer exists.\nYou may need to restart Sublime Text 2\nto update the sketchbook menu.\n'
+			msg = stino.cur_language.translate(display_text)
+			stino.log_panel.addText(msg)
 
 	def is_enabled(self):
 		state = stino.const.settings.get('show_arduino_menu', False)
@@ -176,7 +183,7 @@ class NewToSketchCommand(sublime_plugin.WindowCommand):
 			folder_path = os.path.split(view_file_name)[0]
 			new_file_path = os.path.join(folder_path, filename)
 			if os.path.exists(new_file_path):
-				display_text = 'File {1} exists, please use another file name.\n'
+				display_text = 'A file named "{1}" already exists. Could not create the file.\n'
 				msg = stino.cur_language.translate(display_text)
 				msg = msg.replace('{1}', filename)
 				stino.log_panel.addText(msg)
@@ -192,7 +199,12 @@ class ImportLibraryCommand(sublime_plugin.WindowCommand):
 		view = self.window.active_view()
 		(library, platform) = stino.utils.getInfoFromKey(menu_str)
 		library_path = stino.arduino_info.getLibraryPath(platform, library)
-		stino.src.insertLibraries(library_path, view)
+		if os.path.isdir(library_path):
+			stino.src.insertLibraries(library_path, view)
+		else:
+			display_text = 'The selected library no longer exists.\nYou may need to restart Sublime Text 2\nto update the import library menu.\n'
+			msg = stino.cur_language.translate(display_text)
+			stino.log_panel.addText(msg)
 
 	def is_enabled(self):
 		state = stino.const.settings.get('show_arduino_menu', False)
@@ -401,7 +413,7 @@ class StopSerialMonitorCommand(sublime_plugin.WindowCommand):
 
 class SendToSerialCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		caption = '%(Send:)s'
+		caption = '%(Send)s'
 		self.caption = caption % stino.cur_language.getTransDict()
 		self.window.show_input_panel(self.caption, '', self.on_done, None, None)
 		
@@ -541,6 +553,9 @@ class ToggleVerifyCodeCommand(sublime_plugin.WindowCommand):
 class AutoFormatCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		self.window.run_command('reindent', {'single_line': False})
+		display_text = 'Auto Format finished.\n'
+		msg = stino.cur_language.translate(display_text)
+		state = stino.log_panel.addText(msg)
 
 class ArchiveSketchCommand(sublime_plugin.WindowCommand):
 	def run(self):
@@ -576,7 +591,7 @@ class SelectExampleCommand(sublime_plugin.WindowCommand):
 		example_path = stino.arduino_info.getExamplePath(platform, example)
 		self.window.run_command('show_file_explorer_panel', {'top_path_list':[example_path], \
 				'condition_mod':'arduino', 'condition_func':'isSketchFolder', 'function_mod':'src', \
-				'function_func':'openExample'})
+				'function_func':'openSketch'})
 
 class OpenRefCommand(sublime_plugin.WindowCommand):
 	def run(self, menu_str):
@@ -590,8 +605,14 @@ class FindInReferenceCommand(sublime_plugin.WindowCommand):
 		keyword_operator_list = stino.arduino_info.getOperatorList(platform)
 		keyword_list = stino.utils.getKeywordListFromText(selected_text, keyword_operator_list)
 		(ref_list, msg_text) = stino.utils.getRefList(keyword_list, stino.arduino_info, platform)
-		stino.osfile.openUrlList(ref_list)
-		stino.log_panel.addText(msg_text)
+		if ref_list:
+			stino.osfile.openUrlList(ref_list)
+		if msg_text:
+			stino.log_panel.addText(msg_text)
+		if not (ref_list or msg_text):
+			display_text = 'No reference available.\n'
+			msg = stino.cur_language.translate(display_text)
+			state = stino.log_panel.addText(msg)
 
 class AboutStinoCommand(sublime_plugin.WindowCommand):
 	def run(self):

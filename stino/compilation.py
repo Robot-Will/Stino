@@ -365,12 +365,19 @@ def getNewSerialPort(serial_port, serial_port_list):
 	new_serial_port_list = smonitor.genSerialPortList()
 	for serial_port in serial_port_list:
 		new_serial_port_list.remove(serial_port)
+	index = 0
 	while not new_serial_port_list:
 		time.sleep(0.5)
 		new_serial_port_list = smonitor.genSerialPortList()
 		for serial_port in serial_port_list:
 			new_serial_port_list.remove(serial_port)
-	new_serial_port = new_serial_port_list[0]
+		index += 1
+		if index > 20:
+			break
+	if new_serial_port_list:
+		new_serial_port = new_serial_port_list[0]
+	else:
+		new_serial_port = ''
 	return new_serial_port
 
 def removeMainFunctionsFromList(function_list):
@@ -567,7 +574,7 @@ class Compilation:
 		self.output_panel.addText(msg)
 		self.preCompilationProcess()
 		if self.is_run_cmd:
-			display_text = 'Start compilation...\n'
+			display_text = 'Compiling sketch...\n'
 			msg = self.language.translate(display_text)
 			self.output_panel.addText(msg)
 			self.runCompile()
@@ -665,6 +672,13 @@ class Compilation:
 			compiler_path = os.path.join(self.arduino_root, 'hardware/tools/avr/bin/')
 			compiler_path = compiler_path.replace(os.path.sep, '/')
 			info_dict['compiler.path'] = compiler_path
+
+		compiler_path = info_dict['compiler.path']
+		compiler_path = compiler_path.replace('{runtime.ide.path}', self.arduino_root)
+		compiler_path = compiler_path.replace('/', os.path.sep)
+		if not os.path.isdir(compiler_path):
+			compiler_path = ''
+		info_dict['compiler.path'] = compiler_path
 
 		if 'teensy' in self.platform:
 			if 'build.elide_constructors' in info_dict:
@@ -989,13 +1003,13 @@ class Compilation:
 		
 		if termination_with_error:
 			self.error_code = 4
-			display_text = '[Stino - Compilation terminated with errors.]\n'
+			display_text = '[Stino - Error while compiling.]\n'
 			msg = self.language.translate(display_text)
 			self.output_panel.addText(msg)
 		else:
 			self.endtime = datetime.datetime.now()
 			interval = (self.endtime - self.starttime).microseconds * 1e-6
-			display_text = '[Stino - Compilation completed.]\n'
+			display_text = '[Stino - Done compiling.]\n'
 			msg = self.language.translate(display_text)
 			self.output_panel.addText(msg)
 			sublime.set_timeout(self.TurnFullCompilationOff, 0)
@@ -1035,6 +1049,7 @@ class Upload:
 	def __init__(self, language, arduino_info, menu, file_path, mode = 'upload', \
 		serial_port_in_use_list = None, serial_port_monitor_dict = None):
 		self.language = language
+		self.board = const.settings.get('Board')
 		self.cur_compilation = Compilation(language, arduino_info, menu, file_path)
 		self.output_panel = self.cur_compilation.getOutputPanel()
 		self.error_code = 0
@@ -1067,9 +1082,10 @@ class Upload:
 		else:
 			self.info_dict = self.cur_compilation.getInfoDict()
 			self.hex_file_path = self.cur_compilation.getHexFilePath()
-			display_text = 'Start uploading {1}...\n'
+			display_text = 'Uploading {1} to {2}...\n'
 			msg = self.language.translate(display_text)
 			msg = msg.replace('{1}', self.hex_file_path)
+			msg = msg.replace('{2}', self.board)
 			self.output_panel.addText(msg)
 			if self.mode == 'upload':
 				upload_command = self.info_dict['upload.pattern']
@@ -1077,9 +1093,18 @@ class Upload:
 					self.serial_monitor.stop()
 					time.sleep(0.1)
 				if 'Leonardo' in self.board or 'Micro' in self.board:
+					display_text = 'Forcing reset using 1200bps open/close on port.\n'
+					msg = self.language.translate(display_text)
+					self.output_panel.addText(msg)
 					new_serial_port = getNewSerialPort(self.serial_port, self.serial_port_list)
-					upload_command = upload_command.replace(self.serial_port, new_serial_port)
-					self.serial_port = new_serial_port
+					if new_serial_port:
+						upload_command = upload_command.replace(self.serial_port, new_serial_port)
+						self.serial_port = new_serial_port
+					else:
+						upload_command = ''
+						display_text = 'Couldn’t find a Leonardo on the selected port. Check that you have the\ncorrect port selected.  If it is correct, try pressing the board\'s reset\nbutton after initiating the upload.\n'
+						msg = self.language.translate(display_text)
+						self.output_panel.addText(msg)
 			elif self.mode == 'upload_using_programmer':
 				if 'program.pattern' in self.info_dict:
 					upload_command = self.info_dict['program.pattern']
@@ -1100,11 +1125,11 @@ class Upload:
 						break
 				if termination_with_error:
 					self.error_code = 2
-					display_text = '[Stino - Uploading terminated with errors.]\n'
+					display_text = '[Stino - Error while uploading.]\n'
 					msg = self.language.translate(display_text)
 					self.output_panel.addText(msg)
 				else:
-					display_text = '[Stino - Uploading completed.]\n'
+					display_text = '[Stino - Done uploading.]\n'
 					msg = self.language.translate(display_text)
 					self.output_panel.addText(msg)
 				if self.mode == 'upload':
@@ -1137,7 +1162,7 @@ class BurnBootloader:
 		else:
 			self.info_dict = self.cur_compilation.getInfoDict()
 			if 'bootloader.file' in self.info_dict:
-				display_text = 'Start burning {1}...\n'
+				display_text = 'Burning bootloader to I/O Board (this may take a minute)...\n'
 				msg = self.language.translate(display_text)
 				msg = msg.replace('{1}', self.info_dict['bootloader.file'])
 				self.output_panel.addText(msg)
@@ -1154,11 +1179,11 @@ class BurnBootloader:
 						break
 				if termination_with_error:
 					self.error_code = 2
-					display_text = '[Stino - Bootloader burning terminated with errors.]\n'
+					display_text = '[Stino - Error while burning bootloader.]\n'
 					msg = self.language.translate(display_text)
 					self.output_panel.addText(msg)
 				else:
-					display_text = '[Stino - Bootloader burning completed.]\n'
+					display_text = '[Stino - Done burning bootloader.]\n'
 					msg = self.language.translate(display_text)
 					self.output_panel.addText(msg)
 			else:

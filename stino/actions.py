@@ -26,7 +26,7 @@ def changeSketchbookRoot(sketchbook_root):
 	sketchbook_root = stino.utils.getInfoFromKey(sketchbook_root)[1]
 	pre_sketchbook_root = stino.const.settings.get('sketchbook_root')
 	stino.arduino_info.setSketchbookRoot(sketchbook_root)
-	display_text = 'Sketchbook folder have switched to {1}.\n'
+	display_text = 'Sketchbook folder has been changed to {1}.\n'
 	msg = stino.cur_language.translate(display_text)
 	msg = msg.replace('{1}', sketchbook_root)
 	stino.log_panel.addText(msg)

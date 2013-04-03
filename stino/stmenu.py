@@ -8,6 +8,14 @@ from stino import const
 from stino import osfile
 from stino import smonitor
 
+def replaceMenuCaption(menu_caption):
+	menu_caption = menu_caption.replace('Boards', '%(Board)s')
+	menu_caption = menu_caption.replace('Processor', '%(Processor)s')
+	menu_caption = menu_caption.replace('Type', '%(Type)s')
+	menu_caption = menu_caption.replace('Speed', '%(Speed)s')
+	menu_caption = menu_caption.replace('Keyboard Layout', '%(Keyboard_Layout)s')
+	return menu_caption
+
 class STMenu:
 	def __init__(self, language, arduino_info):
 		self.language = language
@@ -154,7 +162,7 @@ class STMenu:
 		platform_list = self.arduino_info.getPlatformList()
 		for platform in platform_list:
 			board_lists = self.arduino_info.getBoardLists(platform)
-			menu_caption = platform.replace('Boards', '%(Board)s')
+			menu_caption = replaceMenuCaption(platform)
 			menu_text += self.genSubMenuBlock(menu_caption, board_lists, command, menu_base = platform, checkbox = True)
 		return menu_text
 
@@ -167,10 +175,7 @@ class STMenu:
 		for board_type in board_type_list:
 			item_list = self.arduino_info.getBoardItemList(platform, board, board_type)
 			menu_caption = self.arduino_info.getPlatformTypeCaption(platform, board_type)
-			menu_caption = menu_caption.replace('Processor', '%(Processor)s')
-			menu_caption = menu_caption.replace('USB Type', '%(USB_Type)s')
-			menu_caption = menu_caption.replace('CPU Speed', '%(CPU_Speed)s')
-			menu_caption = menu_caption.replace('Keyboard Layout', '%(Keyboard_Layout)s')
+			menu_caption = replaceMenuCaption(menu_caption)
 			board_key = utils.genKey(board, platform)
 			type_key = utils.genKey(board_type, board_key)
 			menu_text += self.genSubMenuBlock(menu_caption, [item_list], command, menu_base = type_key, checkbox = True)
@@ -281,7 +286,7 @@ class STMenu:
 		command_text = ''
 		sketch_list = self.arduino_info.getSketchList()
 		if sketch_list:
-			command_caption = '%(Open_Sketch)s'
+			command_caption = '%(Open)s %(Sketch)s'
 			command = 'open_sketch'
 			parent_mod = 'arduino_info'
 			list_func = 'getSketchList'
@@ -307,7 +312,7 @@ class STMenu:
 		list_func = 'getBoardLists'
 		platform_list = self.arduino_info.getPlatformList()
 		for platform in platform_list:
-			command_caption = '%(Select)s ' + platform.replace('Boards', '%(Board)s')
+			command_caption = '%(Select)s ' + replaceMenuCaption(platform)
 			command_text += self.genSelectItemText(command_caption, command, parent_mod, list_func, parameter1 = platform)
 		return command_text
 
@@ -322,10 +327,7 @@ class STMenu:
 		board_type_list = self.arduino_info.getBoardTypeList(platform, board)
 		for board_type in board_type_list:
 			board_type_caption = self.arduino_info.getPlatformTypeCaption(platform, board_type)
-			board_type_caption = board_type_caption.replace('Processor', '%(Processor)s')
-			board_type_caption = board_type_caption.replace('USB Type', '%(USB_Type)s')
-			board_type_caption = board_type_caption.replace('CPU Speed', '%(CPU_Speed)s')
-			board_type_caption = board_type_caption.replace('Keyboard Layout', '%(Keyboard_Layout)s')
+			board_type_caption = replaceMenuCaption(board_type_caption)
 			command_caption = '%(Select)s ' + board_type_caption
 			command_text += self.genSelectItemText(command_caption, command, parent_mod, list_func, parameter1 = platform, parameter2 = board, parameter3 = board_type)
 		return command_text
@@ -377,7 +379,7 @@ class STMenu:
 		platform = self.getPlatform()
 		example_lists = self.arduino_info.getExampleLists(platform)
 		if example_lists:
-			command_caption = '%(Open)s ' + '%(Example)s'
+			command_caption = '%(Open)s ' + '%(Examples)s'
 			command = 'select_example'
 			parent_mod = 'arduino_info'
 			list_func = 'getExampleLists'
