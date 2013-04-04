@@ -119,7 +119,7 @@ class Language:
 		for key in key_list:
 			text += 'msgid "%s"\n' % key
 			text += 'msgstr "%s"\n\n' % self.trans_dict[key]
-		default_file_path = os.path.join(language_root, 'orginal_text')
+		default_file_path = os.path.join(language_root, 'original_text')
 		osfile.writeFile(default_file_path, text)
 
 	def genTransDict(self):

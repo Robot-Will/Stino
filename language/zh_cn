@@ -264,3 +264,8 @@ msgstr "[Stino - 编译出错。]\n"
 msgid "[Stino - Error while uploading.]\n"
 msgstr "[Stino - 下载出错。]\n"
 
+msgid "Global_Setting"
+msgstr "全局设置"
+
+msgid "unknown"
+msgstr "未知"

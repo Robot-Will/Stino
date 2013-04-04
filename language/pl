@@ -264,3 +264,8 @@ msgstr "[Stino - Error while compiling.]\n"
 msgid "[Stino - Error while uploading.]\n"
 msgstr "[Stino - Error while uploading.]\n"
 
+msgid "Global_Setting"
+msgstr "Global Setting"
+
+msgid "unknown"
+msgstr "unknown"
