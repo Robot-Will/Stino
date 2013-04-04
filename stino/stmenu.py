@@ -174,16 +174,16 @@ class STMenu:
 		board_type_list = self.arduino_info.getBoardTypeList(platform, board)
 		for board_type in board_type_list:
 			item_list = self.arduino_info.getBoardItemList(platform, board, board_type)
-			menu_caption = self.arduino_info.getPlatformTypeCaption(platform, board_type)
-			menu_caption = replaceMenuCaption(menu_caption)
+			type_caption = self.arduino_info.getPlatformTypeCaption(platform, board_type)
+			menu_caption = replaceMenuCaption(type_caption)
 			board_key = utils.genKey(board, platform)
 			type_key = utils.genKey(board_type, board_key)
 			menu_text += self.genSubMenuBlock(menu_caption, [item_list], command, menu_base = type_key, checkbox = True)
 
-			type_value = const.settings.get(menu_caption)
+			type_value = const.settings.get(type_caption)
 			if not type_value in item_list:
 				type_value = item_list[0]
-				const.settings.set(menu_caption, type_value)
+				const.settings.set(type_caption, type_value)
 				const.save_settings()
 		return menu_text
 

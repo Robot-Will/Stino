@@ -11,24 +11,15 @@ from stino import utils
 
 header_ext_list = ['.h', '.hpp']
 arduino_ext_list = ['.ino', '.pde']
+c_ext_list = ['.c', '.cc', '.cpp', '.cxx']
 src_ext_list = ['.ino', '.pde', '.c', '.cc', '.cpp', '.cxx']
 
-def findSrcFileList(path):
+def findSrcFileList(path, ext_list):
 	path_list = []
 	file_list = osfile.listDir(path, with_dirs = False)
 	for cur_file in file_list:
 		cur_file_ext = os.path.splitext(cur_file)[1]
-		if cur_file_ext in src_ext_list:
-			cur_file_path = os.path.join(path, cur_file)
-			path_list.append(cur_file_path)
-	return path_list
-
-def findHeaderFileList(path):
-	path_list = []
-	file_list = osfile.listDir(path, with_dirs = False)
-	for cur_file in file_list:
-		cur_file_ext = os.path.splitext(cur_file)[1]
-		if cur_file_ext in header_ext_list:
+		if cur_file_ext in ext_list:
 			cur_file_path = os.path.join(path, cur_file)
 			path_list.append(cur_file_path)
 	return path_list
@@ -179,8 +170,8 @@ def createNewSketch(filename):
 	openSketch(folder_path)
 
 def openSketch(folder_path):
-	file_path_list = findSrcFileList(folder_path)
-	file_path_list += findHeaderFileList(folder_path)
+	file_path_list = findSrcFileList(folder_path, src_ext_list)
+	file_path_list += findSrcFileList(folder_path, header_ext_list)
 
 	sublime.run_command('new_window')
 	window = sublime.windows()[-1]

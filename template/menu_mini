@@ -15,6 +15,6 @@
 			{"caption": "-"},
 			{"caption": "%(Visit_Arduino_Website)s", "command": "open_url", "args": {"url": "http://arduino.cc"}},
 			{"caption": "-"},
-			{"caption": "%(About_Stino)s", "command" : "about_stino"}
+			{"caption": "%(About)s Stino", "command" : "about_stino"}
 		]
 	}

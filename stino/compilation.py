@@ -290,7 +290,18 @@ def genCommandArgs(command):
 		std_args = command
 	return std_args
 
-def getSizeInfo(size_text):
+def getFlashSizeInfo(size_text, info_dict):
+	flash_size = 0.00
+	pattern_text = info_dict['recipe.size.regex']
+	pattern = re.compile(pattern_text, re.S)
+	lines = utils.convertTextToLines(size_text)
+	for line in lines:
+		match = pattern.search(line)
+		if match:
+			flash_size = int(match.groups()[0])
+	return flash_size
+
+def getRamSizeInfo(size_text):
 	size_line = size_text.split('\n')[-2].strip()
 	info_list = re.findall(r'\S+', size_line)
 	text_size = int(info_list[0])
@@ -298,39 +309,41 @@ def getSizeInfo(size_text):
 	bss_size = int(info_list[2])
 	flash_size = text_size + data_size
 	ram_size = data_size + bss_size
-	return (flash_size, ram_size)
+	return ram_size
 
-def printSizeInfo(size_text, info_dict, language, output_panel):
-	(flash_size, ram_size) = getSizeInfo(size_text)
-	
-	upload_maximum_size_text = info_dict['upload.maximum_size']
-	flash_size_text = str(flash_size)
-	upload_maximum_size = float(upload_maximum_size_text)
-	flash_size_percentage = (flash_size / upload_maximum_size) * 100
-	flash_size_text = formatNumber(flash_size_text)
-	upload_maximum_size_text = formatNumber(upload_maximum_size_text)
-	display_text = 'Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n'
-	msg = language.translate(display_text)
-	msg = msg.replace('{1}', flash_size_text)
-	msg = msg.replace('{2}', upload_maximum_size_text)
-	msg = msg.replace('{3}', '%.2f' % flash_size_percentage)
-	output_panel.addText(msg)
-
-	upload_maximum_ram_size_text = info_dict['upload.maximum_ram_size']
-	if upload_maximum_ram_size_text:
-		ram_size_text = str(ram_size)
-		upload_maximum_ram_size = float(upload_maximum_ram_size_text)
-		ram_size_percentage = (ram_size / upload_maximum_ram_size) * 100
-		ram_size_text = formatNumber(ram_size_text)
-		upload_maximum_ram_size_text = formatNumber(upload_maximum_ram_size_text)
+def getSizeInfoText(size_text, info_dict, language, mode):
+	if mode == 'flash_size':
+		size = getFlashSizeInfo(size_text, info_dict)
+		size_key = 'upload.maximum_size'
+		display_text = 'Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n'
+	elif mode == 'ram_size':
+		size = getRamSizeInfo(size_text)
+		size_key = 'upload.maximum_ram_size'
 		display_text = 'Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n'
-		msg = msg = language.translate(display_text)
-		msg = msg.replace('{1}', ram_size_text)
-		msg = msg.replace('{2}', upload_maximum_ram_size_text)
-		msg = msg.replace('{3}', '%.2f' % ram_size_percentage)
-		output_panel.addText(msg)
 
-def runCommand(command, isSizeCommand, info_dict, language, output_panel, verbose_output):
+	if size_key in info_dict:
+		upload_maximum_size_text = info_dict[size_key]
+	else:
+		upload_maximum_size_text = ''
+	
+	size_text = str(size)
+	size_text = formatNumber(size_text)
+
+	if upload_maximum_size_text:
+		upload_maximum_size = float(upload_maximum_size_text)
+		size_percentage = (size / upload_maximum_size) * 100
+		upload_maximum_size_text = formatNumber(upload_maximum_size_text)
+	else:
+		upload_maximum_size_text = '%(unknown)s'
+		size_percentage = 0.00
+	
+	size_info_text = language.translate(display_text)
+	size_info_text = size_info_text.replace('{1}', size_text)
+	size_info_text = size_info_text.replace('{2}', upload_maximum_size_text)
+	size_info_text = size_info_text.replace('{3}', '%.2f' % size_percentage)
+	return size_info_text
+
+def runCommand(command, command_type, info_dict, language, output_panel, verbose_output):
 	args = genCommandArgs(command)
 	compilation_process = subprocess.Popen(args, stdout = subprocess.PIPE, \
 		stderr = subprocess.PIPE, shell = True)
@@ -345,9 +358,10 @@ def runCommand(command, isSizeCommand, info_dict, language, output_panel, verbos
 		if stdout:
 			output_panel.addText(stdout.decode(const.sys_encoding, 'replace'))
 
-	if isSizeCommand:
+	if command_type == 'flash_size' or command_type == 'ram_size':
 		size_text = stdout
-		printSizeInfo(size_text, info_dict, language, output_panel)
+		size_info_text = getSizeInfoText(size_text, info_dict, language, mode = command_type)
+		output_panel.addText(size_info_text)
 
 	if stderr:
 		output_panel.addText(stderr.decode(const.sys_encoding, 'replace'))
@@ -583,6 +597,7 @@ class Compilation:
 	def preCompilationProcess(self):
 		(main_src_number, self.main_src_path) = self.genMainSrcFileInfo()
 		self.checkBuildPath()
+		self.c_src_path_list = self.genCSrcPathList()
 		self.header_path_list = self.genHeaderPathList()
 		self.copyHeaderSrcFiles()
 		self.info_dict = self.genInfoDict()
@@ -733,11 +748,15 @@ class Compilation:
 		return (platform_info_key_list, platform_info_dict)
 
 	def genSketchSrcPathList(self):
-		sketch_src_path_list = src.findSrcFileList(self.sketch_folder_path)
+		sketch_src_path_list = src.findSrcFileList(self.sketch_folder_path, src.arduino_ext_list)
 		return sketch_src_path_list
 
+	def genCSrcPathList(self):
+		c_src_path_list = src.findSrcFileList(self.sketch_folder_path, src.c_ext_list)
+		return c_src_path_list
+
 	def genHeaderPathList(self):
-		header_path_list = src.findHeaderFileList(self.sketch_folder_path)
+		header_path_list = src.findSrcFileList(self.sketch_folder_path, src.header_ext_list)
 		return header_path_list
 
 	def genCoreSrcPathList(self):
@@ -919,6 +938,7 @@ class Compilation:
 
 		pattern = 'recipe.size.pattern'
 		command_text = self.info_dict[pattern]
+		command_list.append(command_text)
 		command_text = command_text.replace('-A', '')
 		command_text = command_text.replace('.hex', '.elf')
 		command_list.append(command_text)
@@ -926,9 +946,10 @@ class Compilation:
 
 	def genCompilationCommandList(self):
 		(sketch_obj_path_list, sketch_command_list) = self.genSrcCompilationCommandInfo(self.sketch_src_path_list)
+		(c_obj_path_list, c_command_list) = self.genSrcCompilationCommandInfo(self.c_src_path_list)
 		(core_obj_path_list, core_command_list) = self.genSrcCompilationCommandInfo(self.core_src_path_list + self.library_src_path_list)
 		(ar_file_path_list, ar_command_list) = self.genArCommandInfo(core_obj_path_list)
-		(elf_file_path_list, elf_command_list) = self.genElfCommandInfo(sketch_obj_path_list)
+		(elf_file_path_list, elf_command_list) = self.genElfCommandInfo(sketch_obj_path_list + c_obj_path_list)
 		(eep_file_path_list, eep_command_list) = self.genEepCommandInfo()
 		(hex_file_path_list, hex_command_list) = self.genHexCommandInfo()
 		size_command_list = self.genSizeCommandList()
@@ -942,6 +963,8 @@ class Compilation:
 		self.compilation_command_list = []
 		self.created_file_list += sketch_obj_path_list
 		self.compilation_command_list += sketch_command_list
+		self.created_file_list += c_obj_path_list
+		self.compilation_command_list += c_command_list
 		if self.full_compilation:
 			self.created_file_list += core_obj_path_list
 			self.compilation_command_list += core_command_list
@@ -954,7 +977,7 @@ class Compilation:
 			self.compilation_command_list += eep_command_list
 		self.created_file_list += hex_file_path_list
 		self.compilation_command_list += hex_command_list
-		self.created_file_list += ['size']
+		self.created_file_list += ['flash_size', 'ram_size']
 		self.compilation_command_list += size_command_list
 
 	def cleanObjFiles(self):
@@ -969,16 +992,18 @@ class Compilation:
 		termination_with_error = False
 		compilation_info = zip(self.created_file_list, self.compilation_command_list)
 		for (created_file, compilation_command) in compilation_info:
-			isSizeCommand = False
+			command_type = ''
 			if created_file:
-				if created_file == 'size':
-					isSizeCommand = True
+				if created_file == 'flash_size':
+					command_type = 'flash_size'
+				elif created_file == 'ram_size':
+					command_type = 'ram_size'
 				else:
 					display_text = 'Creating {1}...\n'
 					msg = self.language.translate(display_text)
 					msg = msg.replace('{1}', created_file)
 					self.output_panel.addText(msg)
-			return_code = runCommand(compilation_command, isSizeCommand, self.info_dict, \
+			return_code = runCommand(compilation_command, command_type, self.info_dict, \
 				self.language, self.output_panel, self.verbose_compilation)
 			if return_code != 0:
 				termination_with_error = True
@@ -1098,8 +1123,8 @@ class Upload:
 					reboot_command = self.info_dict['reboot.pattern']
 					command_list.append(reboot_command)
 				for command in command_list:
-					isSizeCommand = False
-					return_code = runCommand(command, isSizeCommand, self.info_dict, \
+					command_type = ''
+					return_code = runCommand(command, command_type, self.info_dict, \
 						self.language, self.output_panel, self.verbose_upload)
 					if return_code != 0:
 						termination_with_error = True
@@ -1154,8 +1179,8 @@ class BurnBootloader:
 				burn_command = self.info_dict['bootloader.pattern']
 				command_list = [erase_command, burn_command]
 				for command in command_list:
-					isSizeCommand = False
-					return_code = runCommand(command, isSizeCommand, self.info_dict, \
+					command_type = ''
+					return_code = runCommand(command, command_type, self.info_dict, \
 						self.language, self.output_panel, self.verbose_upload)
 					if return_code != 0:
 						termination_with_error = True
