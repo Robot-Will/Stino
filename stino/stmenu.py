@@ -184,7 +184,6 @@ class STMenu:
 			if not type_value in item_list:
 				type_value = item_list[0]
 				const.settings.set(type_caption, type_value)
-				const.save_settings()
 		return menu_text
 
 	def genSerialMenuText(self):
@@ -202,7 +201,6 @@ class STMenu:
 			else:
 				serial_port = 'No_Serial_Port'
 			const.settings.set('serial_port', serial_port)
-			const.save_settings()
 		return menu_text
 
 	def genBaudrateMenuText(self):
@@ -214,7 +212,6 @@ class STMenu:
 		if not baudrate in baudrate_list:
 			baudrate = '9600'
 			const.settings.set('baudrate', baudrate)
-			const.save_settings()
 		return menu_text
 
 	def genProgrammerMenuText(self):
@@ -229,7 +226,6 @@ class STMenu:
 			if not programmer in all_programer_list:
 				programmer = all_programer_list[0]
 				const.settings.set('programmer', programmer)
-				const.save_settings()
 		return menu_text
 
 	def genLanguageMenuText(self):
@@ -486,7 +482,6 @@ class STMenu:
 		if not platform in platform_list:
 			platform = platform_list[0]
 			const.settings.set('platform', platform)
-			const.save_settings()
 		return platform
 
 	def getBoard(self):
@@ -497,7 +492,6 @@ class STMenu:
 		if not board in all_board_list:
 			board = all_board_list[0]
 			const.settings.set('board', board)
-			const.save_settings()
 		return board
 
 	def getOriginMenuText(self):

@@ -74,7 +74,6 @@ class Language:
 		if not language in self.language_list:
 			language = 'English'
 		const.settings.set('language', language)
-		const.save_settings()
 
 	def genDefaultTransDict(self):
 		self.trans_dict = {}

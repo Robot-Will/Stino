@@ -1,4 +1,5 @@
 [
+    { "caption": "Stino: %(Global_Setting)s", "command": "toggle_global_setting"},
     { "caption": "Preferences: %(Show_Arduino_Menu)s", "command": "show_arduino_menu"},
     { "caption": "Stino: %(New)s %(Sketch)s", "command": "new_sketch" },
     { "caption": "Stino: %(Select_Arduino_Folder...)s", "command": "select_arduino_folder" },

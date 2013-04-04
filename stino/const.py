@@ -7,6 +7,7 @@ import locale
 import codecs
 
 from stino import utils
+from stino import setting
 
 # Sublime Text Version
 st_version = sublime.version()
@@ -39,8 +40,4 @@ compilation_script_root = os.path.join(plugin_root, 'compilation')
 
 # Stino settings file
 # $packages/User/Stino.sublime-settings
-settings_file = 'Stino.sublime-settings'
-settings = sublime.load_settings(settings_file)
-
-def save_settings():
-	sublime.save_settings(settings_file)
+settings = setting.Setting()

@@ -1024,7 +1024,6 @@ class Compilation:
 
 	def TurnFullCompilationOff(self):
 		const.settings.set('full_compilation', False)
-		const.save_settings()
 		self.menu.commandUpdate()
 
 	def removeBuildSourceFiles(self):

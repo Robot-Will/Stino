@@ -82,7 +82,6 @@ class SketchListener(sublime_plugin.EventListener):
 	def on_new(self, view):
 		stino.const.settings.set('show_arduino_menu', False)
 		stino.const.settings.set('show_serial_monitor_menu', False)
-		stino.const.save_settings()
 		stino.cur_menu.update()
 		stino.serial_listener.stop()
 
@@ -97,9 +96,21 @@ class SketchListener(sublime_plugin.EventListener):
 					sketch = filename
 
 			state = stino.src.isSketch(sketch)
+			if state:
+				global_setting = stino.const.settings.get('global_setting')
+				if not global_setting:
+					pre_setting_folder_path = stino.const.settings.get('pre_setting_folder_path')
+					file_path = view.file_name()
+					setting_folder_path = os.path.split(file_path)[0]
+					
+					if setting_folder_path != pre_setting_folder_path:
+						stino.const.settings.changeSettingFileFolder(setting_folder_path)
+						stino.arduino_info.update()
+						stino.cur_menu.update()
+						stino.const.settings.set('pre_setting_folder_path', setting_folder_path)
+
 			if state != pre_state:
 				stino.const.settings.set('show_arduino_menu', state)
-				stino.const.save_settings()
 				stino.cur_menu.update()
 
 				if state:
@@ -111,7 +122,6 @@ class SketchListener(sublime_plugin.EventListener):
 			state = stino.smonitor.isMonitorView(view)
 			if state != pre_state:
 				stino.const.settings.set('show_serial_monitor_menu', state)
-				stino.const.save_settings()
 				stino.cur_menu.update()
 				view.window().run_command('send_to_serial')
 
@@ -129,7 +139,6 @@ class ShowArduinoMenuCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		show_arduino_menu = not stino.const.settings.get('show_arduino_menu')
 		stino.const.settings.set('show_arduino_menu', show_arduino_menu)
-		stino.const.save_settings()
 		stino.cur_menu.update()
 
 	def is_checked(self):
@@ -238,7 +247,6 @@ class ChangeExtraFlagsCommand(sublime_plugin.WindowCommand):
 		if (not extra_flags) or (len(extra_flags) < 3):
 			extra_flags = ''
 		stino.const.settings.set('extra_flags', extra_flags)
-		stino.const.save_settings()
 
 	def description(self):
 		extra_flags = stino.const.settings.get('extra_flags')
@@ -308,7 +316,6 @@ class SelectBoardCommand(sublime_plugin.WindowCommand):
 			stino.const.settings.set('platform', platform)
 			stino.const.settings.set('board', board)
 			stino.const.settings.set('full_compilation', True)
-			stino.const.save_settings()
 			stino.cur_menu.update()
 
 	def is_checked(self, menu_str):
@@ -328,7 +335,6 @@ class SelectBoardTypeCommand(sublime_plugin.WindowCommand):
 		if not item == pre_item:
 			stino.const.settings.set(type_caption, item)
 			stino.const.settings.set('full_compilation', True)
-			stino.const.save_settings()
 			stino.cur_menu.commandUpdate()
 
 	def is_checked(self, menu_str):
@@ -346,7 +352,6 @@ class SelectSerialPortCommand(sublime_plugin.WindowCommand):
 		pre_serial_port = stino.const.settings.get('serial_port')
 		if serial_port != pre_serial_port:
 			stino.const.settings.set('serial_port', serial_port)
-			stino.const.save_settings()
 
 	def is_checked(self, menu_str):
 		state = False
@@ -361,7 +366,6 @@ class SelectBaudrateCommand(sublime_plugin.WindowCommand):
 		pre_baudrate = stino.const.settings.get('baudrate')
 		if baudrate != pre_baudrate:
 			stino.const.settings.set('baudrate', baudrate)
-			stino.const.save_settings()
 
 	def is_checked(self, menu_str):
 		state = False
@@ -446,7 +450,6 @@ class SelectProgrammerCommand(sublime_plugin.WindowCommand):
 		pre_programmer = stino.const.settings.get('programmer')
 		if platform != pre_platform or programmer != pre_programmer:
 			stino.const.settings.set('programmer', programmer)
-			stino.const.save_settings()
 
 	def is_checked(self, menu_str):
 		state = False
@@ -480,7 +483,6 @@ class SelectLanguageCommand(sublime_plugin.WindowCommand):
 		pre_language = stino.const.settings.get('language')
 		if language != pre_language:
 			stino.const.settings.set('language', language)
-			stino.const.save_settings()
 			stino.cur_language.update()
 			stino.cur_menu.languageUpdate()
 
@@ -490,6 +492,15 @@ class SelectLanguageCommand(sublime_plugin.WindowCommand):
 		cur_language = stino.cur_language.getLanguageFromLanguageText(menu_str)
 		if cur_language == setting_language:
 			state = True
+		return state
+
+class ToggleGlobalSettingCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		global_setting = not stino.const.settings.get('global_setting')
+		stino.const.settings.set('global_setting', global_setting)
+		
+	def is_checked(self):
+		state = stino.const.settings.get('global_setting')
 		return state
 
 class SelectArduinoFolderCommand(sublime_plugin.WindowCommand):
@@ -510,7 +521,6 @@ class ToggleFullCompilationCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		full_compilation = not stino.const.settings.get('full_compilation')
 		stino.const.settings.set('full_compilation', full_compilation)
-		stino.const.save_settings()
 		stino.cur_menu.commandUpdate()
 
 	def is_checked(self):
@@ -521,7 +531,6 @@ class ToggleVerboseCompilationCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		verbose_compilation = not stino.const.settings.get('verbose_compilation')
 		stino.const.settings.set('verbose_compilation', verbose_compilation)
-		stino.const.save_settings()
 		stino.cur_menu.commandUpdate()
 
 	def is_checked(self):
@@ -532,7 +541,6 @@ class ToggleVerboseUploadCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		verbose_upload = not stino.const.settings.get('verbose_upload')
 		stino.const.settings.set('verbose_upload', verbose_upload)
-		stino.const.save_settings()
 		stino.cur_menu.commandUpdate()
 
 	def is_checked(self):
@@ -543,7 +551,6 @@ class ToggleVerifyCodeCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		verify_code = not stino.const.settings.get('verify_code')
 		stino.const.settings.set('verify_code', verify_code)
-		stino.const.save_settings()
 		stino.cur_menu.commandUpdate()
 
 	def is_checked(self):

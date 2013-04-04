@@ -40,21 +40,6 @@ def convertTextToVersion(version_text):
 			version *= 100
 		else:
 			version = 1000
-	# if not '.' in version_text:
-	# 	version = int(version_text)
-	# else:
-	# 	number_list = version_text.split('.')
-	# 	power = 0
-	# 	for number in number_list:
-	# 		for n in number:
-	# 			if not (n in '0123456789'):
-	# 				index = number.index(n)
-	# 				number = number[:index]
-	# 				break
-	# 		number = int(number)
-	# 		version += number * (10 ** power)
-	# 		power -= 1
-	# 	version *= 100
 	return int(version)
 
 def parseVersionInfo(arduino_root):
@@ -575,7 +560,6 @@ class Arduino:
 
 	def setArduinoRoot(self, arduino_root):
 		const.settings.set('arduino_root', arduino_root)
-		const.save_settings()
 
 	def getArduinoRoot(self):
 		arduino_root = const.settings.get('arduino_root')
@@ -597,7 +581,6 @@ class Arduino:
 
 	def setSketchbookRoot(self, sketchbook_root):
 		const.settings.set('sketchbook_root', sketchbook_root)
-		const.save_settings()
 		libraries_path = os.path.join(sketchbook_root, 'libraries')
 		hardware_path = os.path.join(sketchbook_root, 'hardware')
 		path_list = [sketchbook_root, libraries_path, hardware_path]

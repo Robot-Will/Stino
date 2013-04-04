@@ -38,6 +38,7 @@
 				"children":
 				[
 					{"caption": "Language->"},
+					{"caption": "%(Global_Setting)s", "command": "toggle_global_setting", "checkbox": true},
 					{"caption": "%(Select_Arduino_Folder...)s", "command": "select_arduino_folder"},
 					{"caption": "%(Change_Sketchbook_Folder...)s", "command": "change_sketchbook_folder"},
 					{"caption": "%(Full_Compilation)s", "command": "toggle_full_compilation", "checkbox": true},

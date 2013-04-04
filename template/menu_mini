@@ -9,6 +9,7 @@
 				"children":
 				[
 					{"caption": "Language->"},
+					{"caption": "%(Global_Setting)s", "command": "toggle_global_setting", "checkbox": true},
 					{"caption": "%(Select_Arduino_Folder...)s", "command": "select_arduino_folder"}
 				]
 			},
