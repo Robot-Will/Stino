@@ -1,264 +1,266 @@
 # LANGUAGE: aragonés (Aragonese)
 # Aragonese translations for Stino Plugin.
-# Copyright (C) 2013 Robot-Will
+# Copyright (C) 2012-2013 Robot-Will
 # This file is distributed under the same license as the Stino Plugin.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# AUTHOR <EMAIL@ADDRESS>
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Stino 1.2\n"
-"POT-Creation-Date: 2013-02-27 11:34+0800\n"
-"PO-Revision-Date: 2013-03-26 13:00+0800\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: Aragonese <LL@li.org>\n"
+"POT-Creation-Date: 2013-01-01 00:00+0000\n"
+"PO-Revision-Date: 2013-04-01 00:00+0000\n"
+"Language-Team: Aragonese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UNICODE\n"
 "Content-Transfer-Encoding: UTF-8\n"
 "Generated-By: pygettext.py 1.5\n"
 
-msgid "Sketchbook"
-msgstr "Sketchbook"
+msgid "A file named "{1}" already exists. Could not create the file.\n"
+msgstr "A file named "{1}" already exists. Could not create the file.\n"
 
-msgid "Start burning {1}...\n"
-msgstr "Start burning {1}...\n"
+msgid "A sketch (or folder) named "{1}" already exists. Could not create the sketch.\n"
+msgstr "A sketch (or folder) named "{1}" already exists. No s'ha puesto creyar a carpeta d'o sketch.\n"
+
+msgid "About"
+msgstr "Arredol d'"
 
 msgid "Add_Extra_Flags"
 msgstr "Add Extra Flags"
 
-msgid "Writing {1} completed.\n"
-msgstr "Writing {1} completed.\n"
+msgid "Archive_Sketch"
+msgstr "Archivar o sketch"
 
 msgid "Arduino"
 msgstr "Arduino"
 
-msgid "[Stino - Uploading terminated with errors.]\n"
-msgstr "[Stino - Uploading terminated with errors.]\n"
+msgid "Arduino {1} is found at {2}.\n"
+msgstr "Arduino {1} is found at {2}.\n"
 
-msgid "Processor"
-msgstr "Processor"
-
-msgid "Serial_Port"
-msgstr "Puerto serie"
-
-msgid "Send"
-msgstr "Ninviar"
-
-msgid "Full_Compilation"
-msgstr "Full Compilation"
-
-msgid "New_File..."
-msgstr "New File..."
-
-msgid "Start uploading {1}...\n"
-msgstr "Start uploading {1}...\n"
-
-msgid "Sketchbook folder have switched to {1}.\n"
-msgstr "Sketchbook folder have switched to {1}.\n"
-
-msgid "Find_in_Reference"
-msgstr "Trobar en a referencia"
-
-msgid "Board"
-msgstr "Tarcheta"
-
-msgid "Upload_Using_Programmer"
-msgstr "Cargar fendo servir o programador"
-
-msgid "[Stino - Bootloader burning terminated with errors.]\n"
-msgstr "[Stino - Bootloader burning terminated with errors.]\n"
-
-msgid "USB_Type"
-msgstr "USB Type"
-
-msgid "Preferences"
-msgstr "Preferencias"
-
-msgid "Sketch {1} exists, please use another file name.\n"
-msgstr "Sketch {1} exists, please use another file name.\n"
-
-msgid "Send:"
-msgstr "Send:"
-
-msgid "Baudrate"
-msgstr "Baudrate"
-
-msgid "Compilation"
-msgstr "Compilation"
-
-msgid "Troubleshooting"
-msgstr "Solución de problemas"
-
-msgid "Stop"
-msgstr "Stop"
+msgid "Auto Format finished.\n"
+msgstr "S'ha rematau o formato automatico.\n"
 
 msgid "Auto_Format"
 msgstr "Formato automatico"
 
-msgid "[Stino - Compilation completed.]\n"
-msgstr "[Stino - Compilation completed.]\n"
-
-msgid "Change_Extra_Flags"
-msgstr "Change Extra Flags"
-
-msgid "Extra compilation flags:"
-msgstr "Extra compilation flags:"
-
-msgid "[Stino - Uploading completed.]\n"
-msgstr "[Stino - Uploading completed.]\n"
-
-msgid "Upload"
-msgstr "Cargar"
-
-msgid "Show_Sketch_Folder"
-msgstr "Amostrar a Carpeta de sketch"
-
-msgid "Error: No main source file was found. A main source file should contain setup() and loop() functions.\n"
-msgstr "Error: No main source file was found. A main source file should contain setup() and loop() functions.\n"
-
-msgid "Fix_Encoding_&_Reload"
-msgstr "Reparar a Codificación y Recargar"
-
-msgid "About_Stino"
-msgstr "About Stino"
-
-msgid "Show_Arduino_Menu"
-msgstr "Show Arduino Menu"
-
-msgid "Tools"
-msgstr "Ferramientas"
-
-msgid "Cleaning...\n"
-msgstr "Cleaning...\n"
-
-msgid "Examples"
-msgstr "Eixemplos"
-
-msgid "Select Current Folder ({1})"
-msgstr "Select Current Folder ({1})"
-
-msgid "Verify_code_after_upload"
-msgstr "Verificar o codigo dimpués de cargar"
-
-msgid "OFF"
-msgstr "OFF"
-
-msgid "Language"
-msgstr "Language"
-
-msgid "Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n"
-msgstr "Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n"
-
-msgid "Parsing C++ source files is difficult and I do not finish it yet.\n"
-msgstr "Parsing C++ source files is difficult and I do not finish it yet.\n"
+msgid "Baudrate"
+msgstr "Baudrate"
 
 msgid "Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n"
-msgstr "Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n"
+msgstr "Grandaria binaria d'o sketch: {1} bytes (d'un maximo de {2} bytes, {3}%).\n"
 
-msgid "Frequently_Asked_Questions"
-msgstr "Preguntas freqüents"
-
-msgid "Keyboard_Layout"
-msgstr "Keyboard Layout"
+msgid "Board"
+msgstr "Tarcheta"
 
 msgid "Burn_Bootloader"
 msgstr "Gravar o bootloader"
 
-msgid "Select_Arduino_Folder..."
-msgstr "Select Arduino Folder..."
+msgid "Burning bootloader {1} to {2} (this may take a minute)...\n"
+msgstr "Burning bootloader {1} to {2} (this may take a minute)...\n"
 
-msgid "Arduino_Help"
-msgstr "Arduino Help"
+msgid "Change_Extra_Flags"
+msgstr "Change Extra Flags"
 
 msgid "Change_Sketchbook_Folder..."
 msgstr "Change Sketchbook Folder..."
 
-msgid "CPU_Speed"
-msgstr "CPU Speed"
+msgid "Cleaning...\n"
+msgstr "Cleaning...\n"
 
-msgid "File {1} exists, please use another file name.\n"
-msgstr "File {1} exists, please use another file name.\n"
+msgid "Compilation"
+msgstr "compilación "
 
-msgid "Name_for_new_sketch:"
-msgstr "Name for new sketch:"
+msgid "Compiling sketch...\n"
+msgstr "Compilando o sketch...\n"
 
-msgid "Start compilation...\n"
-msgstr "Start compilation...\n"
-
-msgid "Example"
-msgstr "Example"
-
-msgid "Getting_Started"
-msgstr "Primers trangos"
-
-msgid "ON"
-msgstr "ON"
-
-msgid "Reference"
-msgstr "Referencia"
-
-msgid "Stino"
-msgstr "Stino"
-
-msgid "Start"
-msgstr "Start"
-
-msgid "Arduino {1} is found at {2}.\n"
-msgstr "Arduino {1} is found at {2}.\n"
-
-msgid "Serial_Monitor"
-msgstr "Monitor serie"
-
-msgid "[Stino - Bootloader burning completed.]\n"
-msgstr "[Stino - Bootloader burning completed.]\n"
-
-msgid "Archive_Sketch"
-msgstr "Archivar o sketch"
+msgid "Couldn\'t find a Leonardo on the selected port. Check that you have the\ncorrect port selected.  If it is correct, try pressing the board\'s reset\nbutton after initiating the upload.\n"
+msgstr "Couldn\'t find a Leonardo on the selected port. Check that you have the\ncorrect port selected.  If it is correct, try pressing the board\'s reset\nbutton after initiating the upload.\n"
 
 msgid "Creating {1}...\n"
 msgstr "Creating {1}...\n"
 
-msgid "[Stino - Compilation terminated with errors.]\n"
-msgstr "[Stino - Compilation terminated with errors.]\n"
-
-msgid "Verify / Compile"
-msgstr "Verificar / Compilar"
-
-msgid "New_Sketch..."
-msgstr "New Sketch..."
-
-msgid "Toggle"
-msgstr "Toggle"
-
 msgid "Discard all changes and reload sketch?\n"
-msgstr "Discard all changes and reload sketch?\n"
-
-msgid "Import_Library..."
-msgstr "Importar Biblioteca..."
-
-msgid "Open_Sketch"
-msgstr "Open Sketch"
-
-msgid "Name_for_new_file:"
-msgstr "Nombre d'o nuevo fichero:"
-
-msgid "Programmer"
-msgstr "Programador"
-
-msgid "Visit_Arduino_Website"
-msgstr "Visit Arduino Website"
-
-msgid "Open"
-msgstr "Ubrir"
+msgstr "Descartar totz os cambeos y recargar o sketch?\n"
 
 msgid "Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n"
 msgstr "Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n"
 
+msgid "Examples"
+msgstr "Eixemplos"
+
+msgid "Extra compilation flags:"
+msgstr "Extra compilation flags:"
+
+msgid "File"
+msgstr "Fichero"
+
+msgid "Find_in_Reference"
+msgstr "Trobar en a referencia"
+
+msgid "Fix_Encoding_&_Reload"
+msgstr "Reparar a Codificación y Recargar"
+
+msgid "Forcing reset using 1200bps open/close on port.\n"
+msgstr "Forcing reset using 1200bps open/close on port.\n"
+
+msgid "Frequently_Asked_Questions"
+msgstr "Preguntas freqüents"
+
+msgid "Full_Compilation"
+msgstr "Full Compilation"
+
+msgid "Gathering compilation infomation...\n"
+msgstr "Gathering compilation infomation...\n"
+
+msgid "Getting_Started"
+msgstr "Primers trangos"
+
+msgid "Help"
+msgstr "Aduya"
+
+msgid "Import_Library..."
+msgstr "Importar Biblioteca..."
+
+msgid "Keyboard_Layout"
+msgstr "Keyboard Layout"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "Name_for_new_file:"
+msgstr "Nombre d'o nuevo fichero:"
+
+msgid "Name_for_new_sketch:"
+msgstr "Name for new sketch:"
+
+msgid "New"
+msgstr "Nuevo"
+
+msgid "No reference available.\n"
+msgstr "No reference available.\n"
+
+msgid "OFF"
+msgstr "OFF"
+
+msgid "ON"
+msgstr "ON"
+
+msgid "Open"
+msgstr "Ubrir"
+
+msgid "Preferences"
+msgstr "Preferencias"
+
+msgid "Processor"
+msgstr "Processor"
+
+msgid "Programmer"
+msgstr "Programador"
+
+msgid "Reference"
+msgstr "Referencia"
+
 msgid "Select"
 msgstr "Select"
+
+msgid "Select Current Folder ({1})"
+msgstr "Select Current Folder ({1})"
+
+msgid "Select_Arduino_Folder..."
+msgstr "Select Arduino Folder..."
+
+msgid "Send"
+msgstr "Ninviar"
+
+msgid "Serial_Monitor"
+msgstr "Monitor serie"
+
+msgid "Serial_Port"
+msgstr "Puerto serie"
+
+msgid "Show_Arduino_Menu"
+msgstr "Show Arduino Menu"
+
+msgid "Show_Sketch_Folder"
+msgstr "Amostrar a Carpeta de sketch"
 
 msgid "Show_Verbose_Output"
 msgstr "Show Verbose Output"
 
-msgid "Gathering compilation infomation...\n"
-msgstr "Gathering compilation infomation...\n"
+msgid "Sketch"
+msgstr "Sketch"
+
+msgid "Sketchbook"
+msgstr "Sketchbook"
+
+msgid "Sketchbook folder has been changed to {1}.\n"
+msgstr "Sketchbook folder has been changed to {1}.\n"
+
+msgid "Speed"
+msgstr "Speed"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Stino"
+msgstr "Stino"
+
+msgid "Stop"
+msgstr "Stop"
+
+msgid "The selected library no longer exists.\nYou may need to restart Sublime Text 2\nto update the import library menu.\n"
+msgstr "The selected library no longer exists.\nYou may need to restart Sublime Text 2\nto update the import library menu.\n"
+
+msgid "The selected sketch no longer exists.\nYou may need to restart Sublime Text 2\nto update the sketchbook menu.\n"
+msgstr "O sketch seleccionau ya no existe.\nYe posible que te calga reiniciar Sublime Text 2\nta esviellar o menú sketchbook.\n"
+
+msgid "Toggle"
+msgstr "Toggle"
+
+msgid "Tools"
+msgstr "Ferramientas"
+
+msgid "Troubleshooting"
+msgstr "Solución de problemas"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Upload"
+msgstr "Cargar"
+
+msgid "Upload_Using_Programmer"
+msgstr "Cargar fendo servir o programador"
+
+msgid "Uploading {1} to {2}...\n"
+msgstr "Uploading {1} to {2}...\n"
+
+msgid "Verify / Compile"
+msgstr "Verificar / Compilar"
+
+msgid "Verify_code_after_upload"
+msgstr "Verificar o codigo dimpués de cargar"
+
+msgid "Visit_Arduino_Website"
+msgstr "Visitar Arduino.cc"
+
+msgid "Writing {1} completed.\n"
+msgstr "Writing {1} completed.\n"
+
+msgid "[Stino - Done burning bootloader.]\n"
+msgstr "[Stino - S'ha rematau a gravación d'o bootloader.]\n"
+
+msgid "[Stino - Done compiling.]\n"
+msgstr "[Stino - S'ha rematau a compilación.]\n"
+
+msgid "[Stino - Done uploading.]\n"
+msgstr "[Stino - S'ha rematau a carga.]\n"
+
+msgid "[Stino - Error while burning bootloader.]\n"
+msgstr "[Stino - S'ha trobau una error en gravar o bootloader.]\n"
+
+msgid "[Stino - Error while compiling.]\n"
+msgstr "[Stino - Error while compiling.]\n"
+
+msgid "[Stino - Error while uploading.]\n"
+msgstr "[Stino - Error while uploading.]\n"
 

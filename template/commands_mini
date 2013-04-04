@@ -1,13 +1,13 @@
 [
     { "caption": "Preferences: %(Show_Arduino_Menu)s", "command": "show_arduino_menu"},
-    { "caption": "Stino: %(New_Sketch...)s", "command": "new_sketch" },
+    { "caption": "Stino: %(New)s %(Sketch)s", "command": "new_sketch" },
     { "caption": "Stino: %(Select_Arduino_Folder...)s", "command": "select_arduino_folder" },
     { "caption": "Stino: %(Getting_Started)s", "command": "open_ref", "args": {"menu_str": "Guide_index"}},
     { "caption": "Stino: %(Troubleshooting)s", "command": "open_ref", "args": {"menu_str": "Guide_Troubleshooting"}},
     { "caption": "Stino: %(Reference)s", "command": "open_ref", "args": {"menu_str": "index"}},
     { "caption": "Stino: %(Frequently_Asked_Questions)s", "command": "open_ref", "args": {"menu_str": "FAQ"}},
     { "caption": "Stino: %(Visit_Arduino_Website)s", "command": "open_url", "args": {"menu_str": "http://arduino.cc"}},
-    { "caption": "Stino: %(About_Stino)s", "command": "about_stino"},
+    { "caption": "Stino: %(About)s Stino", "command": "about_stino"},
     { "caption": "Stino: %(Serial_Monitor)s-%(Start)s", "command": "start_serial_monitor"},
     { "caption": "Stino: %(Serial_Monitor)s-%(Stop)s", "command": "stop_serial_monitor"},
     { "caption": "Stino: %(Serial_Monitor)s-%(Send)s", "command": "send_to_serial"}

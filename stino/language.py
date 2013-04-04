@@ -81,8 +81,9 @@ class Language:
 
 		pattern_text = r'%\(([\S\s]+?)\)s'
 		pattern = re.compile(pattern_text)
-		display_pattern_text = r"display_text\s*?=\s*?'([\S\s]+?)'"
-		display_pattern = re.compile(display_pattern_text)
+		# display_pattern_text = r"display_text\s*?=\s*?'([\S\s]+?)'"
+		display_pattern_text = r"display_text\s*?=\s*?'((?:[^'\\']|\\.)+?)'"
+		display_pattern = re.compile(display_pattern_text, re.S)
 
 		plugin_root = const.plugin_root
 		script_root = const.script_root
@@ -112,10 +113,14 @@ class Language:
 		template_file_path = os.path.join(template_root, 'language')
 		text = osfile.readFileText(template_file_path)
 		text += '\n'
+		key_list = []
 		for key in self.trans_dict:
+			key_list.append(key)
+		key_list.sort()
+		for key in key_list:
 			text += 'msgid "%s"\n' % key
 			text += 'msgstr "%s"\n\n' % self.trans_dict[key]
-		default_file_path = os.path.join(language_root, 'en')
+		default_file_path = os.path.join(language_root, 'orginal_text')
 		osfile.writeFile(default_file_path, text)
 
 	def genTransDict(self):

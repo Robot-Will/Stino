@@ -1,264 +1,266 @@
 # LANGUAGE: 日本語 (Japanese)
 # Japanese translations for Stino Plugin.
-# Copyright (C) 2013 Robot-Will
+# Copyright (C) 2012-2013 Robot-Will
 # This file is distributed under the same license as the Stino Plugin.
-# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+# AUTHOR <EMAIL@ADDRESS>
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Stino 1.2\n"
-"POT-Creation-Date: 2013-02-27 11:34+0800\n"
-"PO-Revision-Date: 2013-03-26 13:00+0800\n"
-"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
-"Language-Team: Japanese <LL@li.org>\n"
+"POT-Creation-Date: 2013-01-01 00:00+0000\n"
+"PO-Revision-Date: 2013-04-01 00:00+0000\n"
+"Language-Team: Japanese\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UNICODE\n"
 "Content-Transfer-Encoding: UTF-8\n"
 "Generated-By: pygettext.py 1.5\n"
 
-msgid "Sketchbook"
-msgstr "スケッチブック"
+msgid "A file named "{1}" already exists. Could not create the file.\n"
+msgstr "A file named "{1}" already exists. Could not create the file.\n"
 
-msgid "Start burning {1}...\n"
-msgstr "Start burning {1}...\n"
+msgid "A sketch (or folder) named "{1}" already exists. Could not create the sketch.\n"
+msgstr "A sketch (or folder) named "{1}" already exists. スケッチフォルダを作成できません。\n"
+
+msgid "About"
+msgstr "について..."
 
 msgid "Add_Extra_Flags"
 msgstr "Add Extra Flags"
 
-msgid "Writing {1} completed.\n"
-msgstr "Writing {1} completed.\n"
+msgid "Archive_Sketch"
+msgstr "スケッチをアーカイブする"
 
 msgid "Arduino"
 msgstr "Arduino"
 
-msgid "[Stino - Uploading terminated with errors.]\n"
-msgstr "[Stino - Uploading terminated with errors.]\n"
+msgid "Arduino {1} is found at {2}.\n"
+msgstr "Arduino {1} is found at {2}.\n"
 
-msgid "Processor"
-msgstr "Processor"
-
-msgid "Serial_Port"
-msgstr "シリアルポート"
-
-msgid "Send"
-msgstr "送信"
-
-msgid "Full_Compilation"
-msgstr "Full Compilation"
-
-msgid "New_File..."
-msgstr "New File..."
-
-msgid "Start uploading {1}...\n"
-msgstr "Start uploading {1}...\n"
-
-msgid "Sketchbook folder have switched to {1}.\n"
-msgstr "Sketchbook folder have switched to {1}.\n"
-
-msgid "Find_in_Reference"
-msgstr "リファレンスで検索"
-
-msgid "Board"
-msgstr "マイコンボード"
-
-msgid "Upload_Using_Programmer"
-msgstr "書込装置を使って書き込む"
-
-msgid "[Stino - Bootloader burning terminated with errors.]\n"
-msgstr "[Stino - Bootloader burning terminated with errors.]\n"
-
-msgid "USB_Type"
-msgstr "USB Type"
-
-msgid "Preferences"
-msgstr "環境設定"
-
-msgid "Sketch {1} exists, please use another file name.\n"
-msgstr "Sketch {1} exists, please use another file name.\n"
-
-msgid "Send:"
-msgstr "Send:"
-
-msgid "Baudrate"
-msgstr "Baudrate"
-
-msgid "Compilation"
-msgstr "Compilation"
-
-msgid "Troubleshooting"
-msgstr "トラブルシューティング"
-
-msgid "Stop"
-msgstr "Stop"
+msgid "Auto Format finished.\n"
+msgstr "自動整形が完了しました。\n"
 
 msgid "Auto_Format"
 msgstr "自動整形"
 
-msgid "[Stino - Compilation completed.]\n"
-msgstr "[Stino - Compilation completed.]\n"
-
-msgid "Change_Extra_Flags"
-msgstr "Change Extra Flags"
-
-msgid "Extra compilation flags:"
-msgstr "Extra compilation flags:"
-
-msgid "[Stino - Uploading completed.]\n"
-msgstr "[Stino - Uploading completed.]\n"
-
-msgid "Upload"
-msgstr "マイコンボードに書き込む"
-
-msgid "Show_Sketch_Folder"
-msgstr "スケッチのフォルダを表示"
-
-msgid "Error: No main source file was found. A main source file should contain setup() and loop() functions.\n"
-msgstr "Error: No main source file was found. A main source file should contain setup() and loop() functions.\n"
-
-msgid "Fix_Encoding_&_Reload"
-msgstr "エンコーディングを修正"
-
-msgid "About_Stino"
-msgstr "About Stino"
-
-msgid "Show_Arduino_Menu"
-msgstr "Show Arduino Menu"
-
-msgid "Tools"
-msgstr "ツール"
-
-msgid "Cleaning...\n"
-msgstr "Cleaning...\n"
-
-msgid "Examples"
-msgstr "スケッチの例"
-
-msgid "Select Current Folder ({1})"
-msgstr "Select Current Folder ({1})"
-
-msgid "Verify_code_after_upload"
-msgstr "書き込みを検証する"
-
-msgid "OFF"
-msgstr "OFF"
-
-msgid "Language"
-msgstr "Language"
-
-msgid "Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n"
-msgstr "Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n"
-
-msgid "Parsing C++ source files is difficult and I do not finish it yet.\n"
-msgstr "Parsing C++ source files is difficult and I do not finish it yet.\n"
+msgid "Baudrate"
+msgstr "Baudrate"
 
 msgid "Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n"
-msgstr "Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n"
+msgstr "コンパイル後のスケッチのサイズ：{1}バイト（最大容量{2}バイト, {3}%).\n"
 
-msgid "Frequently_Asked_Questions"
-msgstr "よくある質問"
-
-msgid "Keyboard_Layout"
-msgstr "Keyboard Layout"
+msgid "Board"
+msgstr "マイコンボード"
 
 msgid "Burn_Bootloader"
 msgstr "ブートローダを書き込む"
 
-msgid "Select_Arduino_Folder..."
-msgstr "Select Arduino Folder..."
+msgid "Burning bootloader {1} to {2} (this may take a minute)...\n"
+msgstr "Burning bootloader {1} to {2} (this may take a minute)...\n"
 
-msgid "Arduino_Help"
-msgstr "Arduino Help"
+msgid "Change_Extra_Flags"
+msgstr "Change Extra Flags"
 
 msgid "Change_Sketchbook_Folder..."
 msgstr "Change Sketchbook Folder..."
 
-msgid "CPU_Speed"
-msgstr "CPU Speed"
+msgid "Cleaning...\n"
+msgstr "Cleaning...\n"
 
-msgid "File {1} exists, please use another file name.\n"
-msgstr "File {1} exists, please use another file name.\n"
+msgid "Compilation"
+msgstr "コンパイル "
 
-msgid "Name_for_new_sketch:"
-msgstr "Name for new sketch:"
+msgid "Compiling sketch...\n"
+msgstr "スケッチをコンパイルしています...\n"
 
-msgid "Start compilation...\n"
-msgstr "Start compilation...\n"
-
-msgid "Example"
-msgstr "Example"
-
-msgid "Getting_Started"
-msgstr "初心者向けガイド"
-
-msgid "ON"
-msgstr "ON"
-
-msgid "Reference"
-msgstr "リファレンス"
-
-msgid "Stino"
-msgstr "Stino"
-
-msgid "Start"
-msgstr "Start"
-
-msgid "Arduino {1} is found at {2}.\n"
-msgstr "Arduino {1} is found at {2}.\n"
-
-msgid "Serial_Monitor"
-msgstr "シリアルモニタ"
-
-msgid "[Stino - Bootloader burning completed.]\n"
-msgstr "[Stino - Bootloader burning completed.]\n"
-
-msgid "Archive_Sketch"
-msgstr "スケッチをアーカイブする"
+msgid "Couldn\'t find a Leonardo on the selected port. Check that you have the\ncorrect port selected.  If it is correct, try pressing the board\'s reset\nbutton after initiating the upload.\n"
+msgstr "Couldn\'t find a Leonardo on the selected port. Check that you have the\ncorrect port selected.  If it is correct, try pressing the board\'s reset\nbutton after initiating the upload.\n"
 
 msgid "Creating {1}...\n"
 msgstr "Creating {1}...\n"
 
-msgid "[Stino - Compilation terminated with errors.]\n"
-msgstr "[Stino - Compilation terminated with errors.]\n"
-
-msgid "Verify / Compile"
-msgstr "検証・コンパイル"
-
-msgid "New_Sketch..."
-msgstr "New Sketch..."
-
-msgid "Toggle"
-msgstr "Toggle"
-
 msgid "Discard all changes and reload sketch?\n"
-msgstr "Discard all changes and reload sketch?\n"
-
-msgid "Import_Library..."
-msgstr "ライブラリを使用"
-
-msgid "Open_Sketch"
-msgstr "Open Sketch"
-
-msgid "Name_for_new_file:"
-msgstr "新規ファイルの名前："
-
-msgid "Programmer"
-msgstr "書込装置"
-
-msgid "Visit_Arduino_Website"
-msgstr "Visit Arduino Website"
-
-msgid "Open"
-msgstr "開く"
+msgstr "未保存の変更を破棄してスケッチを読み込み直しますか？\n"
 
 msgid "Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n"
 msgstr "Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n"
 
+msgid "Examples"
+msgstr "スケッチの例"
+
+msgid "Extra compilation flags:"
+msgstr "Extra compilation flags:"
+
+msgid "File"
+msgstr "ファイル"
+
+msgid "Find_in_Reference"
+msgstr "リファレンスで検索"
+
+msgid "Fix_Encoding_&_Reload"
+msgstr "エンコーディングを修正"
+
+msgid "Forcing reset using 1200bps open/close on port.\n"
+msgstr "シリアルポートを1200bpsで開閉する事により、リセットを行なっています。.\n"
+
+msgid "Frequently_Asked_Questions"
+msgstr "よくある質問"
+
+msgid "Full_Compilation"
+msgstr "Full Compilation"
+
+msgid "Gathering compilation infomation...\n"
+msgstr "Gathering compilation infomation...\n"
+
+msgid "Getting_Started"
+msgstr "初心者向けガイド"
+
+msgid "Help"
+msgstr "ヘルプ"
+
+msgid "Import_Library..."
+msgstr "ライブラリを使用"
+
+msgid "Keyboard_Layout"
+msgstr "Keyboard Layout"
+
+msgid "Language"
+msgstr "Language"
+
+msgid "Name_for_new_file:"
+msgstr "新規ファイルの名前："
+
+msgid "Name_for_new_sketch:"
+msgstr "Name for new sketch:"
+
+msgid "New"
+msgstr "新規ファイル"
+
+msgid "No reference available.\n"
+msgstr "No reference available.\n"
+
+msgid "OFF"
+msgstr "OFF"
+
+msgid "ON"
+msgstr "ON"
+
+msgid "Open"
+msgstr "開く"
+
+msgid "Preferences"
+msgstr "環境設定"
+
+msgid "Processor"
+msgstr "Processor"
+
+msgid "Programmer"
+msgstr "書込装置"
+
+msgid "Reference"
+msgstr "リファレンス"
+
 msgid "Select"
 msgstr "Select"
+
+msgid "Select Current Folder ({1})"
+msgstr "Select Current Folder ({1})"
+
+msgid "Select_Arduino_Folder..."
+msgstr "Select Arduino Folder..."
+
+msgid "Send"
+msgstr "送信"
+
+msgid "Serial_Monitor"
+msgstr "シリアルモニタ"
+
+msgid "Serial_Port"
+msgstr "シリアルポート"
+
+msgid "Show_Arduino_Menu"
+msgstr "Show Arduino Menu"
+
+msgid "Show_Sketch_Folder"
+msgstr "スケッチのフォルダを表示"
 
 msgid "Show_Verbose_Output"
 msgstr "Show Verbose Output"
 
-msgid "Gathering compilation infomation...\n"
-msgstr "Gathering compilation infomation...\n"
+msgid "Sketch"
+msgstr "スケッチ"
+
+msgid "Sketchbook"
+msgstr "スケッチブック"
+
+msgid "Sketchbook folder has been changed to {1}.\n"
+msgstr "Sketchbook folder has been changed to {1}.\n"
+
+msgid "Speed"
+msgstr "Speed"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Stino"
+msgstr "Stino"
+
+msgid "Stop"
+msgstr "Stop"
+
+msgid "The selected library no longer exists.\nYou may need to restart Sublime Text 2\nto update the import library menu.\n"
+msgstr "The selected library no longer exists.\nYou may need to restart Sublime Text 2\nto update the import library menu.\n"
+
+msgid "The selected sketch no longer exists.\nYou may need to restart Sublime Text 2\nto update the sketchbook menu.\n"
+msgstr "選択したスケッチが存在しません。\nスケッチブックメニューを更新するにはSublime Text 2 IDEを再起動して下さい。\n"
+
+msgid "Toggle"
+msgstr "Toggle"
+
+msgid "Tools"
+msgstr "ツール"
+
+msgid "Troubleshooting"
+msgstr "トラブルシューティング"
+
+msgid "Type"
+msgstr "Type"
+
+msgid "Upload"
+msgstr "マイコンボードに書き込む"
+
+msgid "Upload_Using_Programmer"
+msgstr "書込装置を使って書き込む"
+
+msgid "Uploading {1} to {2}...\n"
+msgstr "Uploading {1} to {2}...\n"
+
+msgid "Verify / Compile"
+msgstr "検証・コンパイル"
+
+msgid "Verify_code_after_upload"
+msgstr "書き込みを検証する"
+
+msgid "Visit_Arduino_Website"
+msgstr "Arduino.ccウェブサイトを開く"
+
+msgid "Writing {1} completed.\n"
+msgstr "Writing {1} completed.\n"
+
+msgid "[Stino - Done burning bootloader.]\n"
+msgstr "[Stino - ブートローダの書き込みが完了しました。]\n"
+
+msgid "[Stino - Done compiling.]\n"
+msgstr "[Stino - コンパイル終了。]\n"
+
+msgid "[Stino - Done uploading.]\n"
+msgstr "[Stino - マイコンボードへの書き込みが完了しました。]\n"
+
+msgid "[Stino - Error while burning bootloader.]\n"
+msgstr "[Stino - ブートローダの書き込み中にエラーが発生しました。]\n"
+
+msgid "[Stino - Error while compiling.]\n"
+msgstr "[Stino - Error while compiling.]\n"
+
+msgid "[Stino - Error while uploading.]\n"
+msgstr "[Stino - Error while uploading.]\n"
 

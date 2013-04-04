@@ -1,8 +1,8 @@
 [
     { "caption": "Preferences: %(Show_Arduino_Menu)s", "command": "show_arduino_menu"},
 (_$item$_)
-    { "caption": "Stino: %(New_Sketch...)s", "command": "new_sketch" },
-    { "caption": "Stino: %(New_File...)s", "command": "new_to_sketch" },
+    { "caption": "Stino: %(New)s %(Sketch)s", "command": "new_sketch" },
+    { "caption": "Stino: %(New)s %(File)s", "command": "new_to_sketch" },
     { "caption": "Stino: %(Show_Sketch_Folder)s", "command": "show_sketch_folder" },
     { "caption": "Stino: %(Verify / Compile)s", "command": "compile_sketch" },
     { "caption": "Stino: %(Upload)s", "command": "upload_binary" },
@@ -20,5 +20,5 @@
     { "caption": "Stino: %(Find_in_Reference)s", "command": "find_in_reference"},
     { "caption": "Stino: %(Frequently_Asked_Questions)s", "command": "open_ref", "args": {"menu_str": "FAQ"}},
     { "caption": "Stino: %(Visit_Arduino_Website)s", "command": "open_url", "args": {"menu_str": "http://arduino.cc"}},
-    { "caption": "Stino: %(About_Stino)s", "command": "about_stino"}
+    { "caption": "Stino: %(About)s Stino", "command": "about_stino"}
 ]

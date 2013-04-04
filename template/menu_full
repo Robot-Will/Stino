@@ -3,10 +3,10 @@
 		"id": "arduino",
 		"children":
 		[
-			{"caption": "%(New_Sketch...)s", "command": "new_sketch"},
+			{"caption": "%(New)s %(Sketch)s", "command": "new_sketch"},
 			{"caption": "Sketchbook->"},
 			{"caption": "-"},
-			{"caption": "%(New_File...)s", "command": "new_to_sketch"},
+			{"caption": "%(New)s %(File)s", "command": "new_to_sketch"},
 			{"caption": "Import_Library->"},
 			{"caption": "%(Show_Sketch_Folder)s", "command": "show_sketch_folder"},
 			{"caption": "-"},
@@ -67,7 +67,7 @@
 			{"caption": "-"},
 			{"caption": "Examples->"},
 			{
-				"caption": "%(Arduino_Help)s",
+				"caption": "%(Arduino)s %(Help)s",
 				"id": "arduino_help",
 				"children":
 				[
@@ -81,6 +81,6 @@
 			},			
 			{"caption" : "-"},
 			{"caption": "%(Frequently_Asked_Questions)s", "command": "open_ref", "args": {"menu_str": "FAQ"}},
-			{"caption": "%(About_Stino)s", "command": "about_stino"}
+			{"caption": "%(About)s Stino", "command": "about_stino"}
 		]
 	}

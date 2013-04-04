@@ -489,7 +489,7 @@ class Compilation:
 		self.arduino_info = arduino_info
 		self.menu = menu
 		self.is_run_cmd = is_run_cmd
-		# self.sketch_folder_path = src.getSketchFolderPath(file_path)
+
 		self.sketch_folder_path = os.path.split(file_path)[0]
 		self.sketch_name = src.getSketchNameFromFolder(self.sketch_folder_path)
 		now_time = datetime.datetime.now()
@@ -582,22 +582,6 @@ class Compilation:
 
 	def preCompilationProcess(self):
 		(main_src_number, self.main_src_path) = self.genMainSrcFileInfo()
-		# if main_src_number == 0:
-		# 	self.error_code = 2
-		# 	display_text = 'Error: No main source file was found. A main source file should contain setup() and loop() functions.\n'
-		# 	msg = self.language.translate(display_text)
-		# 	self.output_panel.addText(msg)
-		# 	self.is_run_cmd = False
-		# 	self.is_finished = True
-		# elif main_src_number > 1:
-		# 	self.error_code = 3
-		# 	display_text = 'Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n'
-		# 	msg = self.language.translate(display_text)
-		# 	msg = msg.replace('{1}', '%d' % main_src_number)
-		# 	self.output_panel.addText(msg)
-		# 	self.is_run_cmd = False
-		# 	self.is_finished = True
-		# else:
 		self.checkBuildPath()
 		self.header_path_list = self.genHeaderPathList()
 		self.copyHeaderSrcFiles()
@@ -780,7 +764,6 @@ class Compilation:
 	def genIncludeLibraryPath(self):
 		self.genHeaderList()
 
-		# include_library_path_list = ['.', self.core_folder_path]
 		include_library_path_list = [self.build_path, self.core_folder_path]
 		if 'build.variant' in self.info_dict:
 			include_library_path_list.append(self.variant_folder_path)
@@ -1014,8 +997,6 @@ class Compilation:
 			self.output_panel.addText(msg)
 			sublime.set_timeout(self.TurnFullCompilationOff, 0)
 
-		# self.removeBuildSourceFiles()
-
 	def TurnFullCompilationOff(self):
 		const.settings.set('full_compilation', False)
 		const.save_settings()
@@ -1102,7 +1083,7 @@ class Upload:
 						self.serial_port = new_serial_port
 					else:
 						upload_command = ''
-						display_text = 'Couldn’t find a Leonardo on the selected port. Check that you have the\ncorrect port selected.  If it is correct, try pressing the board\'s reset\nbutton after initiating the upload.\n'
+						display_text = 'Couldn\'t find a Leonardo on the selected port. Check that you have the\ncorrect port selected.  If it is correct, try pressing the board\'s reset\nbutton after initiating the upload.\n'
 						msg = self.language.translate(display_text)
 						self.output_panel.addText(msg)
 			elif self.mode == 'upload_using_programmer':
@@ -1143,6 +1124,7 @@ class Upload:
 class BurnBootloader:
 	def __init__(self, language, arduino_info, menu, file_path):
 		self.language = language
+		self.board = const.settings.get('Board')
 		self.cur_compilation = Compilation(language, arduino_info, menu, file_path, is_run_cmd = False)
 		self.output_panel = self.cur_compilation.getOutputPanel()
 		self.error_code = 0
@@ -1162,9 +1144,10 @@ class BurnBootloader:
 		else:
 			self.info_dict = self.cur_compilation.getInfoDict()
 			if 'bootloader.file' in self.info_dict:
-				display_text = 'Burning bootloader to I/O Board (this may take a minute)...\n'
+				display_text = 'Burning bootloader {1} to {2} (this may take a minute)...\n'
 				msg = self.language.translate(display_text)
-				msg = msg.replace('{1}', self.info_dict['bootloader.file'])
+				msg = msg.replace('{1}', os.path.split(self.info_dict['bootloader.file'])[1])
+				msg = msg.replace('{2}', self.board)
 				self.output_panel.addText(msg)
 				termination_with_error = False
 				erase_command = self.info_dict['erase.pattern']

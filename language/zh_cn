@@ -1,263 +1,266 @@
 # LANGUAGE: 简体中文 (Chinese Simplified)
-# Simplifiled Chinese translations for Stino Plugin.
-# Copyright (C) 2013 Robot-Will
+# Chinese Simplified translations for Stino Plugin.
+# Copyright (C) 2012-2013 Robot-Will
 # This file is distributed under the same license as the Stino Plugin.
-# Will Robot <robot.will.me@gmail.com>, 2013.
+# Robot Will <EMAIL@ADDRESS>
 #
 msgid ""
 msgstr ""
 "Project-Id-Version: Stino 1.2\n"
-"POT-Creation-Date: 2013-02-27 11:34+0800\n"
-"PO-Revision-Date:2013-03-25 16:00+0800\n"
-"Last-Translator: Will Robot <robot.will.me@gmail.com>\n"
-"Language-Team: Chinese Simplified <LL@li.org>\n"
+"POT-Creation-Date: 2013-01-01 00:00+0000\n"
+"PO-Revision-Date: 2013-04-01 00:00+0000\n"
+"Language-Team: Chinese Simplified\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UNICODE\n"
 "Content-Transfer-Encoding: UTF-8\n"
 "Generated-By: pygettext.py 1.5\n"
 
-msgid "Sketchbook"
-msgstr "程序库"
+msgid "A file named "{1}" already exists. Could not create the file.\n"
+msgstr "文件"{1}"已存在。不能创建文件。\n"
 
-msgid "Start burning {1}...\n"
-msgstr "开始烧写{1}...\n"
+msgid "A sketch (or folder) named "{1}" already exists. Could not create the sketch.\n"
+msgstr "程序(所在文件夹)名"{1}"已存在. 不能创建程序文件夹。\n"
+
+msgid "About"
+msgstr "关于"
 
 msgid "Add_Extra_Flags"
 msgstr "添加额外编译参数"
 
-msgid "Writing {1} completed.\n"
-msgstr "写入{1}完成.\n"
+msgid "Archive_Sketch"
+msgstr "打包程序"
 
 msgid "Arduino"
 msgstr "Arduino"
 
-msgid "[Stino - Uploading terminated with errors.]\n"
-msgstr "[Stino - 下载发生错误而中断.]\n"
+msgid "Arduino {1} is found at {2}.\n"
+msgstr "在{2}发现Arduino {1}。\n"
 
-msgid "Serial_Port"
-msgstr "串口"
-
-msgid "Send"
-msgstr "发送"
-
-msgid "Full_Compilation"
-msgstr "完全编译"
-
-msgid "New_File..."
-msgstr "新建文件..."
-
-msgid "Start uploading {1}...\n"
-msgstr "开始下载{1}...\n"
-
-msgid "Sketchbook folder have switched to {1}.\n"
-msgstr "程序库目录切换到{1}.\n"
-
-msgid "Find_in_Reference"
-msgstr "在参考手册中查找"
-
-msgid "Fix_Encoding_&_Reload"
-msgstr "修复编码并重载"
-
-msgid "[Stino - Bootloader burning terminated with errors.]\n"
-msgstr "[Stino - 烧写Bootloader发生错误而中断.]\n"
-
-msgid "Upload_Using_Programmer"
-msgstr "用编程器下载"
-
-msgid "Preferences"
-msgstr "参数设置"
-
-msgid "Sketch {1} exists, please use another file name.\n"
-msgstr "程序{1}已存在, 请使用其它程序名.\n"
-
-msgid "Send:"
-msgstr "发送:"
-
-msgid "Baudrate"
-msgstr "波特率"
-
-msgid "Compilation"
-msgstr "编译"
-
-msgid "Troubleshooting"
-msgstr "问题排除"
-
-msgid "Stop"
-msgstr "停止"
+msgid "Auto Format finished.\n"
+msgstr "自动格式化完成。\n"
 
 msgid "Auto_Format"
 msgstr "自动格式化"
 
-msgid "[Stino - Compilation completed.]\n"
-msgstr "[Stino - 编译完成.]\n"
-
-msgid "Change_Extra_Flags"
-msgstr "改变额外编译参数"
-
-msgid "Extra compilation flags:"
-msgstr "额外编译参数:"
-
-msgid "[Stino - Uploading completed.]\n"
-msgstr "[Stino - 下载完成.]\n"
-
-msgid "Show_Sketch_Folder"
-msgstr "显示程序文件夹"
-
-msgid "Error: No main source file was found. A main source file should contain setup() and loop() functions.\n"
-msgstr "错误: 没有搜索到主程序. 主程序应包含setup()和loop()函数.\n"
-
-msgid "Getting_Started"
-msgstr "快速入门"
-
-msgid "Show_Arduino_Menu"
-msgstr "显示Arduino菜单"
-
-msgid "Tools"
-msgstr "工具"
-
-msgid "Cleaning...\n"
-msgstr "清理目标文件...\n"
-
-msgid "Examples"
-msgstr "示例"
-
-msgid "Select Current Folder ({1})"
-msgstr "选择当前目录({1})"
-
-msgid "Verify_code_after_upload"
-msgstr "下载后验证编码"
-
-msgid "OFF"
-msgstr "关闭"
-
-msgid "Language"
-msgstr "语言"
-
-msgid "Error: More than one ({1}) main source files were found. A main source file contains setup() and loop() functions.\n"
-msgstr "错误: 搜索到多于1({1})个主程序. 主程序包含setup()和loop()函数.\n"
-
-msgid "Parsing C++ source files is difficult and I do not finish it yet.\n"
-msgstr "解析C++源文件是一项艰巨的任务, 我还在努力中.\n"
+msgid "Baudrate"
+msgstr "波特率"
 
 msgid "Binary sketch size: {1} bytes (of a {2} byte maximum, {3}%).\n"
-msgstr "二进制程序容量: {1}字节 (板载最大{2}字节, {3}%).\n"
-
-msgid "Frequently_Asked_Questions"
-msgstr "常见问题"
-
-msgid "Upload"
-msgstr "下载"
-
-msgid "Burn_Bootloader"
-msgstr "烧写Bootloader"
-
-msgid "Select_Arduino_Folder..."
-msgstr "选择Arduino目录..."
-
-msgid "Arduino_Help"
-msgstr "Arduino帮助"
-
-msgid "Change_Sketchbook_Folder..."
-msgstr "改变程序库目录..."
-
-msgid "File {1} exists, please use another file name.\n"
-msgstr "文件{1}已存在, 请使用其它文件名.\n"
-
-msgid "Name_for_new_sketch:"
-msgstr "新程序名:"
-
-msgid "Start compilation...\n"
-msgstr "开始编译...\n"
-
-msgid "Example"
-msgstr "示例"
-
-msgid "About_Stino"
-msgstr "关于Stino"
-
-msgid "ON"
-msgstr "打开"
-
-msgid "Reference"
-msgstr "参考手册"
-
-msgid "Stino"
-msgstr "Stino"
-
-msgid "Start"
-msgstr "开始"
-
-msgid "Arduino {1} is found at {2}.\n"
-msgstr "在{2}找到Arduino {1}.\n"
-
-msgid "Serial_Monitor"
-msgstr "串口监视器"
-
-msgid "[Stino - Bootloader burning completed.]\n"
-msgstr "[Stino - 烧写Bootloader完成.]\n"
-
-msgid "Archive_Sketch"
-msgstr "打包程序"
-
-msgid "Creating {1}...\n"
-msgstr "创建{1}...\n"
-
-msgid "[Stino - Compilation terminated with errors.]\n"
-msgstr "[Stino - 编译发生错误而中断.]\n"
-
-msgid "Verify / Compile"
-msgstr "验证/编译"
-
-msgid "New_Sketch..."
-msgstr "新程序..."
-
-msgid "Toggle"
-msgstr "将"
-
-msgid "Discard all changes and reload sketch?\n"
-msgstr "放弃所有修改并重载程序?\n"
-
-msgid "Import_Library..."
-msgstr "导入库..."
-
-msgid "Open_Sketch"
-msgstr "打开程序"
-
-msgid "Name_for_new_file:"
-msgstr "新文件名:"
-
-msgid "Programmer"
-msgstr "编程器"
-
-msgid "Visit_Arduino_Website"
-msgstr "访问Arduino网站"
-
-msgid "Open"
-msgstr "打开"
-
-msgid "Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n"
-msgstr "预计内存使用: {1}字节 (板载最大{2}字节, {3}%).\n"
-
-msgid "Select"
-msgstr "选择"
-
-msgid "Show_Verbose_Output"
-msgstr "显示详细输出"
+msgstr "二进制程序大小：{1}字节（最大{2}字节, {3}%).\n"
 
 msgid "Board"
 msgstr "板卡"
 
-msgid "Processor"
-msgstr "处理器"
+msgid "Burn_Bootloader"
+msgstr "烧写Bootloader"
 
-msgid "CPU_Speed"
-msgstr "CPU速度"
+msgid "Burning bootloader {1} to {2} (this may take a minute)...\n"
+msgstr "烧写Bootloader {1} 到 {2} (将持续几分钟时间)...\n"
 
-msgid "USB_Type"
-msgstr "USB类型"
+msgid "Change_Extra_Flags"
+msgstr "改变额外编译参数"
+
+msgid "Change_Sketchbook_Folder..."
+msgstr "改变程序库目录..."
+
+msgid "Cleaning...\n"
+msgstr "清理目标文件...\n"
+
+msgid "Compilation"
+msgstr "编译"
+
+msgid "Compiling sketch...\n"
+msgstr "编译程序中...\n"
+
+msgid "Couldn\'t find a Leonardo on the selected port. Check that you have the\ncorrect port selected.  If it is correct, try pressing the board\'s reset\nbutton after initiating the upload.\n"
+msgstr "在所选串口未能发现Leonardo板卡。请检查所选串口是否正确。\n如果是正确的，请尝试在下载初始化完成后按一下板子上的重启按键。\n"
+
+msgid "Creating {1}...\n"
+msgstr "创建{1}...\n"
+
+msgid "Discard all changes and reload sketch?\n"
+msgstr "放弃所有修改并重载程序\n"
+
+msgid "Estimated memory use: {1} bytes (of a {2} byte maximum, {3}%).\n"
+msgstr "预计内存使用：{1}字节(最大{2}字节，{3}%)。\n"
+
+msgid "Examples"
+msgstr "示例"
+
+msgid "Extra compilation flags:"
+msgstr "额外编译参数："
+
+msgid "File"
+msgstr "文件"
+
+msgid "Find_in_Reference"
+msgstr "在手册中查找"
+
+msgid "Fix_Encoding_&_Reload"
+msgstr "修复编码并重载"
+
+msgid "Forcing reset using 1200bps open/close on port.\n"
+msgstr "以1200bps打开并关闭串口以强制其重启。\n"
+
+msgid "Frequently_Asked_Questions"
+msgstr "常见问题"
+
+msgid "Full_Compilation"
+msgstr "完全编译"
+
+msgid "Gathering compilation infomation...\n"
+msgstr "收集编译信息...\n"
+
+msgid "Getting_Started"
+msgstr "快速入门"
+
+msgid "Help"
+msgstr "帮助"
+
+msgid "Import_Library..."
+msgstr "导入库..."
 
 msgid "Keyboard_Layout"
 msgstr "键盘布局"
 
-msgid "Gathering compilation infomation...\n"
-msgstr "收集编译信息...\n"
+msgid "Language"
+msgstr "语言"
+
+msgid "Name_for_new_file:"
+msgstr "新文件名："
+
+msgid "Name_for_new_sketch:"
+msgstr "新程序名："
+
+msgid "New"
+msgstr "新建"
+
+msgid "No reference available.\n"
+msgstr "所选文字没有参考文档。\n"
+
+msgid "OFF"
+msgstr "关闭"
+
+msgid "ON"
+msgstr "打开"
+
+msgid "Open"
+msgstr "打开"
+
+msgid "Preferences"
+msgstr "参数设置"
+
+msgid "Processor"
+msgstr "处理器"
+
+msgid "Programmer"
+msgstr "编程器"
+
+msgid "Reference"
+msgstr "参考手册"
+
+msgid "Select"
+msgstr "选择"
+
+msgid "Select Current Folder ({1})"
+msgstr "选择当前文件夹({1})"
+
+msgid "Select_Arduino_Folder..."
+msgstr "选择Arduino所在文件夹..."
+
+msgid "Send"
+msgstr "发送"
+
+msgid "Serial_Monitor"
+msgstr "串口监视器"
+
+msgid "Serial_Port"
+msgstr "串口"
+
+msgid "Show_Arduino_Menu"
+msgstr "显示Arduino菜单"
+
+msgid "Show_Sketch_Folder"
+msgstr "显示程序文件夹"
+
+msgid "Show_Verbose_Output"
+msgstr "显示详细输出"
+
+msgid "Sketch"
+msgstr "程序"
+
+msgid "Sketchbook"
+msgstr "程序库"
+
+msgid "Sketchbook folder has been changed to {1}.\n"
+msgstr "程序库所在文件夹切换到{1}。\n"
+
+msgid "Speed"
+msgstr "速度"
+
+msgid "Start"
+msgstr "开始"
+
+msgid "Stino"
+msgstr "Stino"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "The selected library no longer exists.\nYou may need to restart Sublime Text 2\nto update the import library menu.\n"
+msgstr "所选库所在目录不存在。\n需要重新启动Sublime Text 2来更新导入库菜单。\n"
+
+msgid "The selected sketch no longer exists.\nYou may need to restart Sublime Text 2\nto update the sketchbook menu.\n"
+msgstr "选择的程序不存在。\n需要重新启动Sublime Text 2来更新程序库菜单\n"
+
+msgid "Toggle"
+msgstr "将"
+
+msgid "Tools"
+msgstr "工具"
+
+msgid "Troubleshooting"
+msgstr "问题排除"
+
+msgid "Type"
+msgstr "类型"
+
+msgid "Upload"
+msgstr "下载"
+
+msgid "Upload_Using_Programmer"
+msgstr "使用编程器下载"
+
+msgid "Uploading {1} to {2}...\n"
+msgstr "下载{1}到{2}...\n"
+
+msgid "Verify / Compile"
+msgstr "校验/编译"
+
+msgid "Verify_code_after_upload"
+msgstr "下载后验证代码"
+
+msgid "Visit_Arduino_Website"
+msgstr "访问Arduino.cc"
+
+msgid "Writing {1} completed.\n"
+msgstr "写入{1}完成。\n"
+
+msgid "[Stino - Done burning bootloader.]\n"
+msgstr "[Stino - 烧写bootloader完毕。]\n"
+
+msgid "[Stino - Done compiling.]\n"
+msgstr "[Stino - 编译完毕。]\n"
+
+msgid "[Stino - Done uploading.]\n"
+msgstr "[Stino - 下载完毕。]\n"
+
+msgid "[Stino - Error while burning bootloader.]\n"
+msgstr "[Stino - 烧写bootloader出错。]\n"
+
+msgid "[Stino - Error while compiling.]\n"
+msgstr "[Stino - 编译出错。]\n"
+
+msgid "[Stino - Error while uploading.]\n"
+msgstr "[Stino - 下载出错。]\n"
+
