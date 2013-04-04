@@ -498,6 +498,7 @@ class ToggleGlobalSettingCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		global_setting = not stino.const.settings.get('global_setting')
 		stino.const.settings.set('global_setting', global_setting)
+		stino.const.settings.changeState(global_setting)
 		
 	def is_checked(self):
 		state = stino.const.settings.get('global_setting')

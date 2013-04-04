@@ -62,3 +62,6 @@ class Setting:
 			self.saveSettingFile()
 		else:
 			self.readSettingFile()
+
+	def changeState(self, state):
+		self.use_global_setting = state
