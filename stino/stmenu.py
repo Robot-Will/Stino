@@ -199,7 +199,7 @@ class STMenu:
 			if serial_port_list:
 				serial_port = serial_port_list[0]
 			else:
-				serial_port = 'No_Serial_Port'
+				serial_port = ''
 			const.settings.set('serial_port', serial_port)
 		return menu_text
 
@@ -226,6 +226,8 @@ class STMenu:
 			if not programmer in all_programer_list:
 				programmer = all_programer_list[0]
 				const.settings.set('programmer', programmer)
+		else:
+			const.settings.set('programmer', '')
 		return menu_text
 
 	def genLanguageMenuText(self):

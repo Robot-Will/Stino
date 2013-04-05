@@ -20,6 +20,8 @@ def changeArduinoRoot(arduino_root):
 		stino.arduino_info.update()
 		stino.const.settings.set('full_compilation', True)
 		stino.cur_menu.fullUpdate()
+		print 'update status'
+		stino.status_info.update()
 		
 def changeSketchbookRoot(sketchbook_root):
 	sketchbook_root = stino.utils.getInfoFromKey(sketchbook_root)[1]
@@ -36,6 +38,7 @@ def changeSketchbookRoot(sketchbook_root):
 
 def updateSerialMenu():
 	stino.cur_menu.update()
+	stino.status_info.update()
 
 def getArchiveFolderPath(zip_folder_path, sketch_folder_path):
 	base_path = sketch_folder_path + os.path.sep

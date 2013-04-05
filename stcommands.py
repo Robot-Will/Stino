@@ -84,6 +84,8 @@ class SketchListener(sublime_plugin.EventListener):
 		stino.const.settings.set('show_serial_monitor_menu', False)
 		stino.cur_menu.update()
 		stino.serial_listener.stop()
+		stino.status_info.setView(view)
+		stino.status_info.update()
 
 	def on_activated(self, view):
 		if not stino.stpanel.isPanel(view):
@@ -106,7 +108,7 @@ class SketchListener(sublime_plugin.EventListener):
 					if setting_folder_path != pre_setting_folder_path:
 						stino.const.settings.changeSettingFileFolder(setting_folder_path)
 						stino.arduino_info.update()
-						stino.cur_menu.update()
+						stino.cur_menu.fullUpdate()
 						stino.const.settings.set('pre_setting_folder_path', setting_folder_path)
 
 			if state != pre_state:
@@ -124,6 +126,9 @@ class SketchListener(sublime_plugin.EventListener):
 				stino.const.settings.set('show_serial_monitor_menu', state)
 				stino.cur_menu.update()
 				view.window().run_command('send_to_serial')
+
+			stino.status_info.setView(view)
+			stino.status_info.update()
 
 	def on_close(self, view):
 		if stino.smonitor.isMonitorView(view):
@@ -317,6 +322,7 @@ class SelectBoardCommand(sublime_plugin.WindowCommand):
 			stino.const.settings.set('board', board)
 			stino.const.settings.set('full_compilation', True)
 			stino.cur_menu.update()
+			stino.status_info.update()
 
 	def is_checked(self, menu_str):
 		state = False
@@ -336,6 +342,7 @@ class SelectBoardTypeCommand(sublime_plugin.WindowCommand):
 			stino.const.settings.set(type_caption, item)
 			stino.const.settings.set('full_compilation', True)
 			stino.cur_menu.commandUpdate()
+			stino.status_info.update()
 
 	def is_checked(self, menu_str):
 		state = False
@@ -352,6 +359,7 @@ class SelectSerialPortCommand(sublime_plugin.WindowCommand):
 		pre_serial_port = stino.const.settings.get('serial_port')
 		if serial_port != pre_serial_port:
 			stino.const.settings.set('serial_port', serial_port)
+			stino.status_info.update()
 
 	def is_checked(self, menu_str):
 		state = False
@@ -366,6 +374,7 @@ class SelectBaudrateCommand(sublime_plugin.WindowCommand):
 		pre_baudrate = stino.const.settings.get('baudrate')
 		if baudrate != pre_baudrate:
 			stino.const.settings.set('baudrate', baudrate)
+			stino.status_info.update()
 
 	def is_checked(self, menu_str):
 		state = False
@@ -450,6 +459,7 @@ class SelectProgrammerCommand(sublime_plugin.WindowCommand):
 		pre_programmer = stino.const.settings.get('programmer')
 		if platform != pre_platform or programmer != pre_programmer:
 			stino.const.settings.set('programmer', programmer)
+			stino.status_info.update()
 
 	def is_checked(self, menu_str):
 		state = False
@@ -504,7 +514,8 @@ class ToggleGlobalSettingCommand(sublime_plugin.WindowCommand):
 			stino.const.settings.changeSettingFileFolder(setting_folder_path)
 		stino.const.settings.changeState(global_setting)
 		stino.arduino_info.update()
-		stino.cur_menu.update()
+		stino.cur_menu.fullUpdate()
+		stino.status_info.update()
 		
 	def is_checked(self):
 		state = stino.const.settings.get('global_setting')
