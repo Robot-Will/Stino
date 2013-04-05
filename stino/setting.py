@@ -66,11 +66,13 @@ class Setting:
 		self.use_global_setting = state
 
 class Status:
-	def __init__(self, settings, arduino_info):
+	def __init__(self, settings, arduino_info, language):
 		self.settings = settings
 		self.arduino_info = arduino_info
+		self.language = language
 
 		self.view = None
+		self.global_setting = True
 		self.arduino_version_text = ''
 		self.board = ''
 		self.board_option_list = []
@@ -85,6 +87,8 @@ class Status:
 		show_arduino_menu = self.settings.get('show_arduino_menu')
 		if show_arduino_menu and self.arduino_info.isReady():
 			self.loadInfo()
+			if self.global_setting:
+				text += '%(Global_Setting)s - '
 			text += 'Arduino %s' % self.arduino_version_text
 			text += ', %s' % self.board
 			for board_option in self.board_option_list:
@@ -94,11 +98,13 @@ class Status:
 				text += ', %s bps' % self.baudrate
 			if self.programmer:
 				text += ', %s' % self.programmer
+			text = text % self.language.getTransDict()
 		if self.view:
 			self.view.set_status('Stino_status', text)
 
 	def loadInfo(self):
 		if self.arduino_info.isReady():
+			self.global_setting = self.settings.get('global_setting')
 			self.arduino_version_text = self.arduino_info.getVersionText()
 			self.board = self.settings.get('board')
 			self.programmer = self.settings.get('programmer')
