@@ -94,8 +94,6 @@ class Status:
 				text += ', %s bps' % self.baudrate
 			if self.programmer:
 				text += ', %s' % self.programmer
-		print text
-		print self.view.file_name()
 		if self.view:
 			self.view.set_status('Stino_status', text)
 

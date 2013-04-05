@@ -20,7 +20,6 @@ def changeArduinoRoot(arduino_root):
 		stino.arduino_info.update()
 		stino.const.settings.set('full_compilation', True)
 		stino.cur_menu.fullUpdate()
-		print 'update status'
 		stino.status_info.update()
 		
 def changeSketchbookRoot(sketchbook_root):
