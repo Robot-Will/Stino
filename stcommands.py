@@ -498,10 +498,20 @@ class ToggleGlobalSettingCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		global_setting = not stino.const.settings.get('global_setting')
 		stino.const.settings.set('global_setting', global_setting)
+		if not global_setting:
+			file_path = self.window.active_view().file_name()
+			setting_folder_path = os.path.split(file_path)[0]
+			stino.const.settings.changeSettingFileFolder(setting_folder_path)
 		stino.const.settings.changeState(global_setting)
+		stino.arduino_info.update()
+		stino.cur_menu.update()
 		
 	def is_checked(self):
 		state = stino.const.settings.get('global_setting')
+		return state
+
+	def is_enabled(self):
+		state = stino.const.settings.get('show_arduino_menu', False)
 		return state
 
 class SelectArduinoFolderCommand(sublime_plugin.WindowCommand):

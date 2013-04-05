@@ -60,8 +60,7 @@ class Setting:
 		self.setting_file_path = os.path.join(setting_file_folder_path, self.setting_filename)
 		if not os.path.isfile(self.setting_file_path):
 			self.saveSettingFile()
-		else:
-			self.readSettingFile()
+		self.readSettingFile()
 
 	def changeState(self, state):
 		self.use_global_setting = state
