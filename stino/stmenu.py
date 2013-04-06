@@ -368,7 +368,7 @@ class STMenu:
 			command_caption = '%(Select)s ' + '%(Language)s'
 			command = 'select_language'
 			parent_mod = 'cur_language'
-			list_func = 'getLanguageList'
+			list_func = 'getLanguageTextList'
 			command_text = self.genSelectItemText(command_caption, command, parent_mod, list_func)
 		return command_text
 
