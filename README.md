@@ -1,5 +1,12 @@
-![Stino logo](http://robot-will.github.com/Stino/images/logo.png)
+![Stino Logo](http://robot-will.github.com/Stino/images/logo.png)
 ![Stino](http://robot-will.github.com/Stino/images/stino.png)
+![Stino Installation](http://robot-will.github.com/Stino/images/installation.png)
+![Stino Manual Installation](http://robot-will.github.com/Stino/images/installation02.png)
+![Stino Select Arduino Folder](http://robot-will.github.com/Stino/images/select_arduino.png)
+![Stino Menu & Command Palette](http://robot-will.github.com/Stino/images/menu.png)
+![Stino Compilation](http://robot-will.github.com/Stino/images/compilation.png)
+![Stino Input](http://robot-will.github.com/Stino/images/input.png)
+![Stino Serial Monitor](http://robot-will.github.com/Stino/images/serial_monitor.png)
 ####A Sublime Text 2 Plugin for Arduino, Version 1.2
 Copyright (c) 2012-2013 Robot-Will(robot.will.me (at) gmail.com). 
 
