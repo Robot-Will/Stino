@@ -12,6 +12,13 @@ Current version does not support [Sublime Text 3](http://www.sublimetext.com/3).
 #### 2. [Arduino](http://arduino.cc/en/Main/Software)
 Arduino versions below 0017 are not supported. Non-standard cores, like Teensy, are supported.
 
+#### 3. Tested OS
+* Windows: Windows XP, Windows 7
+
+* Linux: Ubuntu, Linux Mint, Slax
+
+* Max OS X: Snow Leopard
+
 ## Installation
 Stino installation coulde be achieved through Sublime Text Package Control or manual installation.
 
