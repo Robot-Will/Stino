@@ -51,19 +51,23 @@ Stino installation coulde be achieved through Sublime Text Package Control or ma
 ![Stino Select Arduino Folder](http://robot-will.github.com/Stino/images/select_arduino.png)
 
 ## Full Menu and Command Palette
-Once the Arduino Application Folder was set, a full menu will be ready for use. The Arduino menu is not always showed in menu bar. When the active file's extension is `.ino`, `.pde`, `.c`, `.cc`, `.cpp` or `.cxx`, the Arduino menu will appear. The menu provides all functionalities of Arduino IDE, including a simple Serial Monitor.
+Once the Arduino Application Folder was set, a full menu will be ready for use. The Arduino menu is not always shown in menu bar. When the active file's extension is `.ino`, `.pde`, `.c`, `.cc`, `.cpp` or `.cxx`, the Arduino menu will appear. The menu provides all functionalities of Arduino IDE, including a simple Serial Monitor.
 
 ![Stino Menu & Command Palette](http://robot-will.github.com/Stino/images/menu.png)
 
 ## Compilation and Upload
-
+Click the menu `Arduino`->`Verify/Compile` to compile the sketch, or click `Arduino`->`Upload` to compile and upload the sketch.
 
 ![Stino Compilation](http://robot-will.github.com/Stino/images/compilation.png)
 
+## Input Panel
+When you use `New Sketch`, `New File` and `Add Extra Flags`, a input panel will appear at the bottom of the editor. Just input text and press `Enter` key, it will work.
 
 ![Stino Input](http://robot-will.github.com/Stino/images/input.png)
 
 ## Serial Monitor
+Stino provides a simple serial monitor.
+
 ![Stino Serial Monitor](http://robot-will.github.com/Stino/images/serial_monitor.png)
 
 
