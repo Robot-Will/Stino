@@ -3,7 +3,7 @@
 
 Stino is a [Sublime Text 2](http://www.sublimetext.com) plugin, which provides an [Arduino](http://arduino.cc)-like environement for editing, compiling and uploading sketches. The plugin was written by Robot Will in 2012-2013.
 
-Sublime Text is a sophisticated text editor for code, markup and prose. You'll love the slick user interface, extraordinary features and amazing performance. Stino is a Sublime Text plugin, providing a menu and a command palette, which make it as easy as Arduino IDE for writing code and uploading it to the I/O board. The plugin was written in pure python, and it runs on Windows, Mac OS X, and Linux. Two additional python libraries, [Pyserial](https://pypi.python.org/pypi/pyserial) and [chardet](https://pypi.python.org/pypi/chardet) were used in this plugin, these codes are belong to their own authors.
+Sublime Text is a sophisticated text editor for code, markup and prose. You'll love the slick user interface, extraordinary features and amazing performance. Stino is a Sublime Text plugin, providing a menu and a command palette, which make it as easy as Arduino IDE to write code and upload it to the I/O board. The plugin was written in pure python, and it runs on Windows, Mac OS X, and Linux. Two additional python libraries, [Pyserial](https://pypi.python.org/pypi/pyserial) and [chardet](https://pypi.python.org/pypi/chardet) were used in this plugin, these codes are belonging to their own authors.
 
 ## Requirements
 #### 1. [Sublime Text 2](http://www.sublimetext.com/2)
@@ -14,6 +14,14 @@ Arduino versions below 0017 are not supported. Non-standard cores, like Teensy, 
 
 ## Installation
 #### 1. Installation trough Sublime Text 2 Package Control
+1. Open [Sublime Text 2 Package Control Installation Page](http://wbond.net/sublime_packages/package_control/installation), copy the installation command.
+
+2. Open Sublime Text 2 console via Ctrl+` shorcut, and paste the installation command into the console.
+
+3. Once installation completes, you will see 'Please restart Sublime Text to finish installation'.
+
+4. After restart of Sublime Text, click the menu `Preferences`->`Package Control`.
+
 ![Stino Installation](http://robot-will.github.com/Stino/images/installation.png)
 
 #### 2. Manual Installation
