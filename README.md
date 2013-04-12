@@ -3,7 +3,7 @@
 
 Stino is a [Sublime Text 2](http://www.sublimetext.com) plugin, which provides an [Arduino](http://arduino.cc)-like environement for editing, compiling and uploading sketches. The plugin was written by Robot Will in 2012-2013.
 
-Sublime Text is a sophisticated text editor for code, markup and prose. You'll love the slick user interface, extraordinary features and amazing performance. Stino is a Sublime Text plugin, providing a menu and a command palette, which make it as easy as Arduino IDE to write code and upload it to the I/O board. The plugin was written in pure python, and it runs on Windows, Mac OS X, and Linux. Two additional python libraries, [Pyserial](https://pypi.python.org/pypi/pyserial) and [chardet](https://pypi.python.org/pypi/chardet) were used in this plugin, these codes are belonging to their own authors.
+Sublime Text is a sophisticated text editor for code, markup and prose. You'll love the slick user interface, extraordinary features and amazing performance. Stino is a Sublime Text plugin, providing a menu and a command palette, which make it as easy as Arduino IDE to write code and upload it to the I/O board. The plugin was written in pure python, and it runs on Windows, Mac OS X, and Linux. Two additional python libraries, [Pyserial](https://pypi.python.org/pypi/pyserial) and [Chardet](https://pypi.python.org/pypi/chardet) were used in this plugin, these codes are belonging to their own authors.
 
 ## Requirements
 #### 1. [Sublime Text 2](http://www.sublimetext.com/2)
@@ -77,10 +77,29 @@ Stino provides a simple serial monitor.
 
 ![Stino Serial Monitor](http://robot-will.github.com/Stino/images/serial_monitor.png)
 
-##Translations
-In the __language__ directory, there are translation files. Currently, all these files are generated from Arduino Translations (http://playground.arduino.cc/Main/LanguagesIDE). The translation files' name is the abbravation of the language according  to the ISO standard (http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes). Each file contains a line started with "LANG =", and the Plugin will look for this line to generate language list. As the translation files are automatically generated, the translations are not complete. If you want to make the tranlation better, you can revise the translations and email the file to me or pull request to me.
+##Settings
+Stino uses global setting defaultly, i.e., all sketches use same settings. If you have different I/O boards and write codes for them at the same time, maybe you need different settings for each sketch. Click the menu `Arduino`->`Preferences`->`Global Setting` and each sketch can have their own settings.
 
-##License information
+![Stino Languages](http://robot-will.github.com/Stino/images/setting.png)
+
+## Translations
+Stino is a multi-language software and you can select your favorite language. All translations are stored in files in `language` folder. The translation files' name is the abbravation of the language according  to the ISO standard (http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes). Currently, most of these files are generated from Arduino Translations (http://playground.arduino.cc/Main/LanguagesIDE). As the translation files are automatically generated, the translations are not complete. You can improve the translation and make it better.
+
+![Stino Languages](http://robot-will.github.com/Stino/images/languages.png)
+
+## Issues
+If you meet any problems, you can leave messages at [Issues](https://github.com/Robot-Will/Stino/issues).
+
+#### Know Issues:
+1. Supported Operating Systems
+
+2. Build Process
+
+3. Add Libraries
+
+4. Add Cores
+
+## License
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
 furnished to do so, subject to the following conditions:
 
