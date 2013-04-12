@@ -4,17 +4,17 @@
 Stino is a [Sublime Text 2](http://www.sublimetext.com) plugin, which provides an [Arduino](http://arduino.cc)-like environement for editing, compiling and uploading sketches.
 
 ## Requirements
-1. [Sublime Text 2](http://www.sublimetext.com/2)
+#### 1. [Sublime Text 2](http://www.sublimetext.com/2)
 Current version does not support [Sublime Text 3](http://www.sublimetext.com/3). The next version plugin will add the support of ST3.
 
-2. [Arduino](http://arduino.cc/en/Main/Software)
+#### 2. [Arduino](http://arduino.cc/en/Main/Software)
 Arduino versions below 0017 are not supported. Non-standard cores, like Teensy, are supported.
 
 ## Installation
-#### Installation trough Sublime Text 2 Package Control
+#### 1. Installation trough Sublime Text 2 Package Control
 ![Stino Installation](http://robot-will.github.com/Stino/images/installation.png)
 
-#### Manual Installation
+#### 2. Manual Installation
 ![Stino Manual Installation](http://robot-will.github.com/Stino/images/installation02.png)
 
 ## Set Arduino Application Folder
