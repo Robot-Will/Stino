@@ -1,7 +1,9 @@
 ![Stino Logo](http://robot-will.github.com/Stino/images/logo.png)
 ![Stino](http://robot-will.github.com/Stino/images/stino.png)
 
-Stino is a [Sublime Text 2](http://www.sublimetext.com) plugin, which provides an [Arduino](http://arduino.cc)-like environement for editing, compiling and uploading sketches.
+Stino is a [Sublime Text 2](http://www.sublimetext.com) plugin, which provides an [Arduino](http://arduino.cc)-like environement for editing, compiling and uploading sketches. The plugin was written by Robot Will in 2012-2013.
+
+Sublime Text is a sophisticated text editor for code, markup and prose. You'll love the slick user interface, extraordinary features and amazing performance. Stino is a Sublime Text plugin, providing a menu and a command palette, which make it as easy as Arduino IDE for writing code and uploading it to the I/O board. The plugin was written in pure python, and it runs on Windows, Mac OS X, and Linux. Two additional python libraries, [Pyserial](https://pypi.python.org/pypi/pyserial) and [chardet](https://pypi.python.org/pypi/chardet) were used in this plugin, these codes are belong to their own authors.
 
 ## Requirements
 #### 1. [Sublime Text 2](http://www.sublimetext.com/2)
