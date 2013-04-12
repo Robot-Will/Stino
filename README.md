@@ -1,4 +1,4 @@
-#Stino
+![Stino logo](http://robot-will.github.com/Stino/images/logo.png)
 ![Stino](http://robot-will.github.com/Stino/images/stino.png)
 ####A Sublime Text 2 Plugin for Arduino, Version 1.2
 Copyright (c) 2012-2013 Robot-Will(robot.will.me (at) gmail.com). 
