@@ -13,9 +13,9 @@ Current version does not support [Sublime Text 3](http://www.sublimetext.com/3).
 Arduino versions below 0017 are not supported. Non-standard cores, like Teensy, are supported.
 
 ## Installation
-Stino installation coulde be achieved through Sublime Text Package Control or manula installation.
+Stino installation coulde be achieved through Sublime Text Package Control or manual installation.
 
-#### 1. Installation trough Sublime Text 2 Package Control
+#### * Installation trough Sublime Text 2 Package Control
 1. Open [Sublime Text 2 Package Control Installation Page](http://wbond.net/sublime_packages/package_control/installation), copy the installation command.
 
 2. Open Sublime Text 2 console via Ctrl+` shorcut, and paste the installation command into the console.
@@ -30,7 +30,7 @@ Stino installation coulde be achieved through Sublime Text Package Control or ma
 
 ![Stino Installation](http://robot-will.github.com/Stino/images/installation.png)
 
-#### 2. Manual Installation
+#### * Manual Installation
 1. Download [Stino](https://github.com/Robot-Will/Stino) as a zip file, and extract it.
 
 2. Click the menu `Preferences`->`Browse Packages...`.
@@ -40,6 +40,14 @@ Stino installation coulde be achieved through Sublime Text Package Control or ma
 ![Stino Manual Installation](http://robot-will.github.com/Stino/images/installation02.png)
 
 ## Set Arduino Application Folder
+1. Click the menu `Preferences`->`Show Arduino Menu`, Arduino Menu will appear.
+
+2. Click the menu 'Arduino'->'Preferences'->'Select Arduino Folder'.
+
+3. Select your Arduino Application Folder in quick panel.
+
+4. Once the folder you select is Arduino folder, you will see the message like the following Figure 4.
+
 ![Stino Select Arduino Folder](http://robot-will.github.com/Stino/images/select_arduino.png)
 
 ## Menu and Command Palette
