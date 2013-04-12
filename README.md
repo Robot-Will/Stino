@@ -13,6 +13,8 @@ Current version does not support [Sublime Text 3](http://www.sublimetext.com/3).
 Arduino versions below 0017 are not supported. Non-standard cores, like Teensy, are supported.
 
 ## Installation
+Stino installation coulde be achieved through Sublime Text Package Control or manula installation.
+
 #### 1. Installation trough Sublime Text 2 Package Control
 1. Open [Sublime Text 2 Package Control Installation Page](http://wbond.net/sublime_packages/package_control/installation), copy the installation command.
 
@@ -22,9 +24,19 @@ Arduino versions below 0017 are not supported. Non-standard cores, like Teensy, 
 
 4. After restart of Sublime Text, click the menu `Preferences`->`Package Control`.
 
+5. Input `package control install` and select `Package Control: Install Package`.
+
+6. Input 'arduino' and select 'Arduino-like IDE'.
+
 ![Stino Installation](http://robot-will.github.com/Stino/images/installation.png)
 
 #### 2. Manual Installation
+1. Download [Stino](https://github.com/Robot-Will/Stino) as a zip file, and extract it.
+
+2. Click the menu `Preferences`->`Browse Packages...`.
+
+3. Copy the extracted Stino folder to the Packages folder.
+
 ![Stino Manual Installation](http://robot-will.github.com/Stino/images/installation02.png)
 
 ## Set Arduino Application Folder
