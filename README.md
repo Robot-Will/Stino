@@ -15,7 +15,7 @@ Arduino versions below 0017 are not supported. Non-standard cores, like Teensy, 
 ## Installation
 Stino installation coulde be achieved through Sublime Text Package Control or manual installation.
 
-#### * Installation trough Sublime Text 2 Package Control
+#### 1. Installation trough Sublime Text 2 Package Control
 1. Open [Sublime Text 2 Package Control Installation Page](http://wbond.net/sublime_packages/package_control/installation), copy the installation command.
 
 2. Open Sublime Text 2 console via Ctrl+` shorcut, and paste the installation command into the console.
@@ -30,7 +30,7 @@ Stino installation coulde be achieved through Sublime Text Package Control or ma
 
 ![Stino Installation](http://robot-will.github.com/Stino/images/installation.png)
 
-#### * Manual Installation
+#### 2. Manual Installation
 1. Download [Stino](https://github.com/Robot-Will/Stino) as a zip file, and extract it.
 
 2. Click the menu `Preferences`->`Browse Packages...`.
@@ -46,14 +46,18 @@ Stino installation coulde be achieved through Sublime Text Package Control or ma
 
 3. Select your Arduino Application Folder in quick panel.
 
-4. Once the folder you select is Arduino folder, you will see the message like the following Figure 4.
+4. Once the folder you select is Arduino folder, you will see the message like the Step 4 in the following figure.
 
 ![Stino Select Arduino Folder](http://robot-will.github.com/Stino/images/select_arduino.png)
 
-## Menu and Command Palette
+## Full Menu and Command Palette
+Once the Arduino Application Folder was set, a full menu will be ready for use. The Arduino menu is not always showed in menu bar. When the active file's extension is `.ino`, `.pde`, `.c`, `.cc`, `.cpp` or `.cxx`, the Arduino menu will appear. The menu provides all functionalities of Arduino IDE, including a simple Serial Monitor.
+
 ![Stino Menu & Command Palette](http://robot-will.github.com/Stino/images/menu.png)
 
 ## Compilation and Upload
+
+
 ![Stino Compilation](http://robot-will.github.com/Stino/images/compilation.png)
 
 
