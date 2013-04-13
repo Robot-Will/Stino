@@ -104,7 +104,7 @@ Or you can see this [issue](https://github.com/Robot-Will/Stino/issues/18).
 
 ###### 2. Build Process
 
-The build process is similar to [Arduino Build Process](http://arduino.cc/en/Hacking/BuildProcess). 
+The build process is similar to [Arduino Build Process](http://arduino.cc/en/Hacking/BuildProcess). A number of things have to happen for your Arduino code to get onto the Arduino board. First, Stino performs some small transformations to make sure that the code is correct C or C++ (two common programming languages). It then gets passed to a compiler (avr-gcc), which turns the human readable code into machine readable instructions (or object files). Then, your code gets combined with (linked against), the standard Arduino libraries that provide basic functions like digitalWrite() or Serial.print(). The result is a single Intel hex file, which contains the specific bytes that need to be written to the program memory of the chip on the Arduino board. This file is then uploaded to the board: transmitted over the USB or serial connection via the bootloader already on the chip or with external programming hardware.
 
 * Multi-file sketches
 
@@ -116,7 +116,7 @@ The build process is similar to [Arduino Build Process](http://arduino.cc/en/Hac
 
 Copy the library folder to the `SKETCHBOOK/libraries/` folder.
 
-####### 4. Add Cores
+###### 4. Add Cores
 
 Copy the core folder to the `SKETCHBOOK/hardware/` folder.
 
