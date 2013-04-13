@@ -120,9 +120,9 @@ Next, Stino searches for function definitions within your main sketch file and c
 
 * Build process
 
-First, Stino reads `<ARDUINO>/hardware/boards.txt` and `<ARDUINO>/hardware/programmers.txt` to generate all parameters according settings.
+First, Stino reads `<ARDUINO>/hardware/cores/boards.txt` and `<ARDUINO>/hardware/cores/programmers.txt` to generate all parameters according settings.
 
-Next, Stino seraches the file `<ARDUINO>/hardware/platform.txt`, which defines the compilation commands. If this file does not exist, Stino will use the file in `compilation` folder. After reading compilation commands, Stino starts compilation. 
+Next, Stino seraches the file `<ARDUINO>/hardware/cores/platform.txt`, which defines the compilation commands. If this file does not exist, Stino will use the file in `compilation` folder. After reading compilation commands, Stino starts compilation. 
 
 ###### 3. Add Libraries
 
