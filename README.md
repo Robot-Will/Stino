@@ -90,14 +90,26 @@ Stino is a multi-language software and you can select your favorite language. Al
 ## Issues
 If you meet any problems, you can leave messages at [Issues](https://github.com/Robot-Will/Stino/issues).
 
-#### Know Issues:
+#### Known Issues:
 1. Supported Operating Systems
+Tested Operating Systems are listed below:
+
+* Windows: Windows XP, Windows 7
+
+* Linux: Ubuntu, Linux Mint, Slax
+
+* Max OS X: Snow Leopard
+
+Or you can see this [issue](https://github.com/Robot-Will/Stino/issues/18)
 
 2. Build Process
+The build process is similar to [Arduino Build Process](http://arduino.cc/en/Hacking/BuildProcess). 
 
 3. Add Libraries
+Copy the library folder to the `SKETCHBOOK/libraries/` folder.
 
 4. Add Cores
+Copy the core folder to the `SKETCHBOOK/hardware/` folder.
 
 ## License
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
