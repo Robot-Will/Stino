@@ -83,7 +83,7 @@ Stino uses global setting defaultly, i.e., all sketches use same settings. If yo
 ![Stino Languages](http://robot-will.github.com/Stino/images/setting.png)
 
 ## Translations
-Stino is a multi-language software and you can select your favorite language. All translations are stored in files in `language` folder. The translation files' name is the abbravation of the language according  to the ISO standard (http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes). Currently, most of these files are generated from Arduino Translations (http://playground.arduino.cc/Main/LanguagesIDE). As the translation files are automatically generated, the translations are not complete. You can improve the translation and make it better.
+Stino is a multi-language software and you can select your favorite language. All translations are stored in files in `language` folder. The translation files' name is the abbravation of the language according  to the [ISO standard](http://en.wikipedia.org/wiki/List_of_ISO_639-1_codes). Currently, most of these files are generated from [Arduino Translations](http://playground.arduino.cc/Main/LanguagesIDE). As the translation files are automatically generated, the translations are not complete. You can improve the translation and make it better.
 
 ![Stino Languages](http://robot-will.github.com/Stino/images/languages.png)
 
@@ -91,7 +91,7 @@ Stino is a multi-language software and you can select your favorite language. Al
 If you meet any problems, you can leave messages at [Issues](https://github.com/Robot-Will/Stino/issues).
 
 #### Known Issues:
-1. Supported Operating Systems
+###### 1. Supported Operating Systems
 Tested Operating Systems are listed below:
 
 * Windows: Windows XP, Windows 7
@@ -100,15 +100,24 @@ Tested Operating Systems are listed below:
 
 * Max OS X: Snow Leopard
 
-Or you can see this [issue](https://github.com/Robot-Will/Stino/issues/18)
+Or you can see this [issue](https://github.com/Robot-Will/Stino/issues/18).
 
-2. Build Process
+###### 2. Build Process
+
 The build process is similar to [Arduino Build Process](http://arduino.cc/en/Hacking/BuildProcess). 
 
-3. Add Libraries
+* Multi-file sketches
+
+* Transformations to the main sketch file
+
+* Build process
+
+###### 3. Add Libraries
+
 Copy the library folder to the `SKETCHBOOK/libraries/` folder.
 
-4. Add Cores
+####### 4. Add Cores
+
 Copy the core folder to the `SKETCHBOOK/hardware/` folder.
 
 ## License
