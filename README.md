@@ -108,7 +108,7 @@ The build process is similar to [Arduino Build Process](http://arduino.cc/en/Hac
 
 * Multi-file sketches
 
-A sketch can contain multiple files with extensions of `.ino`, `.pde`, `.c`, `.cc`, `.cpp`, `.cxx` and `.h`. When your sketch is compiled, all files with extensions of are `.ino` and `.pde` concatenated together to form the "main sketch file". Files with `.c`, `.cc`, `.cpp` or `.cxx` extensions are compiled separately. To use files with a .h extension, you need to `#include` it (using "double quotes" not <angle brackets>).
+A sketch can contain multiple files with extensions of `.ino`, `.pde`, `.c`, `.cc`, `.cpp`, `.cxx` and `.h`. When your sketch is compiled, all files with extensions of are `.ino` and `.pde` concatenated together to form the "main sketch file". Files with `.c`, `.cc`, `.cpp` or `.cxx` extensions are compiled separately. To use files with a .h extension, you need to `#include` it (using "double quotes" not angle brackets).
 
 * Transformations to the main sketch file
 
@@ -116,7 +116,7 @@ Stino performs a few transformations to your main sketch file (the concatenation
 
 First, `#include "Arduino.h"`, or for versions less than 1.0, `#include "WProgram.h"` is added to the top of your sketch. This header file (found in `<ARDUINO>/hardware/cores/<CORE>/`) includes all the defintions needed for the standard Arduino core.
 
-Next, Stino searches for function definitions within your main sketch file and creates declarations (prototypes) for them. These are inserted after any comments or pre-processor statements (#includes or #defines), but before any other statements (including type declarations). This means that if you want to use a custom type as a function argument, you should declare it within a separate header file. `Also, this generation isn't perfect: it won't create prototypes for functions that have default argument values, or which are declared within a namespace or class.`
+Next, Stino searches for function definitions within your main sketch file and creates declarations (prototypes) for them. These are inserted after any comments or pre-processor statements (#includes or #defines), but before any other statements (including type declarations). This means that if you want to use a custom type as a function argument, you should declare it within a separate header file. Also, this generation isn't perfect: it won't create prototypes for functions that have default argument values, or which are declared within a namespace or class.
 
 * Build process
 
