@@ -486,7 +486,7 @@ def insertDelarationList(src_text, declaration_list):
 	src_text = upper_text + declaration_text + lower_text
 	return src_text
 
-def genBuildSrcText(insertion_src_text, src_path_list, main_src_path):
+def genBuildSrcText0(insertion_src_text, src_path_list, main_src_path):
 	if main_src_path:
 		src_path_list.remove(main_src_path)
 		src_path_list.append(main_src_path)
@@ -495,6 +495,69 @@ def genBuildSrcText(insertion_src_text, src_path_list, main_src_path):
 	for src_path in src_path_list:
 		build_src_text += '\n// %s\n' % src_path
 		build_src_text += osfile.readFileText(src_path)
+	return build_src_text
+
+def combineSrcText(src_path_list, main_src_path):
+	if main_src_path:
+		src_path_list.remove(main_src_path)
+		src_path_list.append(main_src_path)
+
+	org_src_text = ''
+	for src_path in src_path_list:
+		build_src_text += '\n// %s\n' % src_path
+		src_text = osfile.readFileText(src_path)
+		org_src_text += src_text
+		org_src_text += '\n'
+	return org_src_text
+
+def splitSrcText(src_path):
+	src_text = osfile.readFileText(src_path)
+	# simple_src_text = src.genSimpleSrcText(src_text)
+	simple_src_text = src.removeComments(src_text)
+	(header_text, body_text) = src.splitSrcByFisrtFunction(simple_src_text)
+	include_list = src.genIncludeList(header_text)
+	declaration_list = src.genSrcDeclarationList(header_text)
+	function_list = src.genSrcFunctionList(body_text)
+	for includes_text in include_list:
+		header_text = header_text.replace(includes_text, '')
+
+	new_declaration_list = []
+	function_list = removeMainFunctionsFromList(function_list)
+	for function in function_list:
+		if not function in declaration_list:
+			new_declaration_list.append(function)
+	return (include_list, new_declaration_list, header_text, body_text)
+
+def genBuildSrcText(arduino_version, src_path_list, main_src_path):
+	if main_src_path:
+		src_path_list.remove(main_src_path)
+		src_path_list.append(main_src_path)
+
+	all_include_list = []
+	all_declaration_list = []
+	all_header_text = ''
+	all_body_text = ''
+	for src_path in src_path_list:
+		(include_list, declaration_list, header_text, body_text) = splitSrcText(src_path)
+		all_include_list += include_list
+		all_declaration_list += declaration_list
+		all_header_text += header_text
+		all_body_text += body_text
+
+	if arduino_version < 100:
+		include_text = '#include <WProgram.h>\n'
+	else:
+		include_text = '#include <Arduino.h>\n'
+
+	for include in all_include_list:
+		include_text += '%s\n' % include
+
+	declaration_text = '\n'
+	for declaration in all_declaration_list:
+		declaration_text += '%s;\n' % declaration
+
+	build_src_text = include_text + all_header_text + declaration_text + all_body_text
+
 	return build_src_text
 
 class Compilation:
@@ -833,13 +896,20 @@ class Compilation:
 		return build_src_path
 
 	def genBuildMainSrcFile(self):
+		print 'gen build src_text'
 		arduino_version = self.arduino_info.getVersion()
-		main_src_text = osfile.readFileText(self.main_src_path)
-		insertion_header_file_list = genInsertionHeaderFileList(self.src_header_list, self.header_path_list)
-		insertion_declaration_list = genInsertionDelarationList(self.sketch_src_path_list)
-		insertion_src_text = genInsertionText(arduino_version, insertion_header_file_list, insertion_declaration_list)
-		build_src_text = genBuildSrcText(insertion_src_text, self.sketch_src_path_list, self.main_src_path)
+		# main_src_text = osfile.readFileText(self.main_src_path)
+
+		# insertion_header_file_list = genInsertionHeaderFileList(self.src_header_list, self.header_path_list)
+		# insertion_declaration_list = genInsertionDelarationList(self.sketch_src_path_list)
+		# insertion_src_text = genInsertionText(arduino_version, insertion_header_file_list, insertion_declaration_list)
+		# build_src_text = genBuildSrcText(insertion_src_text, self.sketch_src_path_list, self.main_src_path)
 		
+		# org_src_text = combineSrcText(self.sketch_src_path_list, self.main_src_path)
+		# simple_src_text = src.genSimpleSrcText(org_src_text)
+
+		build_src_text = genBuildSrcText(arduino_version, self.sketch_src_path_list, self.main_src_path)
+
 		self.build_src_path = self.getBuildSketchPath()
 		osfile.writeFile(self.build_src_path, build_src_text)
 		self.sketch_src_path_list = [self.build_src_path]

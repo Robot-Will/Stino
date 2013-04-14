@@ -73,7 +73,7 @@ def genSimpleSrcText(src_text):
 				simple_src_text += '\n'
 			if '{' in line:
 				level += 1
-	simple_src_text = simple_src_text.replace(';', ';\n')
+	# simple_src_text = simple_src_text.replace(';', ';\n')
 	# simple_src_text = simple_src_text.replace('\n', ' ')
 	return simple_src_text
 
@@ -240,6 +240,12 @@ def genHeaderListFromSketchText(sketch_text):
 	pattern = re.compile(pattern_text, re.M|re.S)
 	header_list = pattern.findall(sketch_text)
 	return header_list
+
+def genIncludeList(sketch_text):
+	pattern_text = r'^\s*?#include\s+?["<]\S+?[>"]'
+	pattern = re.compile(pattern_text, re.M|re.S)
+	include_list = pattern.findall(sketch_text)
+	return include_list
 
 def genHeaderListFromSketch(sketch):
 	sketch_text = getTextFromSketch(sketch)
