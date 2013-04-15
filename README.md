@@ -17,7 +17,7 @@ Arduino versions below 0017 are not supported. Non-standard cores, like Teensy, 
 
 * Linux: Ubuntu, Linux Mint, Slax
 
-* Max OS X: Snow Leopard
+* Max OS X: Mountain Lion (10.8), Snow Leopard (10.6)
 
 ## Installation
 Stino installation coulde be achieved through Sublime Text Package Control or manual installation.
@@ -98,7 +98,7 @@ Tested Operating Systems are listed below:
 
 * Linux: Ubuntu, Linux Mint, Slax
 
-* Max OS X: Snow Leopard
+* Max OS X: Mountain Lion (10.8), Snow Leopard (10.6)
 
 Or you can see this [issue](https://github.com/Robot-Will/Stino/issues/18).
 
