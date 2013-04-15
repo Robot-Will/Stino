@@ -515,48 +515,67 @@ def splitSrcText(src_path):
 	# simple_src_text = src.genSimpleSrcText(src_text)
 	simple_src_text = src.removeComments(src_text)
 	(header_text, body_text) = src.splitSrcByFisrtFunction(simple_src_text)
-	include_list = src.genIncludeList(header_text)
+	# include_list = src.genIncludeList(header_text)
 	declaration_list = src.genSrcDeclarationList(header_text)
 	function_list = src.genSrcFunctionList(body_text)
-	for includes_text in include_list:
-		header_text = header_text.replace(includes_text, '')
+	# for includes_text in include_list:
+	# 	header_text = header_text.replace(includes_text, '')
 
 	new_declaration_list = []
-	function_list = removeMainFunctionsFromList(function_list)
+	# function_list = removeMainFunctionsFromList(function_list)
 	for function in function_list:
 		if not function in declaration_list:
-			new_declaration_list.append(function)
-	return (include_list, new_declaration_list, header_text, body_text)
+			if not function_list in new_declaration_list:
+				new_declaration_list.append(function)
+	return new_declaration_list
 
 def genBuildSrcText(arduino_version, src_path_list, main_src_path):
 	if main_src_path:
 		src_path_list.remove(main_src_path)
-		src_path_list.append(main_src_path)
+		src_path_list.insert(0, main_src_path)
 
-	all_include_list = []
+	# all_include_list = []
 	all_declaration_list = []
-	all_header_text = ''
-	all_body_text = ''
+	# all_header_text = ''
+	# all_body_text = ''
 	for src_path in src_path_list:
-		(include_list, declaration_list, header_text, body_text) = splitSrcText(src_path)
-		all_include_list += include_list
+		declaration_list = splitSrcText(src_path)
+		# all_include_list += include_list
 		all_declaration_list += declaration_list
-		all_header_text += header_text
-		all_body_text += body_text
+		# all_header_text += header_text
+		# all_body_text += body_text
 
 	if arduino_version < 100:
 		include_text = '#include <WProgram.h>\n'
 	else:
 		include_text = '#include <Arduino.h>\n'
 
-	for include in all_include_list:
-		include_text += '%s\n' % include
+	# for include in all_include_list:
+	# 	include_text += '%s\n' % include
 
 	declaration_text = '\n'
 	for declaration in all_declaration_list:
 		declaration_text += '%s;\n' % declaration
+	declaration_text += '\n'
 
-	build_src_text = include_text + all_header_text + declaration_text + all_body_text
+	build_src_text = '// %s\n' % src_path_list[0]
+	build_src_text += include_text
+
+	src_text = osfile.readFileText(src_path_list[0])
+	simple_src_text = src.removeComments(src_text)
+	(first_function, first_function_index) = src.findFirstFunction(simple_src_text)
+	index = src_text.index(first_function)
+	header_text = src_text[:index]
+	body_text = src_text[index:]
+
+	build_src_text += header_text
+	build_src_text += declaration_text
+	build_src_text += body_text
+
+	for src_path in src_path_list[1:]:
+		build_src_text += '\n// %s\n' % src_path
+		src_text = osfile.readFileText(src_path)
+		build_src_text += src_text
 
 	return build_src_text
 
@@ -896,7 +915,6 @@ class Compilation:
 		return build_src_path
 
 	def genBuildMainSrcFile(self):
-		print 'gen build src_text'
 		arduino_version = self.arduino_info.getVersion()
 		# main_src_text = osfile.readFileText(self.main_src_path)
 

@@ -112,7 +112,8 @@ def genSrcFunctionList(simple_src_text):
 	function_text_list = pattern.findall(simple_src_text)
 	for function_text in function_text_list:
 		function = regulariseFuctionText(function_text)
-		src_function_list.append(function)
+		if not ('if ' in function or 'else ' in function):
+			src_function_list.append(function)
 	return src_function_list
 
 def isMainSrcText(src_text):
@@ -280,18 +281,37 @@ def getIncludeHeaderText(folder_path, view):
 			include_text += include_header
 	return include_text
 
-def splitSrcByFisrtFunction(src_text):
-	pattern_text = r'^\s*?[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*?\{)'
+def findFirstFunction(src_text):
+	pattern_text = r'^\s*?[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*?\{)|^\s*?class\s+?\w+?(?=\s*?\{)'
 	pattern = re.compile(pattern_text, re.M|re.S)
 	match = pattern.search(src_text)
 	if match:
-		first_function = match.group()
+		first_function = match.group().strip()
 		index = src_text.index(first_function)
-		header_text = src_text[:index]
-		body_text = src_text[index:]
 	else:
-		header_text = src_text
-		body_text = ''
+		first_function = ''
+		index = len(src_text) - 1
+	return (first_function, index)
+
+def splitSrcByFisrtFunction(src_text):
+	# pattern_text = r'^\s*?[\w\[\]\*]+\s+[&\[\]\*\w\s]+\([&,\[\]\*\w\s]*\)(?=\s*?\{)'
+	# pattern = re.compile(pattern_text, re.M|re.S)
+	# match = pattern.search(src_text)
+	# if match:
+	# 	first_function = match.group()
+	# 	index = src_text.index(first_function)
+	# 	header_text = src_text[:index]
+	# 	body_text = src_text[index:]
+	# else:
+	# 	header_text = src_text
+	# 	body_text = ''
+	(first_function, first_function_index) = findFirstFunction(src_text)
+	print '1st func: %s' % first_function
+
+	index = first_function_index
+
+	header_text = src_text[:index]
+	body_text = src_text[index:]
 	return (header_text, body_text)
 
 def getHeaderInsertionPosition(text):
