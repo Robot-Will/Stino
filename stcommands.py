@@ -171,8 +171,9 @@ class NewSketchCommand(sublime_plugin.WindowCommand):
 
 class OpenSketchCommand(sublime_plugin.WindowCommand):
 	def run(self, menu_str):
-		sketchbook_root = stino.const.settings.get('sketchbook_root')
-		folder_path = os.path.join(sketchbook_root, menu_str)
+		# sketchbook_root = stino.const.settings.get('sketchbook_root')
+		# folder_path = os.path.join(sketchbook_root, menu_str)
+		folder_path = stino.arduino_info.getSketchPath(menu_str)
 		if os.path.isdir(folder_path):
 			stino.src.openSketch(folder_path)
 		else:
