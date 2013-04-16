@@ -1236,7 +1236,7 @@ class Upload:
 class BurnBootloader:
 	def __init__(self, language, arduino_info, menu, file_path):
 		self.language = language
-		self.board = const.settings.get('Board')
+		self.board = const.settings.get('board')
 		self.cur_compilation = Compilation(language, arduino_info, menu, file_path, is_run_cmd = False)
 		self.output_panel = self.cur_compilation.getOutputPanel()
 		self.error_code = 0
