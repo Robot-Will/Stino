@@ -17,10 +17,6 @@
 	<array>
 		<dict>
 			<key>include</key>
-			<string>#special_block</string>
-		</dict>
-		<dict>
-			<key>include</key>
 			<string>source.c++</string>
 		</dict>
 (_$dict$_)
