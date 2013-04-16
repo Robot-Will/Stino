@@ -467,8 +467,8 @@ class STMenu:
 
 		text = ''
 		text += self.genDictBlock(constant_list, 'constant.arduino')
-		text += self.genDictBlock(keyword_list, 'keyword.arduino')
-		text += self.genDictBlock(function_list, 'entity.name.function.arduino')
+		text += self.genDictBlock(keyword_list, 'storage.modifier.arduino')
+		text += self.genDictBlock(function_list, 'support.function.arduino')
 
 		temp_file = os.path.join(self.template_root, 'syntax')
 		self.syntax_text = osfile.readFileText(temp_file)

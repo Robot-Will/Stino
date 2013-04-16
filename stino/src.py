@@ -306,7 +306,6 @@ def splitSrcByFisrtFunction(src_text):
 	# 	header_text = src_text
 	# 	body_text = ''
 	(first_function, first_function_index) = findFirstFunction(src_text)
-	print '1st func: %s' % first_function
 
 	index = first_function_index
 
