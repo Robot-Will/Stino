@@ -184,6 +184,14 @@ class OpenSketchCommand(sublime_plugin.WindowCommand):
 		state = stino.const.settings.get('show_arduino_menu', False)
 		return state
 
+class SelectExampleCommand(sublime_plugin.WindowCommand):
+	def run(self, menu_str):
+		(example, platform) = stino.utils.getInfoFromKey(menu_str)
+		example_path = stino.arduino_info.getExamplePath(platform, example)
+		self.window.run_command('show_file_explorer_panel', {'top_path_list':[example_path], \
+				'condition_mod':'arduino', 'condition_func':'isSketchFolder', 'function_mod':'src', \
+				'function_func':'openSketch'})
+
 class NewToSketchCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		caption = '%(Name_for_new_file:)s'
@@ -613,14 +621,6 @@ class FixEncodingCommand(sublime_plugin.WindowCommand):
 				edit = view.begin_edit()
 				view.replace(edit, sublime.Region(0, view.size()), content)
 				view.end_edit(edit)
-
-class SelectExampleCommand(sublime_plugin.WindowCommand):
-	def run(self, menu_str):
-		(example, platform) = stino.utils.getInfoFromKey(menu_str)
-		example_path = stino.arduino_info.getExamplePath(platform, example)
-		self.window.run_command('show_file_explorer_panel', {'top_path_list':[example_path], \
-				'condition_mod':'arduino', 'condition_func':'isSketchFolder', 'function_mod':'src', \
-				'function_func':'openSketch'})
 
 class OpenRefCommand(sublime_plugin.WindowCommand):
 	def run(self, menu_str):

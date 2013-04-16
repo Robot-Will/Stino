@@ -5,6 +5,7 @@
 		[
 			{"caption": "%(New)s %(Sketch)s", "command": "new_sketch"},
 			{"caption": "Sketchbook->"},
+			{"caption": "Examples->"},
 			{"caption": "-"},
 			{"caption": "%(New)s %(File)s", "command": "new_to_sketch"},
 			{"caption": "Import_Library->"},
@@ -66,7 +67,6 @@
 				]
 			},
 			{"caption": "-"},
-			{"caption": "Examples->"},
 			{
 				"caption": "%(Arduino)s %(Help)s",
 				"id": "arduino_help",

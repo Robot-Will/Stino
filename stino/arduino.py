@@ -393,12 +393,28 @@ class Arduino:
 		self.sketch_list = []
 		self.sketch_path_dict = {}
 		sketchbook_root = self.getSketchbookRoot()
-		dir_list = osfile.listDir(sketchbook_root, with_files = False)
-		for cur_dir in dir_list:
-			cur_dir_path = os.path.join(sketchbook_root, cur_dir)
-			if isSketchFolder(cur_dir_path):
+		sketchbook_root = utils.convertAsciiToUtf8(sketchbook_root)
+		# dir_list = osfile.listDir(sketchbook_root, with_files = False)
+		# for cur_dir in dir_list:
+		# 	cur_dir_path = os.path.join(sketchbook_root, cur_dir)
+		# 	if isSketchFolder(cur_dir_path):
+		# 		self.sketch_list.append(cur_dir)
+		# 		self.sketch_path_dict[cur_dir] = cur_dir_path
+
+		for (cur_path, sub_dirs, files) in os.walk(sketchbook_root):
+			if 'libraries' in cur_path or 'hardware' in cur_path:
+				continue
+			if isSketchFolder(cur_path):
+				cur_dir = os.path.split(cur_path)[1]
+
+				parent_path = os.path.split(cur_path)[0]
+				while cur_dir in self.sketch_list:
+					parent_dir = os.path.split(parent_path)[1]
+					cur_dir = parent_dir + '/' + cur_dir
+					parent_path = os.path.split(parent_path)[0]
+
 				self.sketch_list.append(cur_dir)
-				self.sketch_path_dict[cur_dir] = cur_dir_path
+				self.sketch_path_dict[cur_dir] = cur_path
 
 	def genVersion(self):
 		arduino_root = self.getArduinoRoot()
@@ -601,14 +617,14 @@ class Arduino:
 			key = _winreg.OpenKey(_winreg.HKEY_CURRENT_USER,\
 	            r'Software\Microsoft\Windows\CurrentVersion\Explorer\Shell Folders',)
 			document_root = _winreg.QueryValueEx(key, 'Personal')[0]
-			sketchbook_root = os.path.join(document_root, 'Arduino')
+			sketchbook_root = os.path.join(document_root, u'Arduino')
 		elif const.sys_platform == 'linux':
 			home_root = os.getenv('HOME')
-			sketchbook_root = os.path.join(home_root, 'sketchbook')
+			sketchbook_root = os.path.join(home_root, u'sketchbook')
 		elif const.sys_platform == 'osx':
 			home_root = os.getenv('HOME')
-			document_root = os.path.join(home_root, 'Documents')
-			sketchbook_root = os.path.join(document_root, 'Arduino')
+			document_root = os.path.join(home_root, u'Documents')
+			sketchbook_root = os.path.join(document_root, u'Arduino')
 		return sketchbook_root
 
 	def getSketchList(self):
