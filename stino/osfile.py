@@ -133,7 +133,7 @@ def openUrl(url):
 	arduino_root = getRealPath(arduino_root)
 	reference_path = os.path.join(arduino_root, 'reference')
 	reference_path = reference_path.replace(os.path.sep, '/')
-	ref_file = '%s/%s.html' % (reference_path, url)
+	ref_file = 'file://%s/%s.html' % (reference_path, url)
 	sublime.run_command('open_url', {'url': ref_file})
 
 def openUrlList(url_list):
