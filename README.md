@@ -15,9 +15,11 @@ Arduino versions below 0017 are not supported. Non-standard cores, like Teensy, 
 #### 3. Tested OS
 * Windows: Windows XP, Windows 7
 
-* Linux: Ubuntu (12.10), Linux Mint 14, Slax (7.0)
+* Linux: Ubuntu (12), Linux Mint (14), Slax (7), Archlinux
 
 * Max OS X: Mountain Lion (10.8), Lion (10.7), Snow Leopard (10.6)
+
+If your OS is not listed, please see this [issue](https://github.com/Robot-Will/Stino/issues/18) and leave your OS information. Thanks.
 
 ## Installation
 Stino installation coulde be achieved through Sublime Text Package Control or manual installation.
@@ -91,18 +93,8 @@ Stino is a multi-language software and you can select your favorite language. Al
 If you meet any problems, you can leave messages at [Issues](https://github.com/Robot-Will/Stino/issues).
 
 #### Known Issues:
-###### 1. Supported Operating Systems
-Tested Operating Systems are listed below:
 
-* Windows: Windows XP, Windows 7
-
-* Linux: Ubuntu, Linux Mint, Slax
-
-* Max OS X: Mountain Lion (10.8), Snow Leopard (10.6)
-
-Or you can see this [issue](https://github.com/Robot-Will/Stino/issues/18).
-
-###### 2. Build Process
+###### 1. Build Process
 
 The build process is similar to [Arduino Build Process](http://arduino.cc/en/Hacking/BuildProcess). A number of things have to happen for your Arduino code to get onto the Arduino board. First, Stino performs some small transformations to make sure that the code is correct C or C++ (two common programming languages). It then gets passed to a compiler (avr-gcc), which turns the human readable code into machine readable instructions (or object files). Then, your code gets combined with (linked against), the standard Arduino libraries that provide basic functions like digitalWrite() or Serial.print(). The result is a single Intel hex file, which contains the specific bytes that need to be written to the program memory of the chip on the Arduino board. This file is then uploaded to the board: transmitted over the USB or serial connection via the bootloader already on the chip or with external programming hardware.
 
@@ -124,11 +116,11 @@ First, Stino reads `<ARDUINO>/hardware/cores/boards.txt` and `<ARDUINO>/hardware
 
 Next, Stino seraches the file `<ARDUINO>/hardware/cores/platform.txt`, which defines the compilation commands. If this file does not exist, Stino will use the file in `compilation` folder. After reading compilation commands, Stino starts compilation. 
 
-###### 3. Add Libraries
+###### 2. Add Libraries
 
 Copy the library folder to the `<SKETCHBOOK>/libraries/` folder.
 
-###### 4. Add Cores
+###### 3. Add Cores
 
 Copy the core folder to the `<SKETCHBOOK>/hardware/` folder.
 
