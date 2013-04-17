@@ -15,9 +15,9 @@ Arduino versions below 0017 are not supported. Non-standard cores, like Teensy, 
 #### 3. Tested OS
 * Windows: Windows XP, Windows 7
 
-* Linux: Ubuntu, Linux Mint, Slax
+* Linux: Ubuntu (12.10), Linux Mint 14, Slax (7.0)
 
-* Max OS X: Mountain Lion (10.8), Snow Leopard (10.6)
+* Max OS X: Mountain Lion (10.8), Lion (10.7), Snow Leopard (10.6)
 
 ## Installation
 Stino installation coulde be achieved through Sublime Text Package Control or manual installation.
