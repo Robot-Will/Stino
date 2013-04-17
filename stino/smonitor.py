@@ -118,10 +118,16 @@ class SerialMonitor:
 	def start(self):
 		self.view.raiseToFront()
 		if not self.is_alive:
-			self.ser.open()
-			self.is_alive = True
-			monitor_thread = threading.Thread(target=self.receive)
-			monitor_thread.start()
+			if isSerialPortAvailable(self.serial_port):
+				self.ser.open()
+				self.is_alive = True
+				monitor_thread = threading.Thread(target=self.receive)
+				monitor_thread.start()
+			else:
+				display_text = 'Serial port {0} already in use. Try quitting any programs that may be using it.'
+				msg = display_text
+				msg = msg.replace('{0}', self.serial_port)
+				self.view.addText(msg)
 
 	def stop(self):
 		if self.is_alive:

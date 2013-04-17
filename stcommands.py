@@ -409,8 +409,8 @@ class StartSerialMonitorCommand(sublime_plugin.WindowCommand):
 		serial_port = stino.const.settings.get('serial_port')
 		serial_port_list = stino.smonitor.genSerialPortList()
 		if serial_port in serial_port_list:
-			if stino.smonitor.isSerialPortAvailable(serial_port):
-				state = True
+			# if stino.smonitor.isSerialPortAvailable(serial_port):
+			state = True
 		return state
 
 class StopSerialMonitorCommand(sublime_plugin.WindowCommand):
