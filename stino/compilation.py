@@ -372,8 +372,8 @@ def getNewSerialPort(serial_port, serial_port_list):
 	ser.port = serial_port
 	ser.baudrate = 1200
 	ser.open()
-	time.sleep(0.5)
 	ser.close()
+	time.sleep(4)
 
 	serial_port_list.remove(serial_port)
 	new_serial_port_list = smonitor.genSerialPortList()
