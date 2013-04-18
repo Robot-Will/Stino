@@ -884,7 +884,7 @@ class Compilation:
 		for lib_path in lib_path_list:
 			folder_list = osfile.listDir(lib_path, with_files = False)
 			for folder in folder_list:
-				if folder == 'examples':
+				if 'examples' in folder:
 					continue
 				folder_path = os.path.join(lib_path, folder)
 				folder_path = folder_path.replace(os.path.sep, '/')
