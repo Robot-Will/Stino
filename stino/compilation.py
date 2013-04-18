@@ -63,7 +63,8 @@ def findSrcFiles(path):
 def findLibrarySrcFiles(lib_path):
 	file_path_list = []
 	for (cur_path, sub_dirs, files) in os.walk(lib_path):
-		if 'examples' in cur_path:
+		lower_cur_path = cur_path.lower()
+		if 'examples' in lower_cur_path:
 			continue
 		for cur_file in files:
 			cur_ext = os.path.splitext(cur_file)[1]
