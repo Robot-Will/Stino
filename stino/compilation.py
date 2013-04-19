@@ -377,16 +377,31 @@ def getNewSerialPort(serial_port, serial_port_list):
 
 	serial_port_list.remove(serial_port)
 	new_serial_port_list = smonitor.genSerialPortList()
+
 	index = 0
 	while serial_port in new_serial_port_list:
 		time.sleep(0.5)
 		new_serial_port_list = smonitor.genSerialPortList()
 		index += 1
-		if index > 120:
+		if index > 20:
 			break
-	time.sleep(0.1)
+	
+	serial_port_list = new_serial_port_list
+	new_serial_port_list = smonitor.genSerialPortList()
 	for serial_port in serial_port_list:
-		new_serial_port_list.remove(serial_port)
+		if serial_port in new_serial_port_list:
+			new_serial_port_list.remove(serial_port)
+	
+	index = 0
+	while not new_serial_port_list:
+		time.sleep(0.5)
+		new_serial_port_list = smonitor.genSerialPortList()
+		for serial_port in serial_port_list:
+			if serial_port in new_serial_port_list:
+				new_serial_port_list.remove(serial_port)
+		index += 1
+		if index > 40:
+			break
 	
 	if new_serial_port_list:
 		new_serial_port = new_serial_port_list[0]
