@@ -386,8 +386,6 @@ def getNewSerialPort(serial_port, serial_port_list):
 		if index > 20:
 			break
 	
-	serial_port_list = new_serial_port_list
-	new_serial_port_list = smonitor.genSerialPortList()
 	for serial_port in serial_port_list:
 		if serial_port in new_serial_port_list:
 			new_serial_port_list.remove(serial_port)
@@ -399,6 +397,7 @@ def getNewSerialPort(serial_port, serial_port_list):
 		for serial_port in serial_port_list:
 			if serial_port in new_serial_port_list:
 				new_serial_port_list.remove(serial_port)
+
 		index += 1
 		if index > 40:
 			break
