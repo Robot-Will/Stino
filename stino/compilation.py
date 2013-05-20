@@ -93,6 +93,8 @@ def getPlatformFilePath(platform, board):
 	platform_file = ''
 	if 'Arduino AVR' in platform:
 		platform_file = 'arduino_avr.txt'
+	elif 'zpuino' in platform:
+		platform_file = 'zpuino.txt'
 	elif 'teensy' in platform:
 		if '3.0' in board:
 			platform_file = 'teensy_arm.txt'
@@ -799,10 +801,10 @@ class Compilation:
 					info_dict['build.cpp0x'] = ''
 
 		if not 'upload.maximum_ram_size' in info_dict:
-			if info_dict['build.mcu'] in ram_size_dict:
-				info_dict['upload.maximum_ram_size'] = ram_size_dict[info_dict['build.mcu']]
-			else:
-				info_dict['upload.maximum_ram_size'] = ''
+			info_dict['upload.maximum_ram_size'] = ''
+			if 'build.mcu' in info_dict:
+				if info_dict['build.mcu'] in ram_size_dict:
+					info_dict['upload.maximum_ram_size'] = ram_size_dict[info_dict['build.mcu']]				
 
 		if 'cmd.path.linux' in info_dict:
 			if const.sys_platform == 'linux':

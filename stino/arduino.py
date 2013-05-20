@@ -21,25 +21,25 @@ def isArduinoRoot(path):
 	return state
 
 def convertTextToVersion(version_text):
-	if not '.' in version_text:
-		version = int(version_text)
+	# if not '.' in version_text:
+	# 	version = int(version_text)
+	# else:
+	number_patter_text = r'[\d.]+'
+	number_pattern = re.compile(number_patter_text)
+	match = number_pattern.search(version_text)
+	if match:
+		version_text = match.group()
+		number_list = version_text.split('.')
+		
+		version = 0
+		power = 0
+		for number in number_list:
+			number = int(number)
+			version += number * (10 ** power)
+			power -= 1
+		version *= 100
 	else:
-		number_patter_text = r'[\d.]+'
-		number_pattern = re.compile(number_patter_text)
-		match = number_pattern.search(version_text)
-		if match:
-			version_text = match.group()
-			number_list = version_text.split('.')
-			
-			version = 0
-			power = 0
-			for number in number_list:
-				number = int(number)
-				version += number * (10 ** power)
-				power -= 1
-			version *= 100
-		else:
-			version = 1000
+		version = 1000
 	return int(version)
 
 def parseVersionInfo(arduino_root):

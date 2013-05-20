@@ -138,7 +138,7 @@ class STMenu:
 			dict_text += description
 			dict_text += '</string>\n'
 			dict_text += '\t' * 2
-			dict_text += '</dict>'
+			dict_text += '</dict>\n'
 		return dict_text
 
 	def genSketchbookMenuText(self):
