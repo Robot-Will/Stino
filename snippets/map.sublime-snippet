@@ -1,0 +1,8 @@
+<snippet>
+    <content><![CDATA[
+map(${1:value}, ${2:fromLow}, ${3:fromHigh}, ${4:toLow}, ${5:toHigh});
+]]></content>
+    <tabTrigger>map</tabTrigger>
+    <scope>source.arduino</scope>
+    <description>Arduino map()</description>
+</snippet>
