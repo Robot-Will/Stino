@@ -1,0 +1,8 @@
+<snippet>
+    <content><![CDATA[
+pow(${1:base}, ${2:exponent});
+]]></content>
+    <tabTrigger>pow</tabTrigger>
+    <scope>source.arduino</scope>
+    <description>Arduino pow()</description>
+</snippet>

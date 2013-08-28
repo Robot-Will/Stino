@@ -1,0 +1,8 @@
+<snippet>
+    <content><![CDATA[
+millis();
+]]></content>
+    <tabTrigger>millis</tabTrigger>
+    <scope>source.arduino</scope>
+    <description>Arduino millis()</description>
+</snippet>

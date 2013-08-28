@@ -1,0 +1,8 @@
+<snippet>
+    <content><![CDATA[
+Serial.end();
+]]></content>
+    <tabTrigger>send</tabTrigger>
+    <scope>source.arduino</scope>
+    <description>Arduino Serial.end()</description>
+</snippet>
