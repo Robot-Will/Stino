@@ -1,0 +1,8 @@
+<snippet>
+    <content><![CDATA[
+byte(${1:x});
+]]></content>
+    <tabTrigger>byte</tabTrigger>
+    <scope>source.arduino</scope>
+    <description>Arduino byte()</description>
+</snippet>

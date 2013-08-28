@@ -1,0 +1,8 @@
+<snippet>
+    <content><![CDATA[
+detachInterrupt(${1:interrupt});
+]]></content>
+    <tabTrigger>detachInterrupt</tabTrigger>
+    <scope>source.arduino</scope>
+    <description>Arduino detachInterrupt()</description>
+</snippet>
