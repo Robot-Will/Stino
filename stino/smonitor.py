@@ -39,6 +39,7 @@ def genSerialPortList():
 	else:
 		if const.sys_platform == 'osx':
 			dev_names = ['tty.', 'cu.']
+			dev_ignores = ['tty.Bluetooth', 'cu.Bluetooth']
 		else:
 			dev_names = ['ttyACM', 'ttyUSB']
 		
@@ -48,6 +49,15 @@ def genSerialPortList():
 		for dev_file in dev_file_list:
 			for dev_name in dev_names:
 				if dev_name in dev_file:
+					ignored = False
+					for dev_ignore in dev_ignores:
+						if dev_ignore in dev_file:
+							ignored = True
+							break
+					
+					if ignored:
+						break
+					
 					dev_file_path = os.path.join(dev_path, dev_file)
 					serial_port_list.append(dev_file_path)
 	return serial_port_list
