@@ -140,7 +140,13 @@ class UploadUsingProgrammerCommand(sublime_plugin.WindowCommand):
 	def is_enabled(self):
 		state = False
 		if app.active_file.isSrcFile():
-			state = True
+			platform_list = app.arduino_info.getPlatformList()
+			platform_id = app.constant.sketch_settings.get('platform', -1)
+			if (platform_id > 0) and (platform_id < len(platform_list)):
+				platform = platform_list[platform_id]
+				programmer_list = platform.getProgrammerList()
+				if programmer_list:
+					state = True
 		return state
 
 class ChooseBoardCommand(sublime_plugin.WindowCommand):

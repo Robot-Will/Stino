@@ -543,6 +543,27 @@ def getProgrammerListFromFolder(folder):
 		for programmer_block in programmer_block_list:
 			if programmer_block:
 				(name, args) = getBlockInfo(programmer_block)
+				if not 'program.extra_params' in args:
+					if 'Parallel' in name:
+						value = '-F'
+					else:
+						value = ''
+						if 'communication' in args:
+							comm_type = args['communication']
+							if comm_type == 'serial':
+								port = '{serial.port}'
+							else:
+								port = comm_type
+							value += '-P%s' % port
+							value += ' '
+						if '.speed' in args:
+							if not 'program.speed' in args:
+								args['program.speed'] = args['speed']
+						if 'program.speed' in args:
+							speed = args['program.speed']
+							value += '-b%s' % speed
+					args['program.extra_params'] = value
+
 				cur_programmer = Programmer(name)
 				cur_programmer.setArgs(args)
 				programmer_list.append(cur_programmer)
