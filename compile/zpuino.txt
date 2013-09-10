@@ -1,0 +1,61 @@
+
+# Zpuino compile variables
+# --------------------- 
+
+name=Zpuino (32-bits) Boards
+compiler.path={runtime.ide.path}/hardware/tools/zpu/bin/
+compiler.c.cmd=zpu-elf-gcc
+compiler.c.flags=-DZPU -Wall -O2 -fno-gcse -ffunction-sections -fdata-sections -nostartfiles -mmult -mdiv -mno-callpcrel -mno-pushspadd -mno-poppcrel {build.extraCflags}
+compiler.c.elf.cmd=zpu-elf-g++
+compiler.c.elf.flags=-Wl,--whole-archive
+compiler.S.flags={compiler.c.flags} {build.extraSflags}
+compiler.cpp.cmd=zpu-elf-g++
+compiler.cpp.flags={compiler.c.flags} -fno-exceptions -fno-rtti
+compiler.ar.cmd=zpu-elf-ar
+compiler.ar.flags=rcs
+compiler.objcopy.cmd=zpu-elf-objcopy
+compiler.objcopy.eep.flags=-O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0
+compiler.elf2hex.flags=-O binary
+compiler.elf2hex.cmd=zpu-elf-objcopy
+compiler.ldflags=-O2 -nostartfiles -Wl,-T -Wl,{build.core_folder}/zpuino.lds -Wl,--relax -Wl,--gc-sections
+compiler.size.cmd=zpu-elf-size
+compiler.define=-DARDUINO=
+# this can be overriden in boards.txt
+build.extra_flags=
+
+# Zpuino compile patterns
+# ---------------------
+
+## Compile c files
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -DF_CPU={build.f_cpu} -D{software}={runtime.ide.version} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+
+## Compile c++ files
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -DF_CPU={build.f_cpu} -D{software}={runtime.ide.version} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+
+## Create archives
+recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{build.path}/{archive_file}" "{object_file}"
+
+## Combine gc-sections, archives, and objects
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" -o "{build.path}/{build.project_name}.elf" {object_files} {compiler.ldflag} -Wl,--whole-archive "{build.path}/{archive_file}" -Wl,--no-whole-archive
+
+## Create eeprom
+recipe.objcopy.eep.pattern=
+
+## Create hex
+recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
+
+## Compute size
+recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build.project_name}.elf"
+recipe.size.regex=\.text\s+([0-9]+).*
+
+
+# Zpuino Uploader tools
+# -------------------
+
+tools.bossac.cmd=zpuinoprogrammer
+tools.bossac.path={runtime.ide.path}/hardware/tools/zpu/bin
+
+tools.bossac.upload.params.verbose=-v
+tools.bossac.upload.params.quiet=
+tools.bossac.upload.pattern="{path}/{cmd}" {upload.verbose} -R -s 115200 -d {serial.port.file} -b "{build.path}/{build.project_name}.bin"
+

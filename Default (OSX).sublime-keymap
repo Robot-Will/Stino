@@ -1,0 +1,25 @@
+/*
+On OS X, basic text manipulations (left, right, command+left, etc) make use of the system key bindings,
+and don't need to be repeated here. Anything listed here will take precedence, however.
+*/
+[
+	{ "keys": ["alt+super+a"], "command": "show_arduino_menu" },
+	{ "keys": ["alt+super+e"], "command": "set_extra_flag" },
+	{ "keys": ["alt+super+v"], "command": "compile_sketch" },
+	{ "keys": ["alt+super+u"], "command": "upload_sketch" },
+	{ "keys": ["alt+super+p"], "command": "upload_using_programmer" },
+	{ "keys": ["alt+super+b"], "command": "burn_bootloader" },
+	{ "keys": ["alt+super+m"], "command": "start_serial_monitor" },
+	{ "keys": ["alt+super+t"], "command": "stop_serial_monitor" },
+	{ "keys": ["alt+super+d"], "command": "send_serial_text" },
+	{ "keys": ["alt+super+o"], "command": "auto_format" },
+	{ "keys": ["alt+super+z"], "command": "archive_sketch" },
+	{ "keys": ["alt+super+1"], "command": "choose_arduino_folder" },
+	{ "keys": ["alt+super+2"], "command": "change_sketchbook_folder" },
+	{ "keys": ["alt+super+3"], "command": "choose_build_folder" },
+	{ "keys": ["alt+super+g"], "command": "set_global_setting" },
+	{ "keys": ["alt+super+0"], "command": "set_full_compilation" },
+	{ "keys": ["alt+super+9"], "command": "show_compilation_output" },
+	{ "keys": ["alt+super+8"], "command": "show_upload_output" },
+	{ "keys": ["alt+super+f"], "command": "find_in_reference" }
+]
