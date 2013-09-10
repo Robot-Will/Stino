@@ -6,28 +6,28 @@ Stino is a [Sublime Text 2](http://www.sublimetext.com) plugin, which provides a
 Sublime Text is a sophisticated text editor for code, markup and prose. You'll love the slick user interface, extraordinary features and amazing performance. Stino is a Sublime Text plugin, providing a menu and a command palette, which make it as easy as Arduino IDE to write code and upload it to the I/O board. The plugin was written in pure python, and it runs on Windows, Mac OS X, and Linux. Two additional python libraries, [Pyserial](https://pypi.python.org/pypi/pyserial) and [Chardet](https://pypi.python.org/pypi/chardet) were used in this plugin, these codes are belonging to their own authors.
 
 ## Requirements
-#### 1. [Sublime Text 2](http://www.sublimetext.com/2)
-Current version does not support [Sublime Text 3](http://www.sublimetext.com/3). The next version plugin will add the support of ST3.
+#### 1. [Sublime Text](http://www.sublimetext.com)
+Current version supports ST2 and ST3. This version is done at 09/10/2013.
 
 #### 2. [Arduino](http://arduino.cc/en/Main/Software)
-Arduino versions below 0017 are not supported. Non-standard cores, like Teensy, are supported.
+Most Arduino versions are supported.
 
 #### 3. Tested OS
-* Windows: Windows XP, Windows 7
+* Windows: Windows 8, Windows 7
 
-* Linux: Ubuntu (12), Linux Mint (14), Slax (7), Archlinux
+* Linux: Slax (7)
 
-* Max OS X: Mountain Lion (10.8), Lion (10.7), Snow Leopard (10.6)
+* Max OS X: Snow Leopard (10.6)
 
 If your OS is not listed, please see this [issue](https://github.com/Robot-Will/Stino/issues/18) and leave your OS information. Thanks.
 
 ## Installation
 Stino installation coulde be achieved through Sublime Text Package Control or manual installation.
 
-#### 1. Installation trough Sublime Text 2 Package Control
-1. Open [Sublime Text 2 Package Control Installation Page](http://wbond.net/sublime_packages/package_control/installation), copy the installation command.
+#### 1. Installation trough Sublime Text Package Control
+1. Open [Sublime Text Package Control Installation Page](http://wbond.net/sublime_packages/package_control/installation), copy the installation command.
 
-2. Open Sublime Text 2 console via Ctrl+` shorcut, and paste the installation command into the console.
+2. Open Sublime Text console via Ctrl+` shorcut, and paste the installation command into the console.
 
 3. Once installation completes, you will see 'Please restart Sublime Text to finish installation'.
 
@@ -53,16 +53,11 @@ Stino installation coulde be achieved through Sublime Text Package Control or ma
 
 2. Click the menu `Arduino`->`Preferences`->`Select Arduino Folder`.
 
-3. Select your Arduino Application Folder in the quick panel.
+3. Select your `Arduino Application Folder` in the quick panel.
 
 4. Once the folder you select is Arduino folder, you will see the message like the Step 4 in the following figure.
 
 ![Stino Select Arduino Folder](http://robot-will.github.com/Stino/images/select_arduino.png)
-
-## Full Menu and Command Palette
-Once the Arduino Application Folder was set, a full menu will be ready for use. The Arduino menu is not always shown in menu bar. When the active file's extension is `.ino`, `.pde`, `.c`, `.cc`, `.cpp` or `.cxx`, the Arduino menu will appear. The menu provides all functionalities of Arduino IDE, including a simple Serial Monitor.
-
-![Stino Menu & Command Palette](http://robot-will.github.com/Stino/images/menu.png)
 
 ## Compilation and Upload
 Click the menu `Arduino`->`Verify/Compile` to compile the sketch, or click `Arduino`->`Upload` to compile and upload the sketch.
