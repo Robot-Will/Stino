@@ -556,7 +556,7 @@ def getProgrammerListFromFolder(folder):
 								port = comm_type
 							value += '-P%s' % port
 							value += ' '
-						if '.speed' in args:
+						if 'speed' in args:
 							if not 'program.speed' in args:
 								args['program.speed'] = args['speed']
 						if 'program.speed' in args:
