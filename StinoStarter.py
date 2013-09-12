@@ -561,6 +561,16 @@ class ShowUploadOutputCommand(sublime_plugin.WindowCommand):
 		state = app.constant.sketch_settings.get('show_upload_output', False)
 		return state
 
+class VerifyCodeCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		verify_code = not app.constant.sketch_settings.get('verify_code', False)
+		app.constant.sketch_settings.set('verify_code', verify_code)
+
+	def is_checked(self):
+		state = app.constant.sketch_settings.get('verify_code', False)
+		return state
+
+
 class OpenRefCommand(sublime_plugin.WindowCommand):
 	def run(self, url):
 		url = app.base.getUrl(url)

@@ -486,11 +486,16 @@ def buildSettingMenuGroup(language):
 	show_upload_menu.setCheckbox()
 	show_verbose_output_menu.addMenuItem(show_compilation_menu)
 	show_verbose_output_menu.addMenuItem(show_upload_menu)
+
+	verify_code_menu = MenuItem(language.translate('Verify Code after Upload'))
+	verify_code_menu.setCommand('verify_code')
+	verify_code_menu.setCheckbox()
 	
 	setting_menu_group.addMenuItem(setting_menu)
 	setting_menu_group.addMenuItem(global_setting_menu)
 	setting_menu_group.addMenuItem(full_compilation_menu)
 	setting_menu_group.addMenuItem(show_verbose_output_menu)
+	setting_menu_group.addMenuItem(verify_code_menu)
 	return setting_menu_group
 
 def buildHelpMenuGroup(language):

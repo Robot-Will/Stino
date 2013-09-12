@@ -418,6 +418,11 @@ def getPlatformArgs(platform_text, args):
 				if '.quiet' in key:
 					key = key.replace('.quiet', '.verbose')
 
+			if '.verbose' in key:
+				verify_code = constant.sketch_settings.get('verify_code', False)
+				if verify_code:
+					value += ' -V'
+
 			if key == 'build.extra_flags':
 				if key in args:
 					continue
