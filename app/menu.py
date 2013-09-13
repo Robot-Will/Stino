@@ -394,9 +394,14 @@ def buildReferenceMenu(language):
 	return references_menu	
 
 def buildSketchMenuGroup(language, arduino_info):
+	new_sketch_menu = MenuItem(language.translate('New Sketch'))
+	new_sketch_menu.setCommand('new_sketch')
+
 	sketch_menu_group = MenuItemGroup()
 	sketchbook_menu = buildSketchbookMenu(language, arduino_info)
 	examples_menu = buildExampleMenu(language, arduino_info)
+
+	sketch_menu_group.addMenuItem(new_sketch_menu)
 	sketch_menu_group.addMenuItem(sketchbook_menu)
 	sketch_menu_group.addMenuItem(examples_menu)
 	return sketch_menu_group

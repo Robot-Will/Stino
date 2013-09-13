@@ -887,3 +887,21 @@ def getHLibDict(lib_list):
 		for h in h_list:
 			h_lib_dict[h] = lib_folder
 	return h_lib_dict
+
+def newSketch(sketch_name):
+	sketch_file = ''
+	sketchbook_folder = getSketchbookFolder()
+	sketch_folder = os.path.join(sketchbook_folder, sketch_name)
+	print(sketchbook_folder)
+	if not os.path.exists(sketch_folder):
+		os.makedirs(sketch_folder)
+		file_name = sketch_name + '.ino'
+		sketch_file = os.path.join(sketch_folder, file_name)
+		print(sketch_file)
+		text = '// %s\n\n' % file_name
+		text += 'void setup() {\n\n'
+		text += '}\n\n'
+		text += 'void loop() {\n\n'
+		text += '}\n\n'
+		fileutil.writeFile(sketch_file, text)
+	return sketch_file

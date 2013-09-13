@@ -6,6 +6,10 @@
 # this is distributed under a free software license, see license.txt
 
 # compatibility for older Python < 2.6
+
+import sys
+sys_version = int(sys.version[0])
+
 try:
     bytes
     bytearray
@@ -290,10 +294,16 @@ class SerialBase(object):
         was_open = self._isOpen
         if was_open: self.close()
         if port is not None:
-            if isinstance(port, str) or isinstance(port, unicode):
-                self.portstr = port
+            if sys_version < 3:
+                if isinstance(port, str) or isinstance(port, unicode):
+                    self.portstr = port
+                else:
+                    self.portstr = self.makeDeviceName(port)
             else:
-                self.portstr = self.makeDeviceName(port)
+                if isinstance(port, str):
+                    self.portstr = port
+                else:
+                    self.portstr = self.makeDeviceName(port)
         else:
             self.portstr = None
         self._port = port

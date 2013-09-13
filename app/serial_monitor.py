@@ -13,6 +13,7 @@ from . import pyserial
 class MonitorView:
 	def __init__(self, name = 'Serial Monitor'):
 		self.name = name
+		self.show_text = ''
 		self.window = sublime.active_window()
 		self.view = findInOpendView(self.name)
 		if not self.view:
@@ -33,16 +34,21 @@ class MonitorView:
 		return self.view
 
 	def printText(self, text):
-		if text:
-			if constant.sys_version < 3:
-				self.text = text
-				sublime.set_timeout(self.update, 0)
-			else:
-				self.view.run_command('panel_output', {'text': text})
+		self.show_text += text
+		if constant.sys_version < 3: 
+			show_thread = threading.Thread(target=self.show)
+			show_thread.start()
+		else:
+			self.update()
+
+	def show(self):
+		sublime.set_timeout(self.update, 0)
 
 	def update(self):
-		self.view.run_command('panel_output', {'text': self.text})
-		self.text = ''
+		if self.show_text:
+			text = self.show_text
+			self.view.run_command('panel_output', {'text': text})
+			self.show_text = ''
 
 	def raiseToFront(self):
 		self.window.focus_view(self.view)

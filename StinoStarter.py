@@ -65,6 +65,23 @@ class ShowArduinoMenuCommand(sublime_plugin.WindowCommand):
 		state = app.constant.global_settings.get('show_arduino_menu', True)
 		return state
 
+class NewSketchCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		caption = app.i18n.translate('Name for New Sketch')
+		self.window.show_input_panel(caption, '', self.on_done, None, None)
+
+	def on_done(self, input_text):
+		sketch_name = input_text
+		if sketch_name:
+			sketch_file = app.base.newSketch(sketch_name)
+			print(sketch_file)
+			if sketch_file:
+				self.window.open_file(sketch_file)
+				app.arduino_info.refresh()
+				app.main_menu.refresh()
+			else:
+				app.output_console.printText('A sketch (or folder) named "%s" already exists. Could not create the sketch.\n' % sketch_name)
+
 class OpenSketchCommand(sublime_plugin.WindowCommand):
 	def run(self, folder):
 		app.sketch.openSketchFolder(folder)
