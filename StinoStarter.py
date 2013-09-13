@@ -98,6 +98,18 @@ class ImportLibraryCommand(sublime_plugin.WindowCommand):
 			state = True
 		return state
 
+class ShowSketchFolderCommand(sublime_plugin.WindowCommand):
+	def run(self):
+		folder = app.active_file.getFolder()
+		url = 'file://' + folder
+		sublime.run_command('open_url', {'url': url})
+
+	def is_enabled(self):
+		state = False
+		if app.active_file.isSrcFile():
+			state = True
+		return state
+
 class SetExtraFlagCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		extra_flag = app.constant.sketch_settings.get('extra_flag', '')

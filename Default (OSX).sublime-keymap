@@ -4,6 +4,7 @@ and don't need to be repeated here. Anything listed here will take precedence, h
 */
 [
 	{ "keys": ["alt+super+a"], "command": "show_arduino_menu" },
+	{ "keys": ["alt+super+n"], "command": "new_sketch" },
 	{ "keys": ["alt+super+e"], "command": "set_extra_flag" },
 	{ "keys": ["alt+super+v"], "command": "compile_sketch" },
 	{ "keys": ["alt+super+u"], "command": "upload_sketch" },

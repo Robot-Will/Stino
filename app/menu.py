@@ -409,7 +409,11 @@ def buildSketchMenuGroup(language, arduino_info):
 def buildLibraryMenuGroup(language, arduino_info):
 	library_menu_group = MenuItemGroup()
 	import_lib_menu = buildLibraryMenu(language, arduino_info)
+
+	show_sketch_folder_menu = MenuItem(language.translate('Show Sketch Folder'))
+	show_sketch_folder_menu.setCommand('show_sketch_folder')
 	library_menu_group.addMenuItem(import_lib_menu)
+	library_menu_group.addMenuItem(show_sketch_folder_menu)
 	return library_menu_group
 
 def buildDebugMenuGroup(language):
