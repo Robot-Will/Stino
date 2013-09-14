@@ -490,7 +490,7 @@ def getLibFolderListFromProject(cur_project, arduino_info):
 	selected_platform = platform_list[platform_id]
 	general_h_lib_dict = general_platform.getHLibDict()
 	selected_h_lib_dict = selected_platform.getHLibDict()
-
+	
 	ino_src_file_list = cur_project.getInoSrcFileList()
 	c_src_file_list = cur_project.getCSrcFileList()
 	h_list = preprocess.getHListFromSrcList(ino_src_file_list + c_src_file_list)

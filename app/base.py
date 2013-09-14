@@ -460,7 +460,7 @@ def splitBoardOptionBlock(board_option_block):
 	for line in board_option_block:
 		(key, value) = textutil.getKeyValue(line)
 		length = len(key.split('.'))
-		if length == 2:
+		if length <= 2 :
 			item_id = key
 			item_id = item_id.replace('name', '')
 			item_id_list.append(item_id)

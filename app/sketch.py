@@ -132,6 +132,10 @@ def isHSrcFile(cur_file):
 
 def getHSrcFileList(lib_folder):
 	H_src_file_list = []
+	# lib_src_folder = os.path.join(lib_folder, 'src')
+	# if os.path.isdir(lib_src_folder):
+	# 	lib_folder = lib_src_folder
+
 	folder_name_list = fileutil.listDir(lib_folder, with_files = False)
 	file_name_list = fileutil.listDir(lib_folder,with_dirs = False)
 
