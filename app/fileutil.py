@@ -150,8 +150,8 @@ def readFileLines(cur_file):
 
 def writeFile(cur_file, text, encoding = 'utf-8'):
 	if sys_version < 3:
-		# if not isinstance(text, unicode):
-		# 	text = text.encoding(encoding)
+		if isinstance(text, unicode):
+			text = text.encoding(encoding)
 		opened_file = open(cur_file, 'w')
 		opened_file.write(text)
 		opened_file.close()
