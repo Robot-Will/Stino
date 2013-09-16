@@ -23,10 +23,8 @@ If your OS is not listed, please see this [issue](https://github.com/Robot-Will/
 
 ## Installation
 Stino installation coulde be achieved through Sublime Text Package Control or manual installation.
-#### Attention: For ST3, you must install this plugin manually.
 
 #### 1. Installation through Sublime Text Package Control
-
 
 1. Open [Sublime Text Package Control Installation Page](http://wbond.net/sublime_packages/package_control/installation), copy the installation command.
 
