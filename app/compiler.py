@@ -224,6 +224,8 @@ def getChosenArgs(arduino_info):
 				programmer_args = programmer.getArgs()
 				args.update(programmer_args)
 
+			platform_file = getPlatformFile(arduino_info)
+			args = addBuildUsbValue(args, platform_file)
 			args = replaceAllDictValue(args)
 
 			if not 'upload.maximum_ram_size' in args:
@@ -286,6 +288,26 @@ def replaceAllDictValue(args_dict):
 		value_text = replaceValueText(value_text, args_dict)
 		args_dict[key] = value_text
 	return args_dict
+
+def addBuildUsbValue(args, platform_file):
+	lines = fileutil.readFileLines(platform_file)
+	for line in lines:
+		line = line.strip()
+		if line and not '#' in line:
+			(key, value) = textutil.getKeyValue(line)
+			if 'extra_flags' in key:
+				continue
+			if 'build.' in key:
+				if 'usb_manufacturer' in key:
+					if not value:
+						value = 'unknown'
+				value = replaceValueText(value, args)
+
+				if constant.sys_platform == 'windows':
+					value = value.replace('"', '\\"')
+					value = value.replace('\'', '"')
+				args[key] = value
+	return args
 
 def getDefaultArgs(cur_project, arduino_info):
 	core_folder = getCoreFolder(arduino_info)
@@ -389,9 +411,6 @@ def getPlatformFile(arduino_info):
 	return platform_file
 
 def splitPlatformFile(platform_file):
-	# opened_file = open(platform_file, 'r')
-	# text = opened_file.read()
-	# opened_file.close()
 	text = fileutil.readFile(platform_file)
 	index = text.index('recipe.')
 	text_header = text[:index]
