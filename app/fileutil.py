@@ -133,10 +133,9 @@ def getFileListOfExt(folder, ext_list):
 def readFile(cur_file, encoding = 'utf-8'):
 	text = ''
 	if sys_version < 3:
-		opened_file = open(cur_file, 'r')
+		opened_file = codecs.open(cur_file, 'r', encoding = encoding)
 		text = opened_file.read()
 		opened_file.close()
-		text = text.decode(encoding)
 	else:
 		opened_file = open(cur_file, 'r', encoding = encoding)
 		text = opened_file.read()
@@ -150,9 +149,7 @@ def readFileLines(cur_file):
 
 def writeFile(cur_file, text, encoding = 'utf-8'):
 	if sys_version < 3:
-		if isinstance(text, unicode):
-			text = text.encode(encoding)
-		opened_file = open(cur_file, 'w')
+		opened_file = codecs.open(cur_file, 'w', encoding = encoding)
 		opened_file.write(text)
 		opened_file.close()
 	else:
