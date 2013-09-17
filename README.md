@@ -128,6 +128,9 @@ The above copyright notice and this permission notice shall be included in all c
 
 THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
 
+## About The Author
+Dr. Robot Will is a chemist, not a programmer. He is in Shanghai, China, once a member of Xinchejian. He writes this plugin just for fun, meanwhile learning Python and Arduino. If you have any ideas or suggestions, please leave messages to him. He will appreciate your help.
+
 ## Website
 GitHub Page (http://robot-will.github.com/Stino/)
 
