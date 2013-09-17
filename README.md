@@ -10,7 +10,7 @@ Sublime Text is a sophisticated text editor for code, markup and prose. You'll l
 Current version supports ST2 and ST3. This version is done at 09/10/2013.
 
 #### 2. [Arduino](http://arduino.cc/en/Main/Software)
-Most Arduino versions are supported. The latest Arduino versions above 1.5.3 are not supported.
+Most Arduino versions are supported.
  
 #### 3. Tested OS
 * Windows: Windows 8, Windows 7, Windows XP 

@@ -161,7 +161,10 @@ def getChosenArgs(arduino_info):
 		platform_id = constant.sketch_settings.get('platform', -1)
 		if not ((platform_id > 0) and (platform_id < len(platform_list))):
 			platform_id = 1
+			cur_platform = platform_list[platform_id]
+			platform_name = cur_platform.getName()
 			constant.sketch_settings.set('platform', platform_id)
+			constant.sketch_settings.set('platform_name', platform_name)
 		selected_platform = platform_list[platform_id]
 		board_list = selected_platform.getBoardList()
 		board_id = constant.sketch_settings.get('board', -1)
@@ -362,7 +365,10 @@ def getCoreFolder(arduino_info):
 	platform_id = constant.sketch_settings.get('platform', -1)
 	if not ((platform_id > 0) and (platform_id < len(platform_list))):
 		platform_id = 1
+		cur_platform = platform_list[platform_id]
+		platform_name = cur_platform.getName()
 		constant.sketch_settings.set('platform', platform_id)
+		constant.sketch_settings.set('platform_name', platform_name)
 	platform = platform_list[platform_id]
 	
 	core_folder = ''

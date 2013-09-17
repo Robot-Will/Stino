@@ -74,7 +74,6 @@ class NewSketchCommand(sublime_plugin.WindowCommand):
 		sketch_name = input_text
 		if sketch_name:
 			sketch_file = app.base.newSketch(sketch_name)
-			print(sketch_file)
 			if sketch_file:
 				self.window.open_file(sketch_file)
 				app.arduino_info.refresh()
@@ -180,7 +179,9 @@ class UploadUsingProgrammerCommand(sublime_plugin.WindowCommand):
 
 class ChooseBoardCommand(sublime_plugin.WindowCommand):
 	def run(self, platform, board):
+		cur_platform = app.arduino_info.getPlatformList()[platform]
 		app.constant.sketch_settings.set('platform', platform)
+		app.constant.sketch_settings.set('platform_name', cur_platform.getName())
 		app.constant.sketch_settings.set('board', board)
 		app.main_menu.refresh()
 		app.constant.sketch_settings.set('full_compilation', True)

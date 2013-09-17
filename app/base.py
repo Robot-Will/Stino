@@ -616,7 +616,35 @@ def getSketchbook():
 	sketchbook.setName('Sketchbook')
 	return sketchbook
 
-def getLibraryListFromFolder(folder):
+def getGeneralLibraryListFromFolder(folder, platform_name = ''):
+	lib_list = []
+	libraries_folder = os.path.join(folder, 'libraries')
+	if os.path.isdir(libraries_folder):
+		sub_folder_name_list = fileutil.listDir(libraries_folder, with_files = False)
+		for sub_folder_name in sub_folder_name_list:
+			sub_folder = os.path.join(libraries_folder, sub_folder_name)
+			lib_item = LibItem(sub_folder_name)
+			lib_item.setFolder(sub_folder)
+
+			arch_folder = os.path.join(sub_folder, 'arch')
+			if os.path.isdir(arch_folder):
+				avr_folder = os.path.join(arch_folder, 'avr')
+				sam_folder = os.path.join(arch_folder, 'sam')
+				if os.path.isdir(avr_folder):
+					if 'AVR' in platform_name:
+						lib_list.append(lib_item)
+				if os.path.isdir(sam_folder):
+					if 'ARM' in platform_name:
+						lib_list.append(lib_item)
+			else:
+				if 'General' in platform_name:
+					lib_list.append(lib_item)
+	if lib_list:
+		lib_item = LibItem('-')
+		lib_list.append(lib_item)
+	return lib_list
+
+def getPlatformLibraryListFromFolder(folder):
 	lib_list = []
 	libraries_folder = os.path.join(folder, 'libraries')
 	if os.path.isdir(libraries_folder):
@@ -631,11 +659,21 @@ def getLibraryListFromFolder(folder):
 		lib_list.append(lib_item)
 	return lib_list
 
-def getLibraryListFromPlatform(platform):
+def getLibraryListFromPlatform(platform_list, platform_id):
 	lib_list = []
-	core_folder_list = platform.getCoreFolderList()
-	for core_folder in core_folder_list:
-		lib_list += getLibraryListFromFolder(core_folder)
+	platform_general = platform_list[0]
+	general_core_folder_list = platform_general.getCoreFolderList()
+
+	cur_platform = platform_list[platform_id]
+	core_folder_list = cur_platform.getCoreFolderList()
+
+	platform_name = cur_platform.getName()
+	for core_folder in general_core_folder_list:
+		lib_list += getGeneralLibraryListFromFolder(core_folder, platform_name)
+
+	if platform_id > 0:
+		for core_folder in core_folder_list:
+			lib_list += getPlatformLibraryListFromFolder(core_folder)
 	return lib_list
 
 def getExampleListFromFolder(folder):
@@ -728,13 +766,15 @@ def getFolderBuildFolderDict(core_folder_list, folder_name_list):
 def getPlatformList():
 	platform_list = getPlatformListFromCoreFolderList()
 	for platform in platform_list:
+		platform_name = platform.getName()
+		index = platform_list.index(platform)
 		core_folder_list = platform.getCoreFolderList()
 		folder_build_folder_dict = getFolderBuildFolderDict(core_folder_list, build_folder_name_list)
 
 		example = getExampleFromPlatform(platform)
-		lib_list = getLibraryListFromPlatform(platform)
-		h_lib_dict = getHLibDict(lib_list)
-		
+		lib_list = getLibraryListFromPlatform(platform_list, index)
+		h_lib_dict = getHLibDict(lib_list, platform_name)
+
 		platform.setExample(example)
 		platform.setLibList(lib_list)
 		platform.setHLibDict(h_lib_dict)
@@ -879,11 +919,11 @@ def getSelectedWordList(view):
 	word_list = getWordListFromText(selected_text)
 	return word_list
 
-def getHLibDict(lib_list):
+def getHLibDict(lib_list, platform_name):
 	h_lib_dict = {}
 	for lib in lib_list:
 		lib_folder = lib.getFolder()
-		h_list = sketch.getHSrcFileList(lib_folder)
+		h_list = sketch.getHSrcFileList(lib_folder, platform_name)
 		for h in h_list:
 			h_lib_dict[h] = lib_folder
 	return h_lib_dict
@@ -892,12 +932,12 @@ def newSketch(sketch_name):
 	sketch_file = ''
 	sketchbook_folder = getSketchbookFolder()
 	sketch_folder = os.path.join(sketchbook_folder, sketch_name)
-	print(sketchbook_folder)
+
 	if not os.path.exists(sketch_folder):
 		os.makedirs(sketch_folder)
 		file_name = sketch_name + '.ino'
 		sketch_file = os.path.join(sketch_folder, file_name)
-		print(sketch_file)
+
 		text = '// %s\n\n' % file_name
 		text += 'void setup() {\n\n'
 		text += '}\n\n'

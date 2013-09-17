@@ -5,6 +5,7 @@ import os
 
 import sublime
 
+from . import constant
 from . import fileutil
 from . import preprocess
 
@@ -130,12 +131,8 @@ def isHSrcFile(cur_file):
 		state = True
 	return state
 
-def getHSrcFileList(lib_folder):
+def getHSrcFileListFromFolder(lib_folder):
 	H_src_file_list = []
-	# lib_src_folder = os.path.join(lib_folder, 'src')
-	# if os.path.isdir(lib_src_folder):
-	# 	lib_folder = lib_src_folder
-
 	folder_name_list = fileutil.listDir(lib_folder, with_files = False)
 	file_name_list = fileutil.listDir(lib_folder,with_dirs = False)
 
@@ -152,6 +149,14 @@ def getHSrcFileList(lib_folder):
 		cur_file = os.path.join(lib_folder, file_name)
 		if isHSrcFile(cur_file):
 			H_src_file_list.append(file_name)
+	return H_src_file_list
+
+def getHSrcFileList(lib_folder, platform_name = ''):
+	H_src_file_list = []
+	lib_folder_list = expandCoreFolder(lib_folder, platform_name)
+
+	for lib_folder in lib_folder_list:
+		H_src_file_list += getHSrcFileListFromFolder(lib_folder)
 	return H_src_file_list
 
 def isCSrcFile(cur_file):
@@ -182,6 +187,7 @@ def getCSrcFileListFromFolder(core_folder, level = 0):
 
 def getCSrcFileListFromFolderList(core_folder_list):
 	C_src_file_list = []
+	core_folder_list = expandCorFolderList(core_folder_list)
 	for core_folder in core_folder_list:
 		sub_C_src_file_list = getCSrcFileListFromFolder(core_folder)
 		C_src_file_list += sub_C_src_file_list
@@ -200,10 +206,38 @@ def getFolderListFromFolder(core_folder, level = 0):
 
 def getFolderListFromFolderList(core_folder_list):
 	folder_list = []
+	core_folder_list = expandCorFolderList(core_folder_list)
 	for core_folder in core_folder_list:
 		folder_list += getFolderListFromFolder(core_folder)
 	return folder_list
-	
+
+def expandCoreFolder(lib_folder, platform_name = ''):
+	lib_folder_list = []
+	if not platform_name:
+		platform_name = constant.sketch_settings.get('platform_name', 'General')
+
+	lib_src_folder = os.path.join(lib_folder, 'src')
+	if not os.path.isdir(lib_src_folder):
+		lib_folder_list.append(lib_folder)
+	else:
+		lib_folder_list.append(lib_src_folder)
+		arch_folder = os.path.join(lib_folder, 'arch')
+		avr_folder = os.path.join(arch_folder, 'avr')
+		sam_folder = os.path.join(arch_folder, 'sam')
+		if 'AVR' in platform_name:
+			if os.path.isdir(avr_folder):
+				lib_folder_list.append(avr_folder)
+		if 'ARM' in platform_name:
+			if os.path.isdir(sam_folder):
+				lib_folder_list.append(sam_folder)
+	return lib_folder_list
+
+def expandCorFolderList(core_folder_list, platform_name = ''):
+	folder_list = []
+	for core_folder in core_folder_list:
+		folder_list += expandCoreFolder(core_folder, platform_name)
+	return folder_list
+
 def isInEditor(view):
 	view_name = view.name()
 	file_name = view.file_name()
