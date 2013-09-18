@@ -106,6 +106,9 @@ def resetSerial(serial_port, output_console):
 	caterina_serial_port = ''
 	before_serial_list = serial.getSerialPortList()
 	if serial_port in before_serial_list:
+		non_serial_list = before_serial_list[:]
+		non_serial_list.remove(serial_port)
+
 		if show_upload_output:
 			msg = 'Forcing reset using 1200bps open/close on port %s.\n' % serial_port
 			output_console.printText(msg)
@@ -124,7 +127,7 @@ def resetSerial(serial_port, output_console):
 		elapsed = 0
 		while (elapsed < 10000):
 			now_serial_list = serial.getSerialPortList()
-			diff_serial_list = diffList(now_serial_list, before_serial_list)
+			diff_serial_list = diffList(now_serial_list, non_serial_list)
 
 			if show_upload_output:
 				msg = 'Ports {%s}/{%s} => {%s}\n' % (before_serial_list, now_serial_list, 
@@ -133,19 +136,19 @@ def resetSerial(serial_port, output_console):
 			if len(diff_serial_list) > 0:
 				caterina_serial_port = diff_serial_list[0]
 				if show_upload_output:
-					msg = 'Found Leonardo upload port: %s.\n' % caterina_serial_port
+					msg = 'Found new upload port: %s.\n' % caterina_serial_port
 					output_console.printText(msg)
 				break
 
 			# Keep track of port that disappears
-			before_serial_list = now_serial_list
+			# before_serial_list = now_serial_list
 			time.sleep(0.25)
 			elapsed += 250
 
 			# On Windows, it can take a long time for the port to disappear and
 			# come back, so use a longer time out before assuming that the selected
 			# port is the bootloader (not the sketch).
-			if (((constant.sys_platform != 'Windows' and elapsed >= 500) 
+			if (((constant.sys_platform != 'windows' and elapsed >= 500) 
 				or elapsed >= 5000) and (serial_port in now_serial_list)):
 				if show_upload_output:
 					msg = 'Uploading using selected port: %s.\n' % serial_port
