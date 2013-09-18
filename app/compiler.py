@@ -723,4 +723,7 @@ def formatCommand(command):
 			command = command.replace('/"', '"')
 			command = command.replace('/', os.path.sep)
 			command = '"' + command + '"'
+	if constant.sys_version < 3:
+		if isinstance(command, unicode):
+			command = command.encode(constant.sys_encoding)
 	return command

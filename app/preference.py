@@ -19,17 +19,11 @@ class Setting:
 
 	def loadSettingsFile(self):
 		if os.path.isfile(self.file):
-			# opened_file = open(self.file, 'r')
-			# text = opened_file.read()
-			# opened_file.close()
 			text = fileutil.readFile(self.file)
 			self.settings_dict = json.loads(text)
 
 	def saveSettingsFile(self):
 		text = json.dumps(self.settings_dict, sort_keys = True, indent = 4)
-		# opened_file = open(self.file, 'w')
-		# opened_file.write(text)
-		# opened_file.close()
 		fileutil.writeFile(self.file, text)
 
 	def get(self, key, default_value = None):

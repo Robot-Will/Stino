@@ -48,6 +48,10 @@ def getDocumentFolder():
 	return document_folder
 
 def listDir(folder, with_files = True, with_dirs = True):
+	if sys_version < 3:
+		if not isinstance(folder, unicode):
+			folder = folder.decode(sys_encoding)
+
 	file_list = []
 	if os.path.isdir(folder):
 		try:
@@ -115,7 +119,6 @@ def getFolderNameList(folder_list):
 	if sys_version < 3:
 		new_list = []
 		for folder_name in folder_name_list:
-			folder_name = folder_name.decode(sys_encoding)
 			new_list.append(folder_name)
 		folder_name_list = new_list
 	return folder_name_list
