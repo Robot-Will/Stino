@@ -532,7 +532,7 @@ def getLibFolderListFromProject(cur_project, arduino_info):
 
 def genBuildCppFile(build_folder, cur_project, arduino_info):
 	project_name = cur_project.getName()
-	cpp_file_name = project_name + '.cpp'
+	cpp_file_name = project_name + '_ino.cpp'
 	cpp_file = os.path.join(build_folder, cpp_file_name)
 	ino_src_file_list = cur_project.getInoSrcFileList()
 	arduino_version = arduino_info.getVersion()
