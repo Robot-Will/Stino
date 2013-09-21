@@ -110,9 +110,6 @@ def genHList(src_text):
 
 def isMainSrcFile(src_file):
 	state = False
-	# opened_file = open(src_file, 'r', encoding='utf-8')
-	# src_text = opened_file.read()
-	# opened_file.close()
 	src_text = fileutil.readFile(src_file)
 
 	has_setup = False
@@ -142,9 +139,6 @@ def sortSrcFileList(src_file_list):
 	return new_file_list
 
 def genFunctionListFromFile(src_file):
-	# opened_file = open(src_file, 'r', encoding = 'utf-8')
-	# text = opened_file.read()
-	# opened_file.close()
 	text = fileutil.readFile(src_file)
 	function_list = genFunctionList(text)
 	return function_list
@@ -160,6 +154,8 @@ def getInsertText(src_file_list):
 	function_list = genFunctionListFromSrcList(src_file_list)
 
 	for function in function_list:
+		if (' setup' in function) or (' loop' in function):
+			continue
 		insert_text += '%s;\n' % function
 	insert_text += '\n'
 	return insert_text
@@ -177,9 +173,6 @@ def genCppFileFromInoFileList(cpp_file, ino_src_file_list, arduino_version):
 	if ino_src_file_list:
 		insert_text = getInsertText(ino_src_file_list)
 		main_src_file = ino_src_file_list[0]
-		# opened_file = open(main_src_file, 'r', encoding = 'utf-8')
-		# src_text = opened_file.read()
-		# opened_file.close()
 		src_text = fileutil.readFile(main_src_file)
 
 		function_list = genFunctionList(src_text)
@@ -198,23 +191,14 @@ def genCppFileFromInoFileList(cpp_file, ino_src_file_list, arduino_version):
 		cpp_text += body_text
 
 		for src_file in ino_src_file_list[1:]:
-			# opened_file = open(src_file, 'r', encoding = 'utf-8')
-			# src_text = opened_file.read()
-			# opened_file.close()
 			src_text = fileutil.readFile(src_file)
 			cpp_text += src_text
 
-	# opened_file = open(cpp_file, 'w', encoding = 'utf-8')
-	# opened_file.write(cpp_text)
-	# opened_file.close()
 	fileutil.writeFile(cpp_file, cpp_text)
 
 def getHListFromSrcList(ino_src_list):
 	h_list = []
 	for ino_src in ino_src_list:
-		# opened_file = open(ino_src, 'r', encoding = 'utf-8')
-		# text = opened_file.read()
-		# opened_file.close()
 		text = fileutil.readFile(ino_src)
 		h_list += genHList(text)
 	return h_list

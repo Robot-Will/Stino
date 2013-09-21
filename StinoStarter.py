@@ -629,7 +629,7 @@ class FindInReferenceCommand(sublime_plugin.WindowCommand):
 
 class AboutStinoCommand(sublime_plugin.WindowCommand):
 	def run(self):
-		print('About Stino')
+		sublime.run_command('open_url', {'url': 'https://github.com/Robot-Will/Stino'})
 
 class PanelOutputCommand(sublime_plugin.TextCommand):
 	def run(self, edit, text):
