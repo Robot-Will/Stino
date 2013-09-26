@@ -655,6 +655,16 @@ def genCommandList(args, cur_project, arduino_info):
 	build_variant_folder = args['build.variant.path']
 	lib_folder_list = getLibFolderListFromProject(cur_project, arduino_info)
 	core_folder_list = [build_core_folder, build_variant_folder] + lib_folder_list
+
+	compiler_bin_folder = args['compiler.path']
+	compiler_folder = os.path.split(compiler_bin_folder)[0]
+	compiler_folder = os.path.split(compiler_folder)[0]
+	compiler_name = os.path.split(compiler_folder)[1]
+	compiler_folder = os.path.join(compiler_folder, compiler_name)
+	compiler_include_folder = os.path.join(compiler_folder, 'include')
+	compiler_include_folder = compiler_include_folder.replace('/', os.path.sep)
+	core_folder_list.append(compiler_include_folder)
+
 	includes_para = genIncludesPara(build_folder, project_folder, core_folder_list)
 	project_C_file_list = [build_cpp_file] + cur_project.getCSrcFileList()
 	core_C_file_list = sketch.getCSrcFileListFromFolderList(core_folder_list)
