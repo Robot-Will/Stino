@@ -14,6 +14,7 @@ baudrate_list = ['300', '1200', '2400', '4800', '9600', '14400',
 		'19200', '28800', '38400', '57600', '115200']
 line_ending_caption_list = ['None', 'Newline', 'Carriage return', 'Both NL & CR']
 line_ending_list = ['', '\n', '\r', '\r\n']
+display_mode_list = ['Text', 'Ascii', 'Hex']
 
 def getSTVersion():
 	ST_version_text = sublime.version()

@@ -86,12 +86,17 @@ class SerialMonitor:
 		self.is_alive = False
 
 	def receive(self):
+		length_before = 0
 		while self.is_alive:
 			number = self.serial.inWaiting()
 			if number > 0:
 				in_text = self.serial.read(number)
-				in_text = in_text.decode('utf-8').replace('\r', '')
+				length_in_text = len(in_text)
+				in_text = convertMode(in_text, length_before)
 				self.view.printText(in_text)
+
+				length_before += length_in_text
+				length_before %= 20
 			time.sleep(0.01)
 		self.serial.close()
 
@@ -101,7 +106,7 @@ class SerialMonitor:
 		out_text += line_ending
 		
 		self.view.printText('[SEND] ' + out_text + '\n')
-		out_text = out_text.encode('utf-8')
+		out_text = out_text.encode('utf-8', 'replace')
 		self.serial.write(out_text)
 		
 def isMonitorView(view):
@@ -127,3 +132,20 @@ def findInOpendView(view_name):
 		if found:
 			break
 	return opened_view
+
+def convertMode(in_text, str_len = 0):
+	text = u''
+	display_mode = constant.sketch_settings.get('display_mode', 0)
+	if display_mode == 0:
+		text = in_text.decode('utf-8', 'replace')
+	elif display_mode == 1:
+		for character in in_text:
+			text += chr(character)
+	elif display_mode == 2:
+		for (index, character) in enumerate(in_text):
+			text += u'%02X ' % character
+			if (index + str_len + 1) % 10 == 0:
+				text += '\t'
+			if (index + str_len + 1) % 20 == 0:
+				text += '\n'
+	return text

@@ -291,6 +291,18 @@ def buildLineEndingMenu(language):
 		line_ending_menu.addMenuItem(sub_menu)
 	return line_ending_menu
 
+def buildDisplayModeMenu(language):
+	display_mode_menu = MenuItem(language.translate('Display as'))
+	for display_mode in constant.display_mode_list:
+		sub_menu = MenuItem(display_mode)
+		display_mode_id = constant.display_mode_list.index(display_mode)
+		args = {'display_mode' : display_mode_id}
+		sub_menu.setCommand('choose_display_mode')
+		sub_menu.setArgs(args)
+		sub_menu.setCheckbox()
+		display_mode_menu.addMenuItem(sub_menu)
+	return display_mode_menu
+
 def buildBaudrateMenu(language):
 	baudrate_menu = MenuItem(language.translate('Baudrate'))
 	for baudrate in constant.baudrate_list:
@@ -312,12 +324,14 @@ def buildSerialMonitorMenu(language):
 	send_menu = MenuItem(language.translate('Send'))
 	send_menu.setCommand('send_serial_text')
 	line_ending_menu = buildLineEndingMenu(language)
+	display_mode_menu = buildDisplayModeMenu(language)
 	baudrate_menu = buildBaudrateMenu(language)
 	serial_monitor_menu.addMenuItem(start_menu)
 	serial_monitor_menu.addMenuItem(stop_menu)
 	serial_monitor_menu.addMenuItem(send_menu)
 	serial_monitor_menu.addMenuItem(baudrate_menu)
 	serial_monitor_menu.addMenuItem(line_ending_menu)
+	serial_monitor_menu.addMenuItem(display_mode_menu)
 	return serial_monitor_menu
 
 def buildLanguageMenu(language):

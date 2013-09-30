@@ -356,8 +356,19 @@ class ChooseLineEndingCommand(sublime_plugin.WindowCommand):
 
 	def is_checked(self, line_ending):
 		state = False
-		chosen_line_ending = app.constant.sketch_settings.get('line_ending', -1)
+		chosen_line_ending = app.constant.sketch_settings.get('line_ending', 0)
 		if line_ending == chosen_line_ending:
+			state = True
+		return state
+
+class ChooseDisplayModeCommand(sublime_plugin.WindowCommand):
+	def run(self, display_mode):
+		app.constant.sketch_settings.set('display_mode', display_mode)
+
+	def is_checked(self, display_mode):
+		state = False
+		chosen_display_mode = app.constant.sketch_settings.get('display_mode', 0)
+		if display_mode == chosen_display_mode:
 			state = True
 		return state
 
