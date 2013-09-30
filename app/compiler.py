@@ -354,7 +354,7 @@ def checkBuildFolder(build_folder):
 	file_name_list = fileutil.listDir(build_folder, with_dirs = False)
 	for file_name in file_name_list:
 		file_ext = os.path.splitext(file_name)[1]
-		if file_ext in ['.o', '.d']:
+		if file_ext in ['.d']:
 			cur_file = os.path.join(build_folder, file_name)
 			os.remove(cur_file)
 
