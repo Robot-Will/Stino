@@ -539,11 +539,12 @@ def genBuildCppFile(build_folder, cur_project, arduino_info):
 	preprocess.genCppFileFromInoFileList(cpp_file, ino_src_file_list, arduino_version)
 	return cpp_file
 
-def genIncludesPara(build_folder, project_folder, core_folder_list):
+def genIncludesPara(build_folder, project_folder, core_folder_list, compiler_include_folder):
 	folder_list = sketch.getFolderListFromFolderList(core_folder_list)
 	include_folder_list = []
 	include_folder_list.append(build_folder)
 	include_folder_list.append(project_folder)
+	include_folder_list.append(compiler_include_folder)
 	include_folder_list += folder_list
 
 	includes = ''
@@ -663,9 +664,9 @@ def genCommandList(args, cur_project, arduino_info):
 	compiler_folder = os.path.join(compiler_folder, compiler_name)
 	compiler_include_folder = os.path.join(compiler_folder, 'include')
 	compiler_include_folder = compiler_include_folder.replace('/', os.path.sep)
-	core_folder_list.append(compiler_include_folder)
+	# core_folder_list.append(compiler_include_folder)
 
-	includes_para = genIncludesPara(build_folder, project_folder, core_folder_list)
+	includes_para = genIncludesPara(build_folder, project_folder, core_folder_list, compiler_include_folder)
 	project_C_file_list = [build_cpp_file] + cur_project.getCSrcFileList()
 	core_C_file_list = sketch.getCSrcFileListFromFolderList(core_folder_list)
 	
