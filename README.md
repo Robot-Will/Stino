@@ -17,7 +17,7 @@ Most Arduino versions are supported.
 
 * Linux: Ubuntu (13), Slax (7), Arch, ReactOS and SkyOS
 
-* Max OS X: OSX 10.8, 10.7, Snow Leopard (10.6)
+* Mac OS X: OSX 10.8, 10.7, Snow Leopard (10.6)
 
 If your OS is not listed, please see this [issue](https://github.com/Robot-Will/Stino/issues/18) and leave your OS information. Thanks.
 
