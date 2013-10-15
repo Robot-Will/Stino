@@ -14,7 +14,7 @@ else:
 class SketchListener(sublime_plugin.EventListener):
 	def on_activated(self, view):
 		pre_active_sketch = app.constant.global_settings.get('active_sketch', '')
-		
+
 		if not app.sketch.isInEditor(view):
 			return
 
@@ -83,7 +83,7 @@ class NewSketchCommand(sublime_plugin.WindowCommand):
 
 class OpenSketchCommand(sublime_plugin.WindowCommand):
 	def run(self, folder):
-		app.sketch.openSketchFolder(folder)
+		app.sketch.openSketchFolder(folder, self.window)
 
 class ImportLibraryCommand(sublime_plugin.WindowCommand):
 	def run(self, folder):
@@ -124,7 +124,7 @@ class CompileSketchCommand(sublime_plugin.WindowCommand):
 		self.window.active_view().run_command('save')
 		cur_folder = app.active_file.getFolder()
 		cur_project = app.sketch.Project(cur_folder)
-		
+
 		args = app.compiler.Args(cur_project, app.arduino_info)
 		compiler = app.compiler.Compiler(app.arduino_info, cur_project, args)
 		compiler.run()
@@ -140,7 +140,7 @@ class UploadSketchCommand(sublime_plugin.WindowCommand):
 		self.window.active_view().run_command('save')
 		cur_folder = app.active_file.getFolder()
 		cur_project = app.sketch.Project(cur_folder)
-		
+
 		args = app.compiler.Args(cur_project, app.arduino_info)
 		compiler = app.compiler.Compiler(app.arduino_info, cur_project, args)
 		compiler.run()
@@ -158,7 +158,7 @@ class UploadUsingProgrammerCommand(sublime_plugin.WindowCommand):
 		self.window.active_view().run_command('save')
 		cur_folder = app.active_file.getFolder()
 		cur_project = app.sketch.Project(cur_folder)
-		
+
 		args = app.compiler.Args(cur_project, app.arduino_info)
 		compiler = app.compiler.Compiler(app.arduino_info, cur_project, args)
 		compiler.run()
@@ -205,7 +205,7 @@ class ChooseBoardOptionCommand(sublime_plugin.WindowCommand):
 			cur_board_option_setting = board_option_settings[board_id]
 			if board_option < len(cur_board_option_setting):
 				has_setted = True
-		
+
 		if not has_setted:
 			platform_list = app.arduino_info.getPlatformList()
 			cur_platform = platform_list[chosen_platform]
@@ -255,7 +255,7 @@ class BurnBootloaderCommand(sublime_plugin.WindowCommand):
 	def run(self):
 		cur_folder = app.active_file.getFolder()
 		cur_project = app.sketch.Project(cur_folder)
-		
+
 		args = app.compiler.Args(cur_project, app.arduino_info)
 		bootloader = app.uploader.Bootloader(cur_project, args)
 		bootloader.burn()
@@ -426,7 +426,7 @@ class ArchiveSketchCommand(sublime_plugin.WindowCommand):
 			chosen_folder = self.folder_list[index]
 			chosen_folder = chosen_folder.split('(')[1]
 			chosen_folder = chosen_folder[:-1]
-			
+
 			source_folder = app.active_file.getFolder()
 			sketch_name = app.active_file.getSketchName()
 			zip_file_name = sketch_name + '.zip'
@@ -553,7 +553,7 @@ class SetGlobalSettingCommand(sublime_plugin.WindowCommand):
 		if app.active_file.isSrcFile():
 			global_settings = not app.constant.global_settings.get('global_settings', True)
 			app.constant.global_settings.set('global_settings', global_settings)
-		
+
 			if global_settings:
 				folder = app.constant.stino_root
 			else:

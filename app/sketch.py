@@ -18,7 +18,7 @@ src_ext_list = ['.ino', '.pde', '.c', '.cpp', '.asm']
 class Project:
 	def __init__(self, folder):
 		self.setFolder(folder)
-		
+
 	def getFolder(self):
 		return self.folder
 
@@ -100,7 +100,7 @@ def isSrcFile(cur_file):
 		state = True
 	return state
 
-def openSketchFolder(sketch_folder):
+def openSketchFolder(sketch_folder, window):
 	src_file_list = []
 	if os.path.isdir(sketch_folder):
 		file_name_list = fileutil.listDir(sketch_folder, with_dirs = False)
@@ -109,11 +109,8 @@ def openSketchFolder(sketch_folder):
 			if isSrcFile(cur_file):
 				src_file_list.append(cur_file)
 
-	if src_file_list:
-		sublime.run_command('new_window')
-		window = sublime.windows()[-1]
-		for src_file in src_file_list:
-			window.open_file(src_file)
+	for src_file in src_file_list:
+		window.open_file(src_file)
 
 def importLibrary(view, lib_folder):
 	include_text = '\n'
@@ -144,7 +141,7 @@ def getHSrcFileListFromFolder(lib_folder):
 		for sub_H_src_file in sub_H_src_file_list:
 			sub_H_src_file = folder_name + '/' + sub_H_src_file
 			H_src_file_list.append(sub_H_src_file)
-	
+
 	for file_name in file_name_list:
 		cur_file = os.path.join(lib_folder, file_name)
 		if isHSrcFile(cur_file):
@@ -178,7 +175,7 @@ def getCSrcFileListFromFolder(core_folder, level = 0):
 			cur_folder = os.path.join(core_folder, folder_name)
 			sub_C_src_file_list = getCSrcFileListFromFolder(cur_folder, level + 1)
 			C_src_file_list += sub_C_src_file_list
-	
+
 	for file_name in file_name_list:
 		cur_file = os.path.join(core_folder, file_name)
 		if isCSrcFile(cur_file):
