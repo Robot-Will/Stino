@@ -100,7 +100,7 @@ def isSrcFile(cur_file):
 		state = True
 	return state
 
-def openSketchFolder(sketch_folder):
+def openSketchFolder(sketch_folder):	
 	src_file_list = []
 	if os.path.isdir(sketch_folder):
 		file_name_list = fileutil.listDir(sketch_folder, with_dirs = False)
@@ -115,6 +115,19 @@ def openSketchFolder(sketch_folder):
 		for src_file in src_file_list:
 			window.open_file(src_file)
 
+		addFolderToProject(window, sketch_folder)
+
+def addFolderToProject(window, folder):
+	if os.path.isdir(folder):	
+		project_data = window.project_data()
+		
+		if(project_data == None):
+			project_data = {'folders': []}
+		
+		project_data['folders'].append({'follow_symlinks': True, 'path': folder})
+
+		window.set_project_data(project_data)
+		
 def importLibrary(view, lib_folder):
 	include_text = '\n'
 	H_src_file_list = getHSrcFileList(lib_folder)
