@@ -1,0 +1,123 @@
+# LANGUAGE: Français (French)
+# French translations for Stino Plugin.
+# Copyright (C) 2012-2013 Robot-Will
+# This file is distributed under the same license as the Stino Plugin.
+# AUTHOR <fabrice@weeple.fr>
+#
+
+msgid "Serial Monitor"
+msgstr "Moniteur série"
+
+msgid "Start"
+msgstr "Démarrer"
+
+msgid "Select Build Folder"
+msgstr "Sélectionner le dossier de compilation"
+
+msgid "Show Arduino Menu"
+msgstr "Afficher Menu Arduino"
+
+msgid "Programmer"
+msgstr "Programmateur"
+
+msgid "Select Arduino Application Folder"
+msgstr "Selectionner le dossier d'application Arduino"
+
+msgid "Extra compilation flags:"
+msgstr "Extra compilation flags:"
+
+msgid "Extra Flags"
+msgstr "Extra Flags"
+
+msgid "Frequently Asked Questions"
+msgstr "Questions fréquentes"
+
+msgid "Preferences"
+msgstr "Préférences"
+
+msgid "Full Compilation"
+msgstr "Tout compiler"
+
+msgid "Show Verbose Output"
+msgstr "Afficher la sortie détaillée"
+
+msgid "Reference"
+msgstr "Référence"
+
+msgid "Arduino Application is found at {0}.\n"
+msgstr "L'application Arduino a été trouvé dans {0}.\n"
+
+msgid "Build folder is changed to {0}.\n"
+msgstr "Le dossier de compilation est changé en {0}.\n"
+
+msgid "Upload"
+msgstr "Téléverser"
+
+msgid "Archive Sketch"
+msgstr "Archive Sketch"
+
+msgid "Global Setting"
+msgstr "Paramètre globaux"
+
+msgid "Upload by Using Programmer"
+msgstr "Téléverser en utilisant un programmateur"
+
+msgid "Sketchbook is changed to {0}.\n"
+msgstr "Le carnet de croquis est changé dans {0}.\n"
+
+msgid "Serial Port"
+msgstr "Port série"
+
+msgid "Auto Format"
+msgstr "Formattage automatique"
+
+msgid "Language"
+msgstr "Languages"
+
+msgid "About Stino"
+msgstr "A propos de Stino"
+
+msgid "Import Library"
+msgstr "Importer une librairie"
+
+msgid "Baudrate"
+msgstr "Baudrate"
+
+msgid "Verify/Compile"
+msgstr "Vérifier/Compiler"
+
+msgid "Find in Reference"
+msgstr "Trouver dans Référence"
+
+msgid "Troubleshooting"
+msgstr "Résolution des problèmes"
+
+msgid "Getting Started"
+msgstr "Pour commencer"
+
+msgid "Burn Bootloader"
+msgstr "Graver la séquence d'initialisation"
+
+msgid "References"
+msgstr "Références"
+
+msgid "Send"
+msgstr "Envoyer"
+
+msgid "Change Sketchbook Folder"
+msgstr "Changer le dossier de croquis"
+
+msgid "Stop"
+msgstr "Arrêt"
+
+msgid "Compilation"
+msgstr "Compilation"
+
+msgid "Visit Arduino Website"
+msgstr "Visiter le site Arduino"
+
+msgid "Examples"
+msgstr "Exemples"
+
+msgid "Sketchbook"
+msgstr "Carnet de croquis"
