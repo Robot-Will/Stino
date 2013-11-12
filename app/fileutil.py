@@ -17,7 +17,7 @@ else:
 
 def getWinVolumeList():
 	vol_list = []
-	for label in range(67, 90):
+	for label in range(65, 91):
 		vol = chr(label) + ':\\'
 		if os.path.isdir(vol):
 			vol_list.append(vol)
