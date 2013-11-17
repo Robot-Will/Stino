@@ -1,5 +1,5 @@
 <snippet>
-	<content><![CDATA[void loop() 
+	<content><![CDATA[void loop()
 {
 	$1
 }

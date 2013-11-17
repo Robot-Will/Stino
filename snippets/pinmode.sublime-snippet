@@ -1,6 +1,6 @@
 <snippet>
     <content><![CDATA[
-pinMode(${1:pin}, ${2:mode}); 
+pinMode(${1:pin}, ${2:mode});
 ]]></content>
     <tabTrigger>pinMode</tabTrigger>
     <scope>source.arduino</scope>

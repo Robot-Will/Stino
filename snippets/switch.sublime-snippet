@@ -7,7 +7,7 @@ switch (${1}) {
     case ${4}:
       ${5:// do something}
       break;
-    default: 
+    default:
       ${6:// do something}
 }
 ]]></content>

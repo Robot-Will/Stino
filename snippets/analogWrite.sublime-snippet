@@ -1,6 +1,6 @@
 <snippet>
     <content><![CDATA[
-analogWrite(${1:pin}, ${2:value}); 
+analogWrite(${1:pin}, ${2:value});
 ]]></content>
     <tabTrigger>analogWrite</tabTrigger>
     <scope>source.arduino</scope>
