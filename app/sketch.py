@@ -229,8 +229,9 @@ def expandCoreFolder(lib_folder, platform_name = ''):
 	if not platform_name:
 		platform_name = constant.sketch_settings.get('platform_name', 'General')
 
+	arduino_folder = constant.sketch_settings.get('arduino_folder', '')
 	lib_src_folder = os.path.join(lib_folder, 'src')
-	if not os.path.isdir(lib_src_folder):
+	if not os.path.isdir(lib_src_folder) or (os.path.isdir(lib_src_folder) and not arduino_folder in lib_src_folder ):
 		lib_folder_list.append(lib_folder)
 	else:
 		lib_folder_list.append(lib_src_folder)
