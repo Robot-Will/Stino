@@ -1,6 +1,6 @@
 <snippet>
     <content><![CDATA[
-shiftIn(${1:dataPin}, ${2:clockPin}, ${3:bitOrder}); 
+shiftIn(${1:dataPin}, ${2:clockPin}, ${3:bitOrder});
 ]]></content>
     <tabTrigger>shiftIn</tabTrigger>
     <scope>source.arduino</scope>

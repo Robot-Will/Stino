@@ -1,10 +1,12 @@
 <snippet>
     <content><![CDATA[
-while(${1}){
-  ${2:// statement}
+if(${1:condition}){
+    ${2:// statement}
+} else {
+    ${3:// statement}
 }
 ]]></content>
-    <tabTrigger>while</tabTrigger>
+    <tabTrigger>ifelse</tabTrigger>
     <scope>source.arduino</scope>
-    <description>Arduino while</description>
+    <description>Arduino if-else</description>
 </snippet>
