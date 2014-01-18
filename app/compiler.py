@@ -672,7 +672,7 @@ def genCommandList(args, cur_project, arduino_info):
 
 	includes_para = genIncludesPara(build_folder, project_folder, core_folder_list, compiler_include_folder)
 	project_C_file_list = [build_cpp_file] + cur_project.getCSrcFileList() + cur_project.getAsmSrcFileList()
-	core_C_file_list = sketch.getAsmSrcFileListFromFolderList(core_folder_list) + sketch.getCSrcFileListFromFolderList(core_folder_list)
+	core_C_file_list = sketch.getCSrcFileListFromFolderList(core_folder_list) + sketch.getAsmSrcFileListFromFolderList(core_folder_list)
 	
 	project_command_list = getCompileCommandList(project_C_file_list, args, includes_para)
 	core_command_list = getCompileCommandList(core_C_file_list, args, includes_para)
