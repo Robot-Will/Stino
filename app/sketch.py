@@ -12,8 +12,8 @@ from . import preprocess
 h_src_ext_list = ['.h']
 ino_src_ext_list = ['.ino', '.pde']
 c_src_ext_list = ['.c', '.cpp']
-asm_src_ext_list = ['.asm']
-src_ext_list = ['.ino', '.pde', '.c', '.cpp', '.asm']
+asm_src_ext_list = ['.asm', '.S']
+src_ext_list = ['.ino', '.pde', '.c', '.cpp', '.asm', '.S']
 
 class Project:
 	def __init__(self, folder):
@@ -205,6 +205,40 @@ def getCSrcFileListFromFolderList(core_folder_list):
 		sub_C_src_file_list = getCSrcFileListFromFolder(core_folder)
 		C_src_file_list += sub_C_src_file_list
 	return C_src_file_list
+
+def isAsmSrcFile(cur_file):
+	state = False
+	ext = os.path.splitext(cur_file)[1]
+	if ext in asm_src_ext_list:
+		state = True
+	return state
+
+def getAsmSrcFileListFromFolder(core_folder, level = 0):
+	asm_src_file_list = []
+	folder_name_list = fileutil.listDir(core_folder, with_files = False)
+	file_name_list = fileutil.listDir(core_folder,with_dirs = False)
+
+	if level < 1:
+		for folder_name in folder_name_list:
+			if folder_name.lower() == 'examples':
+				continue
+			cur_folder = os.path.join(core_folder, folder_name)
+			sub_asm_src_file_list = getAsmSrcFileListFromFolder(cur_folder, level + 1)
+			asm_src_file_list += sub_asm_src_file_list
+	
+	for file_name in file_name_list:
+		cur_file = os.path.join(core_folder, file_name)
+		if isAsmSrcFile(cur_file):
+			asm_src_file_list.append(cur_file)
+	return asm_src_file_list
+
+def getAsmSrcFileListFromFolderList(core_folder_list):
+	asm_src_file_list = []
+	core_folder_list = expandCorFolderList(core_folder_list)
+	for core_folder in core_folder_list:
+		sub_asm_src_file_list = getAsmSrcFileListFromFolder(core_folder)
+		asm_src_file_list += sub_asm_src_file_list
+	return asm_src_file_list
 
 def getFolderListFromFolder(core_folder, level = 0):
 	folder_list = [core_folder]

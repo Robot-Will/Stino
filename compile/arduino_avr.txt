@@ -9,6 +9,7 @@ compiler.c.cmd=avr-gcc
 compiler.c.flags=-c -g -Os -w -ffunction-sections -fdata-sections -MMD
 compiler.c.elf.flags=-Os -Wl,--gc-sections
 compiler.c.elf.cmd=avr-gcc
+compiler.S.cmd=avr-gcc
 compiler.S.flags=-c -g -assembler-with-cpp
 compiler.cpp.cmd=avr-g++
 compiler.cpp.flags=-c -g -Os -w -fno-exceptions -ffunction-sections -fdata-sections -MMD
@@ -31,6 +32,9 @@ recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -mmcu={b
 
 ## Compile c++ files
 recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -mmcu={build.mcu} -DF_CPU={build.f_cpu} -D{software}={runtime.ide.version} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+
+## Compile S files
+recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} -mmcu={build.mcu} -DF_CPU={build.f_cpu} -D{software}={runtime.ide.version} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
 
 ## Create archives
 recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{build.path}/{archive_file}" "{object_file}"
