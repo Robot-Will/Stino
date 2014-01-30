@@ -71,6 +71,7 @@ class Uploader:
 				if serial_port:
 					for cur_command in self.command_list:
 						command_text = cur_command.getCommand()
+						serial_port = serial_port.replace('/dev/','')  # Fixes #100. removes Path from serial_port string. only tested in OSX, Arduino Due
 						command_text = command_text.replace(pre_serial_port, serial_port)
 						cur_command.setCommand(command_text)
 
