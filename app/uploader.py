@@ -67,7 +67,8 @@ class Uploader:
 
 			if force_to_reset:
 				pre_serial_port = serial_port
-				serial_port = resetSerial(pre_serial_port, self.output_console)
+				wait_for_upload_port = self.args.get('upload.wait_for_upload_port', 'false') == 'true'
+				serial_port = resetSerial(pre_serial_port, self.output_console, wait_for_upload_port)
 				if serial_port:
 					for cur_command in self.command_list:
 						command_text = cur_command.getCommand()
@@ -100,7 +101,7 @@ def touchSerialPort(serial_port, baudrate):
 	cur_serial.open()
 	cur_serial.close()
 
-def resetSerial(serial_port, output_console):
+def resetSerial(serial_port, output_console, wait_for_upload_port):
 	show_upload_output = constant.sketch_settings.get('show_upload_output', False)
 
 	caterina_serial_port = ''
@@ -113,6 +114,10 @@ def resetSerial(serial_port, output_console):
 			msg = 'Forcing reset using 1200bps open/close on port %s.\n' % serial_port
 			output_console.printText(msg)
 		touchSerialPort(serial_port, 1200)
+
+		if not wait_for_upload_port:
+			time.sleep(0.4)
+			return serial_port
 
 		# Scanning for available ports seems to open the port or
 		# otherwise assert DTR, which would cancel the WDT reset if
