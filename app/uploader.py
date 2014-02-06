@@ -62,7 +62,7 @@ class Uploader:
 			if 'bootloader.file' in self.args:
 				if 'caterina' in self.args['bootloader.file'].lower():
 					force_to_reset = True
-			elif 'upload.use_1200bps_touch' in self.args:
+			elif self.args.get('upload.use_1200bps_touch', 'false') == 'true':
 				force_to_reset = True
 
 			if force_to_reset:
