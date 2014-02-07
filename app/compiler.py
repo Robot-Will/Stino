@@ -151,7 +151,6 @@ class Compiler:
 					printSizeInfo(self.output_console, stdout, self.args)
 		if self.no_error:
 			self.output_console.printText('[Stino - Done compiling.]\n')
-			constant.sketch_settings.set('full_compilation', False)
 		self.is_finished = True
 			
 def getChosenArgs(arduino_info):
