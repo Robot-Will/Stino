@@ -15,7 +15,7 @@ class MainMenu:
 		self.arduino_info = arduino_info
 		self.menu = MenuItem('Main Menu')
 		self.refresh()
-		
+
 	def getMenu(self):
 		return self.menu
 
@@ -250,7 +250,7 @@ def buildProgrammerMenu(language, arduino_info):
 		platform_list = arduino_info.getPlatformList()
 		if platform_id < len(platform_list):
 			platform = platform_list[platform_id]
-				
+
 			programmer_list = platform.getProgrammerList()
 			if programmer_list:
 				for cur_programmer in programmer_list:
@@ -361,6 +361,7 @@ def buildSettingMenu(language):
 	change_build_folder_menu = MenuItem(language.translate('Select Build Folder'))
 	change_build_folder_menu.setCommand('choose_build_folder')
 
+
 	language_menu = buildLanguageMenu(language)
 
 	setting_menu.addMenuItem(select_arduino_folder_menu)
@@ -405,7 +406,7 @@ def buildReferenceMenu(language):
 	references_menu.addMenuItem(find_menu)
 	references_menu.addMenuItem(faq_menu)
 	references_menu.addMenuItem(website_menu)
-	return references_menu	
+	return references_menu
 
 def buildSketchMenuGroup(language, arduino_info):
 	new_sketch_menu = MenuItem(language.translate('New Sketch'))
@@ -492,6 +493,7 @@ def buildToolsMenuGroup(language):
 def buildSettingMenuGroup(language):
 	setting_menu_group = MenuItemGroup()
 	setting_menu = buildSettingMenu(language)
+
 	global_setting_menu = MenuItem(language.translate('Global Setting'))
 	global_setting_menu.setCommand('set_global_setting')
 	global_setting_menu.setCheckbox()
@@ -500,22 +502,30 @@ def buildSettingMenuGroup(language):
 	full_compilation_menu.setCommand('set_full_compilation')
 	full_compilation_menu.setCheckbox()
 
-	show_verbose_output_menu = MenuItem(language.translate('Show Verbose Output'))
+
+	bare_gcc_only_menu = MenuItem(language.translate('Bare GCC Build (No Arduino code-munging)'))
+	bare_gcc_only_menu.setCommand('set_bare_gcc_only')
+	bare_gcc_only_menu.setCheckbox()
+
 	show_compilation_menu = MenuItem(language.translate('Compilation'))
 	show_compilation_menu.setCommand('show_compilation_output')
 	show_compilation_menu.setCheckbox()
+
 	show_upload_menu = MenuItem(language.translate('Upload'))
 	show_upload_menu.setCommand('show_upload_output')
 	show_upload_menu.setCheckbox()
+
+	show_verbose_output_menu = MenuItem(language.translate('Show Verbose Output'))
 	show_verbose_output_menu.addMenuItem(show_compilation_menu)
 	show_verbose_output_menu.addMenuItem(show_upload_menu)
 
 	verify_code_menu = MenuItem(language.translate('Verify Code after Upload'))
 	verify_code_menu.setCommand('verify_code')
 	verify_code_menu.setCheckbox()
-	
+
 	setting_menu_group.addMenuItem(setting_menu)
 	setting_menu_group.addMenuItem(global_setting_menu)
+	setting_menu_group.addMenuItem(bare_gcc_only_menu)
 	setting_menu_group.addMenuItem(full_compilation_menu)
 	setting_menu_group.addMenuItem(show_verbose_output_menu)
 	setting_menu_group.addMenuItem(verify_code_menu)
@@ -539,7 +549,8 @@ def buildPreferenceMenu(language):
 	show_arduino_menu = MenuItem(language.translate('Show Arduino Menu'))
 	show_arduino_menu.setCommand('show_arduino_menu')
 	show_arduino_menu.setCheckbox()
-	
+
+
 	preference_menu.addMenuItem(show_arduino_menu)
 	return preference_menu
 
@@ -610,4 +621,4 @@ def convertMenuToData(cur_menu, level = 0):
 			if checkbox:
 				data['checkbox'] = checkbox
 	return data
-		
+
