@@ -61,14 +61,14 @@ class Command:
 			output_console.printText(message)
 
 		cur_command = formatCommand(self.command)
-		compile_proc = subprocess.Popen(cur_command, stdout = subprocess.PIPE, 
+		compile_proc = subprocess.Popen(cur_command, stdout = subprocess.PIPE,
 			stderr = subprocess.PIPE, shell = True)
 		result = compile_proc.communicate()
 		return_code = compile_proc.returncode
 		stdout = result[0].decode(constant.sys_encoding).replace('\r', '')
 		stderr = result[1].decode(constant.sys_encoding).replace('\r', '')
 		self.stdout = stdout
-		
+
 		show_compilation_output = constant.sketch_settings.get('show_compilation_output', False)
 		if show_compilation_output:
 			output_console.printText(self.command)
@@ -76,7 +76,7 @@ class Command:
 			output_console.printText(stdout)
 		output_console.printText(stderr)
 		return return_code
-			
+
 	def isSizeCommand(self):
 		return self.calc_size
 
@@ -127,7 +127,7 @@ class Compiler:
 		self.command_list = []
 		if self.args:
 			self.command_list = genCommandList(self.args, self.cur_project, self.arduino_info)
-	
+
 	def run(self):
 		if self.command_list:
 			compilation_thread = threading.Thread(target=self.compile)
@@ -153,7 +153,7 @@ class Compiler:
 			self.output_console.printText('[Stino - Done compiling.]\n')
 			constant.sketch_settings.set('full_compilation', False)
 		self.is_finished = True
-			
+
 def getChosenArgs(arduino_info):
 	args = {}
 	platform_list = arduino_info.getPlatformList()
@@ -392,7 +392,7 @@ def getCoreFolder(arduino_info):
 		constant.sketch_settings.set('platform', platform_id)
 		constant.sketch_settings.set('platform_name', platform_name)
 	platform = platform_list[platform_id]
-	
+
 	core_folder = ''
 	core_folder_list = platform.getCoreFolderList()
 	for cur_core_folder in core_folder_list:
@@ -515,7 +515,7 @@ def getLibFolderListFromProject(cur_project, arduino_info):
 	selected_platform = platform_list[platform_id]
 	general_h_lib_dict = general_platform.getHLibDict()
 	selected_h_lib_dict = selected_platform.getHLibDict()
-	
+
 	ino_src_file_list = cur_project.getInoSrcFileList()
 	c_src_file_list = cur_project.getCSrcFileList()
 	h_list = preprocess.getHListFromSrcList(ino_src_file_list + c_src_file_list)
@@ -536,7 +536,10 @@ def genBuildCppFile(build_folder, cur_project, arduino_info):
 	cpp_file = os.path.join(build_folder, cpp_file_name)
 	ino_src_file_list = cur_project.getInoSrcFileList()
 	arduino_version = arduino_info.getVersion()
-	preprocess.genCppFileFromInoFileList(cpp_file, ino_src_file_list, arduino_version)
+
+	doMunge = not constant.sketch_settings.get('set_bare_gcc_only', False)
+	preprocess.genCppFileFromInoFileList(cpp_file, ino_src_file_list, arduino_version, preprocess=doMunge)
+
 	return cpp_file
 
 def genIncludesPara(build_folder, project_folder, core_folder_list, compiler_include_folder):
@@ -669,7 +672,7 @@ def genCommandList(args, cur_project, arduino_info):
 	includes_para = genIncludesPara(build_folder, project_folder, core_folder_list, compiler_include_folder)
 	project_C_file_list = [build_cpp_file] + cur_project.getCSrcFileList()
 	core_C_file_list = sketch.getCSrcFileListFromFolderList(core_folder_list)
-	
+
 	project_command_list = getCompileCommandList(project_C_file_list, args, includes_para)
 	core_command_list = getCompileCommandList(core_C_file_list, args, includes_para)
 	ar_command = getArCommand(args, core_command_list)
@@ -677,7 +680,7 @@ def genCommandList(args, cur_project, arduino_info):
 	eep_command = getEepCommand(args)
 	hex_command = getHexCommand(args)
 	size_command = getSizeCommand(args)
-	
+
 	full_compilation = constant.sketch_settings.get('full_compilation', True)
 	archive_file_name = args['archive_file']
 	archive_file = os.path.join(build_folder, archive_file_name)

@@ -160,39 +160,49 @@ def getInsertText(src_file_list):
 	insert_text += '\n'
 	return insert_text
 
-def genCppFileFromInoFileList(cpp_file, ino_src_file_list, arduino_version):
+def genCppFileFromInoFileList(cpp_file, ino_src_file_list, arduino_version, preprocess=True):
 	cpp_text = ''
 
-	if arduino_version < 100:
-		include_text = '#include <WProgram.h>\n'
-	else:
-		include_text = '#include <Arduino.h>\n'
-
-	cpp_text += include_text
-
-	if ino_src_file_list:
-		insert_text = getInsertText(ino_src_file_list)
-		main_src_file = ino_src_file_list[0]
-		src_text = fileutil.readFile(main_src_file)
-
-		function_list = genFunctionList(src_text)
-		if function_list:
-			first_function = function_list[0]
-			index = src_text.index(first_function)
-			header_text = src_text[:index]
-			body_text = src_text[index:]
+	if preprocess:
+		if arduino_version < 100:
+			include_text = '#include <WProgram.h>\n'
 		else:
-			index = len(src_text)
-			header_text = src_text
-			body_text = ''
-		
-		cpp_text += header_text
-		cpp_text += insert_text
-		cpp_text += body_text
+			include_text = '#include <Arduino.h>\n'
 
-		for src_file in ino_src_file_list[1:]:
-			src_text = fileutil.readFile(src_file)
-			cpp_text += src_text
+		cpp_text += include_text
+
+		if ino_src_file_list:
+			insert_text = getInsertText(ino_src_file_list)
+			main_src_file = ino_src_file_list[0]
+			src_text = fileutil.readFile(main_src_file)
+
+			function_list = genFunctionList(src_text)
+			if function_list:
+				first_function = function_list[0]
+				index = src_text.index(first_function)
+				header_text = src_text[:index]
+				body_text = src_text[index:]
+			else:
+				index = len(src_text)
+				header_text = src_text
+				body_text = ''
+
+			cpp_text += header_text
+			cpp_text += insert_text
+			cpp_text += body_text
+
+			for src_file in ino_src_file_list[1:]:
+				src_text = fileutil.readFile(src_file)
+				cpp_text += src_text
+
+	# Don't do any preprocessing at all
+	else:
+
+		if len(ino_src_file_list) != 1:
+			raise ValueError("Too many source files! Only one \".ino\" file is supported")
+
+		main_src_file = ino_src_file_list[0]
+		cpp_text = fileutil.readFile(main_src_file)
 
 	fileutil.writeFile(cpp_file, cpp_text)
 
