@@ -117,7 +117,7 @@ class SetExtraFlagCommand(sublime_plugin.WindowCommand):
 
 	def on_done(self, input_text):
 		extra_flag = input_text
-		stino.constant.sketch_settings.set('extra_flag', extra_flags)
+		app.constant.sketch_settings.set('extra_flag', extra_flag)
 
 class CompileSketchCommand(sublime_plugin.WindowCommand):
 	def run(self):
