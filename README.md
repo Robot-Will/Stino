@@ -49,14 +49,14 @@ Stino installation coulde be achieved through Sublime Text Package Control or ma
 
 ![Stino Manual Installation](http://robot-will.github.com/Stino/images/installation02.png)
 
-## Set Arduino Application Folder
+## Set Arduino Install Location
 1. Click the menu `Preferences`->`Show Arduino Menu`, Arduino Menu will appear.
 
 2. Click the menu `Arduino`->`Preferences`->`Select Arduino Folder`.
 
-3. Select your `Arduino Application Folder` in the quick panel.
+3. Select your `Arduino Application Folder` in the quick panel. This is the location where Arduino.app is installed.
 
-4. Once the folder you select is Arduino folder, you will see the message like the Step 4 in the following figure.
+4. Once you've selected the appropriate directory, you will see the message like the Step 4 in the following figure.
 
 ![Stino Select Arduino Folder](http://robot-will.github.com/Stino/images/select_arduino.png)
 
