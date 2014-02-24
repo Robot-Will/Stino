@@ -372,7 +372,8 @@ def getDefaultPlatformFile(arduino_info):
 		board_id = constant.sketch_settings.get('board', 0)
 		board = board_list[board_id]
 		board_name = board.getName()
-		if '3.0' in board_name:
+		board_version = float(board_name.split()[1])
+		if board_version >= 3.0:
 			file_name = 'teensy_arm.txt'
 		else:
 			file_name = 'teensy_avr.txt'
@@ -562,7 +563,9 @@ def getCompileCommand(c_file, args, includes_para):
 	obj_file_name = file_name + '.o'
 	obj_file = os.path.join(build_folder, obj_file_name)
 
-	if file_ext in ['.c']:
+	if file_ext in ['.S']:
+		command = args['recipe.S.o.pattern']
+	elif file_ext in ['.c']:
 		command = args['recipe.c.o.pattern']
 	else:
 		command = args['recipe.cpp.o.pattern']
@@ -669,8 +672,8 @@ def genCommandList(args, cur_project, arduino_info):
 	# core_folder_list.append(compiler_include_folder)
 
 	includes_para = genIncludesPara(build_folder, project_folder, core_folder_list, compiler_include_folder)
-	project_C_file_list = [build_cpp_file] + cur_project.getCSrcFileList()
-	core_C_file_list = sketch.getCSrcFileListFromFolderList(core_folder_list)
+	project_C_file_list = [build_cpp_file] + cur_project.getCSrcFileList()  + cur_project.getAsmSrcFileList()
+	core_C_file_list = sketch.getCSrcFileListFromFolderList(core_folder_list) + sketch.getAsmSrcFileListFromFolderList(core_folder_list)
 
 	project_command_list = getCompileCommandList(project_C_file_list, args, includes_para)
 	core_command_list = getCompileCommandList(core_C_file_list, args, includes_para)

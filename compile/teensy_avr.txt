@@ -6,6 +6,7 @@ name=Teensy AVR Boards
 # Default "compiler.path" is correct, change only if you want to overidde the initial value
 #compiler.path={ide.path}/tools/avr/bin/..
 compiler.c.cmd=avr-gcc
+compiler.S.cmd=avr-gcc
 compiler.c.flags=-c -g -Os -Wall -ffunction-sections -fdata-sections -MMD
 compiler.c.elf.flags=-Os -Wl,--gc-sections,--relax
 compiler.c.elf.cmd=avr-gcc
@@ -28,6 +29,9 @@ build.extra_flags={build.define0} {build.define1}
 
 ## Compile c files
 recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -mmcu={build.mcu} -DF_CPU={build.f_cpu} -D{software}={runtime.ide.version} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+
+## Compile S files
+recipe.S.o.pattern="{compiler.path}{compiler.S.cmd}" {compiler.S.flags} -mmcu={build.mcu} -DF_CPU={build.f_cpu} -D{software}={runtime.ide.version} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
 
 ## Compile c++ files
 recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -mmcu={build.mcu} -DF_CPU={build.f_cpu} -D{software}={runtime.ide.version} {build.extra_flags} {build.elide_constructors} {build.cpp0x} {includes} "{source_file}" -o "{object_file}"
