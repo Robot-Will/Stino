@@ -224,7 +224,7 @@ def getAsmSrcFileListFromFolder(core_folder, level = 0):
 				continue
 			cur_folder = os.path.join(core_folder, folder_name)
 			sub_asm_src_file_list = getAsmSrcFileListFromFolder(cur_folder, level + 1)
- 			asm_src_file_list += sub_asm_src_file_list
+			asm_src_file_list += sub_asm_src_file_list
 	
 	for file_name in file_name_list:
 		cur_file = os.path.join(core_folder, file_name)
