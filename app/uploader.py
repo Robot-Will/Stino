@@ -69,7 +69,7 @@ class Uploader:
 				pre_serial_port = serial_port
 				wait_for_upload_port = self.args.get('upload.wait_for_upload_port', 'false') == 'true'
 				serial_port = resetSerial(pre_serial_port, self.output_console, wait_for_upload_port)
-				self.args['cmd'] != 'avrdude':
+				if self.args['cmd'] != 'avrdude':
 					if serial_port.startswith('/dev/'):
 						serial_port = serial_port[5:]
 				if serial_port:
