@@ -121,11 +121,10 @@ def addFolderToProject(window, folder):
 	if os.path.isdir(folder):	
 		project_data = window.project_data()
 		
-		if(project_data == None):
+		if not project_data:
 			project_data = {'folders': []}
 		
 		project_data['folders'].append({'follow_symlinks': True, 'path': folder})
-
 		window.set_project_data(project_data)
 		
 def importLibrary(view, lib_folder):
