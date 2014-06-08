@@ -725,12 +725,13 @@ def printSizeInfo(output_console, stdout, args):
 
 	flash_size = text_size + data_size
 	ram_size = data_size + bss_size
+	free_ram = max_ram_size - ram_size
 
 	flash_percent = float(flash_size) / max_flash_size * 100
 	text = 'Binary sketch size: %d bytes (of a %d byte maximum, %.2f percent).\n' % (flash_size, max_flash_size, flash_percent)
 	if max_ram_size > 0:
 		ram_percent = float(ram_size) / max_ram_size * 100
-		text += 'Estimated memory use: %d bytes (of a %d byte maximum, %.2f percent).\n' % (ram_size, max_ram_size, ram_percent)
+		text += 'Estimated memory use: %d bytes (of a %d byte maximum, %.2f percent) estimated free memory: %d bytes.\n' % (ram_size, max_ram_size, ram_percent, free_ram)
 	output_console.printText(text)
 
 def formatCommand(command):
