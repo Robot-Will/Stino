@@ -1,0 +1,150 @@
+# LANGUAGE: Português (Portuguese)
+# Brazilian portuguese translations for Stino Plugin.
+# Copyright (C) 2012-2013 Robot-Will
+# This file is distributed under the same license as the Stino Plugin.
+# AUTHOR <aron.bordin@gmail.com>
+#
+
+msgid "Serial Monitor"
+msgstr "Monitor Serial"
+
+msgid "Start"
+msgstr "Iniciar"
+
+msgid "Select Build Folder"
+msgstr "Selecionar Pasta de Compilação"
+
+msgid "Show Arduino Menu"
+msgstr "Mostrar Menu Arduino"
+
+msgid "Programmer"
+msgstr "Programador"
+
+msgid "Select Arduino Application Folder"
+msgstr "Selecionar Pasta do Arduino"
+
+msgid "Extra compilation flags:"
+msgstr "Flags extras de compilação:"
+
+msgid "Extra Flags"
+msgstr "Flags Extra"
+
+msgid "Frequently Asked Questions"
+msgstr "FAQ"
+
+msgid "Preferences"
+msgstr "Preferências"
+
+msgid "Full Compilation"
+msgstr "Compilação completa"
+
+msgid "Show Verbose Output"
+msgstr "Mostrar Saída Verbosa"
+
+msgid "Reference"
+msgstr "Referência"
+
+msgid "Arduino Application is found at {0}.\n"
+msgstr "Arduino é encontrado em {0}.\n"
+
+msgid "Build folder is changed to {0}.\n"
+msgstr "Pasta de compilação modificada para {0}.\n"
+
+msgid "Upload"
+msgstr "Upload"
+
+msgid "Archive Sketch"
+msgstr "Arquivo Sketch"
+
+msgid "Global Setting"
+msgstr "Configuração Global"
+
+msgid "Upload by Using Programmer"
+msgstr "Upload com Using Programmer"
+
+msgid "Sketchbook is changed to {0}.\n"
+msgstr "Sketchbook modificado para {0}.\n"
+
+msgid "Serial Port"
+msgstr "Porta Serial"
+
+msgid "Auto Format"
+msgstr "Auto Formatar"
+
+msgid "Language"
+msgstr "Linguagem"
+
+msgid "About Stino"
+msgstr "Sobre Stino"
+
+msgid "Import Library"
+msgstr "Importar Biblioteca"
+
+msgid "Baudrate"
+msgstr "Taxa de Transmissão"
+
+msgid "Verify/Compile"
+msgstr "Verificar/Compilar"
+
+msgid "Find in Reference"
+msgstr "Encontrar em Referência"
+
+msgid "Troubleshooting"
+msgstr "Solução de Problemas"
+
+msgid "Getting Started"
+msgstr "Primeiros Passos"
+
+msgid "Burn Bootloader"
+msgstr "Queimar Bootloader"
+
+msgid "References"
+msgstr "Referências"
+
+msgid "Send"
+msgstr "Enviar"
+
+msgid "Change Sketchbook Folder"
+msgstr "Mudar Pasta Sketchbook"
+
+msgid "Stop"
+msgstr "Parar"
+
+msgid "Compilation"
+msgstr "Compilação"
+
+msgid "Visit Arduino Website"
+msgstr "Visitar Site Arduino"
+
+msgid "Examples"
+msgstr "Exemplos"
+
+msgid "Sketchbook"
+msgstr "Sketchbook"
+
+msgid "New Sketch"
+msgstr "Nova Sketch"
+
+msgid "Bare GCC Build (No Arduino code-munging)"
+msgstr "Compilação GCC crua (Sem melhora de código Arduino)"
+
+msgid "Line Ending"
+msgstr "Fim de linha"
+
+msgid "Writing {0} done.\n"
+msgstr "{0} escrito com sucesso.\n"
+
+msgid "Verify Code after Upload"
+msgstr "Verificar Código após Upload"
+
+msgid "Display as"
+msgstr "Mostrar como"
+
+msgid "Name for New Sketch"
+msgstr "Nome para Nova Sketch"
+
+msgid "Writing {0} failed.\n"
+msgstr "Falha ao escrever {0} .\n"
+
+msgid "Show Sketch Folder"
+msgstr "Mostrar pasta Sketch"
