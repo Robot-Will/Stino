@@ -147,7 +147,9 @@ class Compiler(object):
         self.need_to_build = bool(self.project_obj_paths)
 
     def prepare_lib_src_files(self):
-        ino_files = self.project.list_ino_files()
+        ino_files = []
+        if not self.bare_gcc:
+            ino_files = self.project.list_ino_files()
         cpp_files = self.project.list_cpp_files()
         h_files = self.project.list_h_files()
         src_files = ino_files + cpp_files + h_files
