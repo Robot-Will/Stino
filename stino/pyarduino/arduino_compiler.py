@@ -207,8 +207,11 @@ class Compiler(object):
         core_path = self.params.get('build_core_path')
         varient_path = self.params.get('build_variant_path')
         include_paths = [project_path, core_path, varient_path]
+
+        target_arch = \
+            self.arduino_info.get_target_board_info().get_target_arch()
         for lib in self.libraries:
-            src_dirs = lib.list_src_dirs(self.target_arch)
+            src_dirs = lib.list_src_dirs(target_arch)
             include_paths += [d.get_path() for d in src_dirs]
 
         includes = ['"-I%s"' % path for path in include_paths]
