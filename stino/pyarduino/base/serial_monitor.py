@@ -85,10 +85,8 @@ class SerialMonitor(object):
 def convert_mode(in_text, str_len=0):
     arduino_settings = settings.get_arduino_settings()
     text = u''
-    display_mode = arduino_settings.get('display_mode', 'text')
-    if display_mode == 'text':
-        text = in_text.decode('utf-8', 'replace')
-    elif display_mode == 'Ascii':
+    display_mode = arduino_settings.get('display_mode', 'Text')
+    if display_mode == 'Ascii':
         for character in in_text:
             text += chr(character)
     elif display_mode == 'Hex':
@@ -98,6 +96,8 @@ def convert_mode(in_text, str_len=0):
                 text += '\t'
             if (index + str_len + 1) % 20 == 0:
                 text += '\n'
+    else:
+        text = in_text.decode('utf-8', 'replace')
     return text
 
 

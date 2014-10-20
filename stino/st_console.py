@@ -28,6 +28,7 @@ class Console:
             self.panel = self.window.get_output_panel(self.name)
         else:
             self.panel = self.window.create_output_panel(self.name)
+        self.panel.run_command('toggle_setting', {'setting': 'word_wrap'})
 
     def print_screen(self, text):
         sublime.set_timeout(lambda: self.println(text), 0)
@@ -47,6 +48,7 @@ class MonitorView:
             self.window = window
             self.view = self.window.new_file()
             self.view.set_name(self.name)
+        self.view.run_command('toggle_setting', {'setting': 'word_wrap'})
         self.window.focus_view(self.view)
 
     def print_screen(self, text):
@@ -54,7 +56,6 @@ class MonitorView:
 
     def println(self, text):
         self.view.run_command('panel_output', {'text': text})
-        self.window.focus_view(self.view)
 
 
 def find_in_opend_view(view_name):
