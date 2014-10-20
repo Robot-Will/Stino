@@ -351,7 +351,7 @@ def add_extra_params(arduino_info, params):
             if show_upload_output:
                 value = value.replace('.verbose}', '.params.verbose}')
             else:
-                value = value.replace('.verbose}', 'params.quiet}')
+                value = value.replace('.verbose}', '.params.quiet}')
             params[key] = value
 
     # For Teensy

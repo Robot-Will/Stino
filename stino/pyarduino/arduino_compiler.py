@@ -96,6 +96,7 @@ class Compiler(object):
 
         last_build_path = os.path.join(self.build_path, 'last_build.txt')
         last_build_file = base.settings.Settings(last_build_path)
+        last_bare_gcc = last_build_file.get('bare_gcc')
         last_ide_path = last_build_file.get('ide_path')
         last_sketchbook_path = last_build_file.get('sketchbook_path')
         last_board_id = last_build_file.get('board_id')
@@ -103,15 +104,18 @@ class Compiler(object):
 
         settings = base.settings.get_arduino_settings()
         full_compilation = settings.get('full_compilation', False)
+        bare_gcc = settings.get('bare_gcc', False)
 
         if full_compilation or ide_path != last_ide_path or \
                 sketchbook_path != last_sketchbook_path or \
                 target_board_id != last_board_id or \
-                target_sub_board_ids != last_sub_board_ids:
+                target_sub_board_ids != last_sub_board_ids or \
+                bare_gcc != last_bare_gcc:
             last_build_file.set('ide_path', ide_path)
             last_build_file.set('sketchbook_path', sketchbook_path)
             last_build_file.set('board_id', target_board_id)
             last_build_file.set('sub_board_ids', target_sub_board_ids)
+            last_build_file.set('bare_gcc', bare_gcc)
             self.is_new_build = True
 
     def prepare_project_src_files(self):
