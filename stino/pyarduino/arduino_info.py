@@ -37,6 +37,10 @@ class ArduinoInfo(object):
             arduino_target_programmer.TargetProgrammerInfo(root_dirs)
         self.load_libraries()
 
+    def reload(self):
+        self.ide_dir.reload()
+        self.sketchbook_dir.reload()
+
     def update(self):
         self.target_board_info.update([self.ide_dir, self.sketchbook_dir])
         self.target_programmer_info.update([self.ide_dir, self.sketchbook_dir])

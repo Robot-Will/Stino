@@ -56,6 +56,12 @@ class Bootloader(object):
         self.params['serial.port.file'] = self.upload_port_file
         self.params = arduino_target_params.replace_param_values(self.params)
 
+        if self.upload_port in base.serial_monitor.serials_in_use:
+            serial_monitor = base.serial_monitor.serial_monitor_dict.get(
+                self.upload_port, None)
+            if serial_monitor:
+                serial_monitor.stop()
+
     def prepare_cmds(self):
         self.cmds = []
         erase_cmd = self.params.get('erase.pattern', '')

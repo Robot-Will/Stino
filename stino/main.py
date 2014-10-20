@@ -89,6 +89,7 @@ def create_menus():
 
 def update_menu():
     arduino_info = st_base.get_arduino_info()
+    arduino_info.reload()
     arduino_info.update()
     i18n = st_base.get_i18n()
     i18n.load()
@@ -122,7 +123,8 @@ def create_sketch(sketch_name):
     src_code = src_code.replace('${ino_file_name}', ino_file_name)
     ino_file.write(src_code)
 
-    arduino_info.sketchbook_update()
+    arduino_info.reload()
+    arduino_info.update()
     st_menu.create_sketchbook_menu(arduino_info)
     return sketch_path
 
@@ -196,8 +198,11 @@ def change_programmer(programmer_id):
     arduino_info.change_programmer(programmer_id)
 
 
-def archive_sketch(sketch_path):
-    print('Archive %s' % sketch_path)
+def archive_sketch(window, sketch_path):
+    console = st_console.Console(window, str(time.time()))
+    message_queue = pyarduino.base.message_queue.MessageQueue(console)
+    message_queue.put('Archive {0}\n', sketch_path)
+
     sketch_name = os.path.basename(sketch_path)
     zip_file_name = sketch_name + '.zip'
     document_path = pyarduino.base.sys_path.get_document_path()
@@ -210,12 +215,13 @@ def archive_sketch(sketch_path):
         opened_zipfile = zipfile.ZipFile(zip_file_path,
                                          'w', zipfile.ZIP_DEFLATED)
     except IOError:
-        print('Error occured while writing %s.' % zip_file_path)
+        message_queue.put('Error occured while writing {0}.\n', zip_file_path)
     else:
         for file_name in file_names:
             opened_zipfile.write(file_name)
         opened_zipfile.close()
-        print('Done writing %s.' % zip_file_path)
+        message_queue.put('Done writing {0}.\n', zip_file_path)
+    message_queue.print_screen(one_time=True)
 
 
 def get_url(url):
@@ -281,10 +287,12 @@ def set_arduino_ide_path(window, dir_path):
 
         ide_dir = arduino_info.get_ide_dir()
         version_name = ide_dir.get_version_name()
-        text = 'Arduino %s is found!' % version_name
+        text = 'Arduino {0} is found!\n'
 
         console = st_console.Console(window, str(time.time()))
-        console.print_screen(text)
+        message_queue = pyarduino.base.message_queue.MessageQueue(console)
+        message_queue.put(text, version_name)
+        message_queue.print_screen(one_time=True)
 
         create_menus()
         return 0
@@ -296,9 +304,11 @@ def set_sketchbook_path(window, dir_path):
     arduino_info = st_base.get_arduino_info()
     arduino_info.change_sketchbook_path(dir_path)
 
-    text = 'Sketchbook is set to %s!' % dir_path
+    text = 'Sketchbook is set to {0}!\n'
     console = st_console.Console(window, str(time.time()))
-    console.print_screen(text)
+    message_queue = pyarduino.base.message_queue.MessageQueue(console)
+    message_queue.put(text, dir_path)
+    message_queue.print_screen(one_time=True)
 
     create_menus()
     return 0
@@ -307,9 +317,11 @@ def set_sketchbook_path(window, dir_path):
 def set_build_path(window, dir_path):
     settings = st_base.get_settings()
     settings.set('build_path', dir_path)
-    text = 'Build Folder is set to %s!' % dir_path
+    text = 'Build Folder is set to {0}!\n'
     console = st_console.Console(window, str(time.time()))
-    console.print_screen(text)
+    message_queue = pyarduino.base.message_queue.MessageQueue(console)
+    message_queue.put(text, dir_path)
+    message_queue.print_screen(one_time=True)
     return 0
 
 

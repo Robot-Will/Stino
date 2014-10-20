@@ -46,6 +46,9 @@ class Compiler(object):
         self.done_build = False
         self.error_occured = False
 
+        settings = base.settings.get_arduino_settings()
+        self.bare_gcc = settings.get('bare_gcc', False)
+
     def set_build_path(self, build_path):
         self.build_path = build_path
         if not os.path.isdir(self.build_path):
@@ -117,7 +120,7 @@ class Compiler(object):
         self.project_obj_paths = []
 
         ino_files = self.project.list_ino_files()
-        if ino_files:
+        if ino_files and not self.bare_gcc:
             combined_file_name = self.project.get_name() + '.ino.cpp'
             combined_file_path = os.path.join(
                 self.build_path, combined_file_name)
@@ -157,17 +160,22 @@ class Compiler(object):
             self.lib_cpp_files += library.list_cpp_files(target_arch)
 
     def prepare_core_src_files(self):
+        cpp_files = []
         self.core_src_changed = False
+
         self.prepare_lib_src_files()
-        core_path = self.params.get('build_core_path')
-        varient_path = self.params.get('build_variant_path')
-        core_dir = base.abs_file.Dir(core_path)
-        varient_dir = base.abs_file.Dir(varient_path)
-        cpp_files = self.lib_cpp_files
-        cpp_files += core_dir.recursive_list_files(
-            arduino_src.CPP_EXTS)
-        cpp_files += varient_dir.recursive_list_files(
-            arduino_src.CPP_EXTS)
+        cpp_files += self.lib_cpp_files
+
+        if not self.bare_gcc:
+            core_path = self.params.get('build_core_path')
+            varient_path = self.params.get('build_variant_path')
+            core_dir = base.abs_file.Dir(core_path)
+            varient_dir = base.abs_file.Dir(varient_path)
+            cpp_files += core_dir.recursive_list_files(
+                arduino_src.CPP_EXTS)
+            cpp_files += varient_dir.recursive_list_files(
+                arduino_src.CPP_EXTS)
+
         self.core_obj_paths = gen_obj_paths(self.build_path, cpp_files)
         self.core_cpp_obj_pairs = gen_cpp_obj_pairs(
             self.build_path, cpp_files, self.is_new_build)

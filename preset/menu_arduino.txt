@@ -94,6 +94,12 @@
                         "checkbox": true
                     },
                     {
+                        "caption": "Bare GCC Build (No Arduino code-munging)",
+                        "id": "toggle_bare_gcc_only",
+                        "command": "toggle_bare_gcc_only",
+                        "checkbox": true
+                    },
+                    {
                         "caption": "Select Build Folder",
                         "id": "choose_build_folder",
                         "command": "choose_build_folder"
@@ -315,6 +321,16 @@
                         "caption": "Change Sketchbook Folder",
                         "id": "change_sketchbook_folder",
                         "command": "change_sketchbook_folder"
+                    },
+                    {
+                        "caption": "Global Settings",
+                        "id": "toggle_global_settings",
+                        "command": "toggle_global_settings"
+                    },
+                    {
+                        "caption": "Big Project",
+                        "id": "toggle_big_project",
+                        "command": "toggle_big_project"
                     }
                 ]
             },

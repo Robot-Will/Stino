@@ -63,6 +63,12 @@ class Uploader(object):
             self.upload_port_file = self.upload_port
         self.params['serial.port.file'] = self.upload_port_file
 
+        if self.upload_port in base.serial_monitor.serials_in_use:
+            serial_monitor = base.serial_monitor.serial_monitor_dict.get(
+                self.upload_port, None)
+            if serial_monitor:
+                serial_monitor.stop()
+
         if not using_programmer or not self.params.get('upload.protocol'):
             bootloader_file = self.params.get('bootloader.file', '')
             if 'caterina' in bootloader_file.lower():

@@ -37,20 +37,28 @@ class MessageQueue(object):
         text = self.i18n.translate(text, *args)
         self.queue.put(text)
 
-    def start_print(self):
+    def start_print(self, one_time=False):
         if not self.is_alive:
             self.is_alive = True
-            thread = threading.Thread(target=self.print_screen)
+            thread = threading.Thread(
+                target=lambda: self.print_screen(one_time))
             thread.start()
 
-    def print_screen(self):
-        while self.is_alive:
-            if not self.queue.empty():
-                text = self.queue.get()
-                if self.console:
-                    self.console.print_screen(text)
-                else:
-                    print(text)
+    def print_screen(self, one_time=False):
+        if one_time:
+            self.print_once()
+        else:
+            while self.is_alive:
+                self.print_once()
+                time.sleep(0.01)
+
+    def print_once(self):
+        while not self.queue.empty():
+            text = self.queue.get()
+            if self.console:
+                self.console.print_screen(text)
+            else:
+                print(text)
             time.sleep(0.01)
 
     def stop_print(self):

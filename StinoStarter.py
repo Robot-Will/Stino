@@ -165,6 +165,16 @@ class VerifyCodeCommand(sublime_plugin.WindowCommand):
         return verify_code
 
 
+class ToggleBareGccOnly(sublime_plugin.WindowCommand):
+    def run(self):
+        bare_gcc = stino.settings.get('bare_gcc', False)
+        stino.settings.set('bare_gcc', not bare_gcc)
+
+    def is_checked(self):
+        bare_gcc = stino.settings.get('bare_gcc', False)
+        return bare_gcc
+
+
 class ChooseBuildFolderCommand(sublime_plugin.WindowCommand):
     def run(self):
         stino.main.change_build_dir(self.window)
@@ -274,7 +284,7 @@ class ArchiveSketchCommand(sublime_plugin.TextCommand):
         file_path = self.view.file_name()
         if file_path:
             sketch_path = os.path.dirname(file_path)
-            stino.main.archive_sketch(sketch_path)
+            stino.main.archive_sketch(self.view.window(), sketch_path)
 
 
 class ChooseArduinoFolderCommand(sublime_plugin.WindowCommand):
@@ -285,6 +295,26 @@ class ChooseArduinoFolderCommand(sublime_plugin.WindowCommand):
 class ChangeSketchbookFolderCommand(sublime_plugin.WindowCommand):
     def run(self):
         stino.main.change_sketchbook_dir(self.window)
+
+
+class ToggleGlobalSettings(sublime_plugin.WindowCommand):
+    def run(self):
+        global_settings = stino.settings.get('global_settings', True)
+        stino.settings.set('global_settings', not global_settings)
+
+    def is_checked(self):
+        # global_settings = stino.settings.get('global_settings', False)
+        return True
+
+
+class ToggleBigProject(sublime_plugin.WindowCommand):
+    def run(self):
+        big_project = stino.settings.get('big_project', False)
+        stino.settings.set('big_project', not big_project)
+
+    def is_checked(self):
+        big_project = stino.settings.get('big_project', False)
+        return big_project
 
 
 class SelectLanguageCommand(sublime_plugin.WindowCommand):
