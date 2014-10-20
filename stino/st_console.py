@@ -43,11 +43,11 @@ class MonitorView:
         self.name = 'Serial Monitor - ' + serial_port
         self.window, self.view = find_in_opend_view(self.name)
 
-        # if self.view is None:
-        #     self.window = window
-        #     self.view = self.window.new_file()
-        #     self.view.set_name(self.name)
-        # self.window.focus_view(self.view)
+        if self.view is None:
+            self.window = window
+            self.view = self.window.new_file()
+            self.view.set_name(self.name)
+        self.window.focus_view(self.view)
 
     def print_screen(self, text):
         sublime.set_timeout(lambda: self.println(text), 0)
