@@ -260,6 +260,11 @@ class Compiler(object):
         if self.project_src_changed or core_changed:
             obj_paths = ' '.join(self.project_obj_paths)
             cmd = combine_cmd.replace('{object_files}', obj_paths)
+            if not self.core_obj_paths:
+                core_archive_path = \
+                    self.build_path + '/' + self.archive_file_name
+                text = '"' + core_archive_path + '"'
+                cmd = cmd.replace(text, '')
             elf_file_path = self.project.get_name() + '.elf'
             self.build_files.append(elf_file_path)
             self.file_cmds_dict[elf_file_path] = [cmd]
