@@ -1,0 +1,758 @@
+{
+    "aa": [
+        "Afaraf",
+        "Afar"
+    ],
+    "ab": [
+        "\u0430\u04a7\u0441\u0443\u0430 \u0431\u044b\u0437\u0448\u04d9\u0430",
+        "Abkhaz"
+    ],
+    "ae": [
+        "avesta",
+        "Avestan"
+    ],
+    "af": [
+        "Afrikaans",
+        "Afrikaans"
+    ],
+    "ak": [
+        "Akan",
+        "Akan"
+    ],
+    "am": [
+        "\u12a0\u121b\u122d\u129b",
+        "Amharic"
+    ],
+    "an": [
+        "aragon\u00e9s",
+        "Aragonese"
+    ],
+    "ar": [
+        "\u0627\u0644\u0639\u0631\u0628\u064a\u0629",
+        "Arabic"
+    ],
+    "as": [
+        "\u0985\u09b8\u09ae\u09c0\u09af\u09bc\u09be",
+        "Assamese"
+    ],
+    "av": [
+        "\u0430\u0432\u0430\u0440 \u043c\u0430\u0446\u04c0",
+        "Avaric"
+    ],
+    "ay": [
+        "aymar aru",
+        "Aymara"
+    ],
+    "az": [
+        "az\u0259rbaycan dili",
+        "Azerbaijani"
+    ],
+    "ba": [
+        "\u0431\u0430\u0448\u04a1\u043e\u0440\u0442 \u0442\u0435\u043b\u0435",
+        "Bashkir"
+    ],
+    "be": [
+        "\u0431\u0435\u043b\u0430\u0440\u0443\u0441\u043a\u0430\u044f \u043c\u043e\u0432\u0430",
+        "Belarusian"
+    ],
+    "bg": [
+        "\u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 \u0435\u0437\u0438\u043a",
+        "Bulgarian"
+    ],
+    "bh": [
+        "\u092d\u094b\u091c\u092a\u0941\u0930\u0940",
+        "Bihari"
+    ],
+    "bi": [
+        "Bislama",
+        "Bislama"
+    ],
+    "bm": [
+        "bamanankan",
+        "Bambara"
+    ],
+    "bn": [
+        "\u09ac\u09be\u0982\u09b2\u09be",
+        "Bengali"
+    ],
+    "bo": [
+        "\u0f56\u0f7c\u0f51\u0f0b\u0f61\u0f72\u0f42",
+        "Tibetan Standard"
+    ],
+    "br": [
+        "brezhoneg",
+        "Breton"
+    ],
+    "bs": [
+        "bosanski jezik",
+        "Bosnian"
+    ],
+    "ca": [
+        "catal\u00e0",
+        "Catalan"
+    ],
+    "ce": [
+        "\u043d\u043e\u0445\u0447\u0438\u0439\u043d \u043c\u043e\u0442\u0442",
+        "Chechen"
+    ],
+    "ch": [
+        "Chamoru",
+        "Chamorro"
+    ],
+    "co": [
+        "corsu",
+        "Corsican"
+    ],
+    "cr": [
+        "\u14c0\u1426\u1403\u152d\u140d\u140f\u1423",
+        "Cree"
+    ],
+    "cs": [
+        "\u010de\u0161tina",
+        "Czech"
+    ],
+    "cu": [
+        "\u0469\u0437\u044b\u043a\u044a \u0441\u043b\u043e\u0432\u0463\u043d\u044c\u0441\u043a\u044a",
+        "Old Church Slavonic"
+    ],
+    "cv": [
+        "\u0447\u04d1\u0432\u0430\u0448 \u0447\u04d7\u043b\u0445\u0438",
+        "Chuvash"
+    ],
+    "cy": [
+        "Cymraeg",
+        "Welsh"
+    ],
+    "da": [
+        "dansk",
+        "Danish"
+    ],
+    "de": [
+        "Deutsch",
+        "German"
+    ],
+    "dv": [
+        "\u078b\u07a8\u0788\u07ac\u0780\u07a8",
+        "Divehi"
+    ],
+    "dz": [
+        "\u0f62\u0fab\u0f7c\u0f44\u0f0b\u0f41",
+        "Dzongkha"
+    ],
+    "ee": [
+        "E\u028begbe",
+        "Ewe"
+    ],
+    "el": [
+        "\u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac",
+        "Greek"
+    ],
+    "en": [
+        "English",
+        "English"
+    ],
+    "eo": [
+        "Esperanto",
+        "Esperanto"
+    ],
+    "es": [
+        "espa\u00f1ol",
+        "Spanish"
+    ],
+    "et": [
+        "eesti",
+        "Estonian"
+    ],
+    "eu": [
+        "euskara",
+        "Basque"
+    ],
+    "fa": [
+        "\u0641\u0627\u0631\u0633\u06cc",
+        "Persian"
+    ],
+    "ff": [
+        "Fulfulde",
+        "Fula"
+    ],
+    "fi": [
+        "suomi",
+        "Finnish"
+    ],
+    "fj": [
+        "vosa Vakaviti",
+        "Fijian"
+    ],
+    "fo": [
+        "f\u00f8royskt",
+        "Faroese"
+    ],
+    "fr": [
+        "fran\u00e7ais",
+        "French"
+    ],
+    "fy": [
+        "Frysk",
+        "Western Frisian"
+    ],
+    "ga": [
+        "Gaeilge",
+        "Irish"
+    ],
+    "gd": [
+        "G\u00e0idhlig",
+        "Scottish Gaelic"
+    ],
+    "gl": [
+        "galego",
+        "Galician"
+    ],
+    "gn": [
+        "Ava\u00f1e'\u1ebd",
+        "Guarani"
+    ],
+    "gu": [
+        "\u0a97\u0ac1\u0a9c\u0ab0\u0abe\u0aa4\u0ac0",
+        "Gujarati"
+    ],
+    "gv": [
+        "Gaelg",
+        "Manx"
+    ],
+    "ha": [
+        "Hausa",
+        "Hausa"
+    ],
+    "he": [
+        "\u05e2\u05d1\u05e8\u05d9\u05ea",
+        "Hebrew"
+    ],
+    "hi": [
+        "\u0939\u093f\u0928\u094d\u0926\u0940",
+        "Hindi"
+    ],
+    "ho": [
+        "Hiri Motu",
+        "Hiri Motu"
+    ],
+    "hr": [
+        "hrvatski jezik",
+        "Croatian"
+    ],
+    "ht": [
+        "Krey\u00f2l ayisyen",
+        "Haitian"
+    ],
+    "hu": [
+        "magyar",
+        "Hungarian"
+    ],
+    "hy": [
+        "\u0540\u0561\u0575\u0565\u0580\u0565\u0576",
+        "Armenian"
+    ],
+    "hz": [
+        "Otjiherero",
+        "Herero"
+    ],
+    "ia": [
+        "Interlingua",
+        "Interlingua"
+    ],
+    "id": [
+        "Bahasa Indonesia",
+        "Indonesian"
+    ],
+    "ie": [
+        "Originally called\u00a0Occidental",
+        "Interlingue"
+    ],
+    "ig": [
+        "As\u1ee5s\u1ee5 Igbo",
+        "Igbo"
+    ],
+    "ii": [
+        "\ua188\ua320\ua4bf Nuosuhxop",
+        "Nuosu"
+    ],
+    "ik": [
+        "I\u00f1upiaq",
+        "Inupiaq"
+    ],
+    "io": [
+        "Ido",
+        "Ido"
+    ],
+    "is": [
+        "\u00cdslenska",
+        "Icelandic"
+    ],
+    "it": [
+        "italiano",
+        "Italian"
+    ],
+    "iu": [
+        "\u1403\u14c4\u1483\u144e\u1450\u1466",
+        "Inuktitut"
+    ],
+    "ja": [
+        "\u65e5\u672c\u8a9e",
+        "Japanese"
+    ],
+    "jv": [
+        "basa Jawa",
+        "Javanese"
+    ],
+    "ka": [
+        "\u10e5\u10d0\u10e0\u10d7\u10e3\u10da\u10d8",
+        "Georgian"
+    ],
+    "kg": [
+        "KiKongo",
+        "Kongo"
+    ],
+    "ki": [
+        "G\u0129k\u0169y\u0169",
+        "Kikuyu"
+    ],
+    "kj": [
+        "Kuanyama",
+        "Kwanyama"
+    ],
+    "kk": [
+        "\u049b\u0430\u0437\u0430\u049b \u0442\u0456\u043b\u0456",
+        "Kazakh"
+    ],
+    "kl": [
+        "kalaallisut",
+        "Kalaallisut"
+    ],
+    "km": [
+        "\u1781\u17d2\u1798\u17c2\u179a",
+        "Khmer"
+    ],
+    "kn": [
+        "\u0c95\u0ca8\u0ccd\u0ca8\u0ca1",
+        "Kannada"
+    ],
+    "ko": [
+        "\ud55c\uad6d\uc5b4",
+        "Korean"
+    ],
+    "kr": [
+        "Kanuri",
+        "Kanuri"
+    ],
+    "ks": [
+        "\u0915\u0936\u094d\u092e\u0940\u0930\u0940",
+        "Kashmiri"
+    ],
+    "ku": [
+        "Kurd\u00ee",
+        "Kurdish"
+    ],
+    "kv": [
+        "\u043a\u043e\u043c\u0438 \u043a\u044b\u0432",
+        "Komi"
+    ],
+    "kw": [
+        "Kernewek",
+        "Cornish"
+    ],
+    "ky": [
+        "\u041a\u044b\u0440\u0433\u044b\u0437\u0447\u0430",
+        "Kyrgyz"
+    ],
+    "la": [
+        "latine",
+        "Latin"
+    ],
+    "lb": [
+        "L\u00ebtzebuergesch",
+        "Luxembourgish"
+    ],
+    "lg": [
+        "Luganda",
+        "Ganda"
+    ],
+    "li": [
+        "Limburgs",
+        "Limburgish"
+    ],
+    "ln": [
+        "Ling\u00e1la",
+        "Lingala"
+    ],
+    "lo": [
+        "\u0e9e\u0eb2\u0eaa\u0eb2\u0ea5\u0eb2\u0ea7",
+        "Lao"
+    ],
+    "lt": [
+        "lietuvi\u0173 kalba",
+        "Lithuanian"
+    ],
+    "lu": [
+        "Tshiluba",
+        "Luba-Katanga"
+    ],
+    "lv": [
+        "latvie\u0161u valoda",
+        "Latvian"
+    ],
+    "mg": [
+        "fiteny malagasy",
+        "Malagasy"
+    ],
+    "mh": [
+        "Kajin M\u0327aje\u013c",
+        "Marshallese"
+    ],
+    "mi": [
+        "te reo M\u0101ori",
+        "Maori"
+    ],
+    "mk": [
+        "\u043c\u0430\u043a\u0435\u0434\u043e\u043d\u0441\u043a\u0438 \u0458\u0430\u0437\u0438\u043a",
+        "Macedonian"
+    ],
+    "ml": [
+        "\u0d2e\u0d32\u0d2f\u0d3e\u0d33\u0d02",
+        "Malayalam"
+    ],
+    "mn": [
+        "\u043c\u043e\u043d\u0433\u043e\u043b",
+        "Mongolian"
+    ],
+    "mr": [
+        "\u092e\u0930\u093e\u0920\u0940",
+        "Marathi"
+    ],
+    "ms": [
+        "\u0628\u0647\u0627\u0633 \u0645\u0644\u0627\u064a\u0648\u200e",
+        "Malay"
+    ],
+    "mt": [
+        "Malti",
+        "Maltese"
+    ],
+    "my": [
+        "\u1017\u1019\u102c\u1005\u102c",
+        "Burmese"
+    ],
+    "na": [
+        "Ekakair\u0169 Naoero",
+        "Nauru"
+    ],
+    "nb": [
+        "Norsk bokm\u00e5l",
+        "Norwegian Bokm\u00e5l"
+    ],
+    "nd": [
+        "isiNdebele",
+        "North Ndebele"
+    ],
+    "ne": [
+        "\u0928\u0947\u092a\u093e\u0932\u0940",
+        "Nepali"
+    ],
+    "ng": [
+        "Owambo",
+        "Ndonga"
+    ],
+    "nl": [
+        "Nederlands",
+        "Dutch"
+    ],
+    "nn": [
+        "Norsk nynorsk",
+        "Norwegian Nynorsk"
+    ],
+    "no": [
+        "Norsk",
+        "Norwegian"
+    ],
+    "no_nb": [
+        "Norsk",
+        "Norwegian"
+    ],
+    "nr": [
+        "isiNdebele",
+        "South Ndebele"
+    ],
+    "nv": [
+        "Din\u00e9 bizaad",
+        "Navajo"
+    ],
+    "ny": [
+        "chiChe\u0175a",
+        "Chichewa"
+    ],
+    "oc": [
+        "occitan",
+        "Occitan"
+    ],
+    "oj": [
+        "\u140a\u14c2\u1511\u14c8\u142f\u14a7\u140e\u14d0",
+        "Ojibwe"
+    ],
+    "om": [
+        "Afaan Oromoo",
+        "Oromo"
+    ],
+    "or": [
+        "\u0b13\u0b21\u0b3c\u0b3f\u0b06",
+        "Oriya"
+    ],
+    "os": [
+        "\u0438\u0440\u043e\u043d \u00e6\u0432\u0437\u0430\u0433",
+        "Ossetian"
+    ],
+    "pa": [
+        "\u0a2a\u0a70\u0a1c\u0a3e\u0a2c\u0a40,\u00a0\u067e\u0646\u062c\u0627\u0628\u06cc\u200e",
+        "Panjabi"
+    ],
+    "pi": [
+        "\u092a\u093e\u0934\u093f",
+        "P\u0101li"
+    ],
+    "pl": [
+        "j\u0119zyk polski",
+        "Polish"
+    ],
+    "ps": [
+        "\u067e\u069a\u062a\u0648",
+        "Pashto"
+    ],
+    "pt": [
+        "portugu\u00eas",
+        "Portuguese"
+    ],
+    "pt_br": [
+        "portugu\u00eas - Brazil",
+        "Portuguese"
+    ],
+    "pt_pt": [
+        "portugu\u00eas - Portugal",
+        "Portuguese"
+    ],
+    "qu": [
+        "Runa Simi",
+        "Quechua"
+    ],
+    "rm": [
+        "rumantsch grischun",
+        "Romansh"
+    ],
+    "rn": [
+        "Ikirundi",
+        "Kirundi"
+    ],
+    "ro": [
+        "limba rom\u00e2n\u0103",
+        "Romanian"
+    ],
+    "ru": [
+        "\u0440\u0443\u0441\u0441\u043a\u0438\u0439 \u044f\u0437\u044b\u043a",
+        "Russian"
+    ],
+    "rw": [
+        "Ikinyarwanda",
+        "Kinyarwanda"
+    ],
+    "sa": [
+        "\u0938\u0902\u0938\u094d\u0915\u0943\u0924\u092e\u094d",
+        "Sanskrit"
+    ],
+    "sc": [
+        "sardu",
+        "Sardinian"
+    ],
+    "sd": [
+        "\u0938\u093f\u0928\u094d\u0927\u0940",
+        "Sindhi"
+    ],
+    "se": [
+        "Davvis\u00e1megiella",
+        "Northern Sami"
+    ],
+    "sg": [
+        "y\u00e2ng\u00e2 t\u00ee s\u00e4ng\u00f6",
+        "Sango"
+    ],
+    "si": [
+        "\u0dc3\u0dd2\u0d82\u0dc4\u0dbd",
+        "Sinhala"
+    ],
+    "sk": [
+        "sloven\u010dina",
+        "Slovak"
+    ],
+    "sl": [
+        "slovenski jezik",
+        "Slovene"
+    ],
+    "sm": [
+        "gagana fa'a Samoa",
+        "Samoan"
+    ],
+    "sn": [
+        "chiShona",
+        "Shona"
+    ],
+    "so": [
+        "Soomaaliga",
+        "Somali"
+    ],
+    "sq": [
+        "gjuha shqipe",
+        "Albanian"
+    ],
+    "sr": [
+        "\u0441\u0440\u043f\u0441\u043a\u0438 \u0458\u0435\u0437\u0438\u043a",
+        "Serbian"
+    ],
+    "ss": [
+        "SiSwati",
+        "Swati"
+    ],
+    "st": [
+        "Sesotho",
+        "Southern Sotho"
+    ],
+    "su": [
+        "Basa Sunda",
+        "Sundanese"
+    ],
+    "sv": [
+        "Svenska",
+        "Swedish"
+    ],
+    "sw": [
+        "Kiswahili",
+        "Swahili"
+    ],
+    "ta": [
+        "\u0ba4\u0bae\u0bbf\u0bb4\u0bcd",
+        "Tamil"
+    ],
+    "te": [
+        "\u0c24\u0c46\u0c32\u0c41\u0c17\u0c41",
+        "Telugu"
+    ],
+    "tg": [
+        "\u0442\u043e\u04b7\u0438\u043a\u04e3",
+        "Tajik"
+    ],
+    "th": [
+        "\u0e44\u0e17\u0e22",
+        "Thai"
+    ],
+    "ti": [
+        "\u1275\u130d\u122d\u129b",
+        "Tigrinya"
+    ],
+    "tk": [
+        "T\u00fcrkmen",
+        "Turkmen"
+    ],
+    "tl": [
+        "Wikang Tagalog",
+        "Tagalog"
+    ],
+    "tn": [
+        "Setswana",
+        "Tswana"
+    ],
+    "to": [
+        "faka Tonga",
+        "Tonga"
+    ],
+    "tr": [
+        "T\u00fcrk\u00e7e",
+        "Turkish"
+    ],
+    "ts": [
+        "Xitsonga",
+        "Tsonga"
+    ],
+    "tt": [
+        "\u0442\u0430\u0442\u0430\u0440 \u0442\u0435\u043b\u0435",
+        "Tatar"
+    ],
+    "tw": [
+        "Twi",
+        "Twi"
+    ],
+    "ty": [
+        "Reo Tahiti",
+        "Tahitian"
+    ],
+    "ug": [
+        "Uy\u01a3urq\u0259",
+        "Uighur"
+    ],
+    "uk": [
+        "\u0443\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 \u043c\u043e\u0432\u0430",
+        "Ukrainian"
+    ],
+    "ur": [
+        "\u0627\u0631\u062f\u0648",
+        "Urdu"
+    ],
+    "uz": [
+        "O'zbek",
+        "Uzbek"
+    ],
+    "ve": [
+        "Tshiven\u1e13a",
+        "Venda"
+    ],
+    "vi": [
+        "Ti\u1ebfng Vi\u1ec7t",
+        "Vietnamese"
+    ],
+    "vo": [
+        "Volap\u00fck",
+        "Volapuk"
+    ],
+    "wa": [
+        "walon",
+        "Walloon"
+    ],
+    "wo": [
+        "Wollof",
+        "Wolof"
+    ],
+    "xh": [
+        "isiXhosa",
+        "Xhosa"
+    ],
+    "yi": [
+        "\u05d9\u05d9\u05b4\u05d3\u05d9\u05e9",
+        "Yiddish"
+    ],
+    "yo": [
+        "Yor\u00f9b\u00e1",
+        "Yoruba"
+    ],
+    "za": [
+        "Sa\u026f cue\u014b\u0185",
+        "Zhuang"
+    ],
+    "zh": [
+        "\u4e2d\u6587",
+        "Chinese"
+    ],
+    "zh_cn": [
+        "简体中文",
+        "Chinese Simplified"
+    ],
+    "zh_tw": [
+        "\u7e41\u4f53\u4e2d\u6587",
+        "Chinese Traditional"
+    ],
+    "zu": [
+        "isiZulu",
+        "Zulu"
+    ]
+}

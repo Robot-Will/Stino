@@ -1,0 +1,85 @@
+[
+    {
+        "caption": "Preferences",
+        "mnemonic": "n",
+        "id": "preferences",
+        "children":
+        [
+            {
+                "caption": "Package Settings",
+                "mnemonic": "P",
+                "id": "package-settings",
+                "children":
+                [
+                    {
+                        "caption": "Stino (Arduino Like IDE)",
+                        "children":
+                        [
+                            {
+                                "caption": "Show Arduino Menu",
+                                "command": "show_arduino_menu",
+                                "checkbox": true
+                            },
+                            {"caption": "-"},
+                            {
+                                "caption": "Settings - User",
+                                "command": "open_file",
+                                "args": {"file": "${packages}/User/stino/Preferences.stino-settings"}
+                            },
+                            {"caption": "-"},
+                            {
+                                "caption": "Key Bindings - Default",
+                                "command": "open_file",
+                                "args": {
+                                    "file": "${packages}/${stino}/Default (OSX).sublime-keymap",
+                                    "platform": "OSX"
+                                }
+                            },
+                            {
+                                "caption": "Key Bindings - Default",
+                                "command": "open_file",
+                                "args": {
+                                    "file": "${packages}/${stino}/Default (Linux).sublime-keymap",
+                                    "platform": "Linux"
+                                }
+                            },
+                            {
+                                "caption": "Key Bindings - Default",
+                                "command": "open_file",
+                                "args": {
+                                    "file": "${packages}/${stino}/Default (Windows).sublime-keymap",
+                                    "platform": "Windows"
+                                }
+                            },
+                            {
+                                "caption": "Key Bindings - User",
+                                "command": "open_file",
+                                "args": {
+                                    "file": "${packages}/User/stino/Default (OSX).sublime-keymap",
+                                    "platform": "OSX"
+                                }
+                            },
+                            {
+                                "caption": "Key Bindings - User",
+                                "command": "open_file",
+                                "args": {
+                                    "file": "${packages}/User/stino/Default (Linux).sublime-keymap",
+                                    "platform": "Linux"
+                                }
+                            },
+                            {
+                                "caption": "Key Bindings - User",
+                                "command": "open_file",
+                                "args": {
+                                    "file": "${packages}/User/stino/Default (Windows).sublime-keymap",
+                                    "platform": "Windows"
+                                }
+                            },
+                            {"caption": "-"}
+                        ]
+                    }
+                ]
+            }
+        ]
+    }
+]

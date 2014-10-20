@@ -1,0 +1,17 @@
+[
+   {
+        "caption": "Arduino",
+        "mnemonic": "a",
+        "id": "arduino",
+        "children":
+        [
+            {
+                "caption": "Board Options",
+                "id": "board_options",
+                "children":
+                [
+                ]
+            }
+        ]
+    }
+]

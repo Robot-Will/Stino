@@ -1,0 +1,195 @@
+# LANGUAGE: 简体中文 (Chinese Simplified)
+# Chinese Simplified translations for Stino Plugin.
+# Copyright (C) 2012-2013 Robot-Will
+# This file is distributed under the same license as the Stino Plugin.
+# Robot Will <EMAIL@ADDRESS>
+#
+
+msgid "New Sketch"
+msgstr "新建项目"
+
+msgid "Serial Monitor"
+msgstr "串口监视器"
+
+msgid "Start"
+msgstr "启动"
+
+msgid "Select Build Folder"
+msgstr "选择编译目录"
+
+msgid "Show Arduino Menu"
+msgstr "显示Arduino菜单"
+
+msgid "Programmer"
+msgstr "编程器"
+
+msgid "Select Arduino Application Folder"
+msgstr "选择Arduino程序目录"
+
+msgid "Extra compilation flags:"
+msgstr "额外编译参数:"
+
+msgid "Extra Flags"
+msgstr "额外编译参数"
+
+msgid "Frequently Asked Questions"
+msgstr "常见问题"
+
+msgid "Preferences"
+msgstr "参数设置"
+
+msgid "Full Compilation"
+msgstr "完全编译"
+
+msgid "Show Verbose Output"
+msgstr "显示详细输出"
+
+msgid "Reference"
+msgstr "参考手册"
+
+msgid "Arduino Application is found at {0}.\n"
+msgstr "在{0}发现Arduino程序.\n"
+
+msgid "Build folder is changed to {0}.\n"
+msgstr "设置编译目录为{0}.\n"
+
+msgid "Upload"
+msgstr "下载"
+
+msgid "Archive Sketch"
+msgstr "打包程序"
+
+msgid "Global Setting"
+msgstr "全局设置"
+
+msgid "Upload by Using Programmer"
+msgstr "使用编程器下载"
+
+msgid "Sketchbook is changed to {0}.\n"
+msgstr "程序目录设置为{0}.\n"
+
+msgid "Serial Port"
+msgstr "串口"
+
+msgid "Auto Format"
+msgstr "自动格式化"
+
+msgid "Language"
+msgstr "语言"
+
+msgid "About Stino"
+msgstr "关于Stino"
+
+msgid "Import Library"
+msgstr "导入库"
+
+msgid "Baudrate"
+msgstr "波特率"
+
+msgid "Verify/Compile"
+msgstr "验证/编译"
+
+msgid "Find in Reference"
+msgstr "在参考手册中查找"
+
+msgid "Troubleshooting"
+msgstr "解决问题"
+
+msgid "Getting Started"
+msgstr "快速入门"
+
+msgid "Burn Bootloader"
+msgstr "烧录Bootloader"
+
+msgid "References"
+msgstr "参考手册"
+
+msgid "Send"
+msgstr "发送"
+
+msgid "Change Sketchbook Folder"
+msgstr "更改项目库目录"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "Compilation"
+msgstr "编译"
+
+msgid "Visit Arduino Website"
+msgstr "访问Arduino网站"
+
+msgid "Examples"
+msgstr "示例"
+
+msgid "Sketchbook"
+msgstr "项目库"
+
+msgid "Show Sketch Folder"
+msgstr "打开项目目录"
+
+msgid "Board"
+msgstr "主控板"
+
+msgid "Help"
+msgstr "帮助"
+
+msgid "Update Menu"
+msgstr "更新菜单"
+
+msgid "Build Options"
+msgstr "编译选项"
+
+msgid "Board Options"
+msgstr "主控板选项"
+
+msgid "None"
+msgstr "无"
+
+msgid "Documents"
+msgstr "文档"
+
+msgid "Processor"
+msgstr "处理器"
+
+msgid "USB Type"
+msgstr "USB类型"
+
+msgid "CPU Speed"
+msgstr "CPU速度"
+
+msgid "Keyboard Layout"
+msgstr "键盘布局"
+
+msgid "Show Compilation Output"
+msgstr "显示编译详细信息"
+
+msgid "Show Upload Output"
+msgstr "显示下载详细信息"
+
+msgid "Verify Code after Upload"
+msgstr "下载后校验代码"
+
+msgid "Line Ending"
+msgstr "行尾"
+
+msgid "New Line"
+msgstr "换行"
+
+msgid "Carriage Return"
+msgstr "回车"
+
+msgid "Both NL & CR"
+msgstr "换行和回车"
+
+msgid "Text"
+msgstr "文本"
+
+msgid "Hex"
+msgstr "十六进制"
+
+msgid "Display Mode"
+msgstr "显示模式"
+
+msgid "Run"
+msgstr "运行"

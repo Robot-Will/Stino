@@ -1,0 +1,123 @@
+# LANGUAGE: Deutsch (German)
+# German translations for Stino Plugin.
+# Copyright (C) 2012-2013 Robot-Will
+# This file is distributed under the same license as the Stino Plugin.
+# AUTHOR <g@6xg.de>
+#
+
+msgid "Serial Monitor"
+msgstr "Serial Monitor"
+
+msgid "Start"
+msgstr "Start"
+
+msgid "Select Build Folder"
+msgstr "Build-Verzeichnis auswählen"
+
+msgid "Show Arduino Menu"
+msgstr "Arduino Menü anzeigen"
+
+msgid "Programmer"
+msgstr "Programmer"
+
+msgid "Select Arduino Application Folder"
+msgstr "Arduino-Programmverzeichnis auswählen"
+
+msgid "Extra compilation flags:"
+msgstr "Zusätliche Compileroption:"
+
+msgid "Extra Flags"
+msgstr "Zusätzliche Optionen"
+
+msgid "Frequently Asked Questions"
+msgstr "Häufig gestellte Fragen"
+
+msgid "Preferences"
+msgstr "Einstellungen"
+
+msgid "Full Compilation"
+msgstr "Vollständige Kompilierung"
+
+msgid "Show Verbose Output"
+msgstr "Lognachrichten anzeigen"
+
+msgid "Reference"
+msgstr "Referenz"
+
+msgid "Arduino Application is found at {0}.\n"
+msgstr "Arduino-IDE Anwendung wurde in {0}.\n nicht gefunden."
+
+msgid "Build folder is changed to {0}.\n"
+msgstr "Build-Verzeichnis geändert: {0}.\n"
+
+msgid "Upload"
+msgstr "Upload"
+
+msgid "Archive Sketch"
+msgstr "Sketch archivieren"
+
+msgid "Global Setting"
+msgstr "Globale Einstellung"
+
+msgid "Upload by Using Programmer"
+msgstr "Upload mit Programmer"
+
+msgid "Sketchbook is changed to {0}.\n"
+msgstr "Sketchbook Verzeichnis geändert: {0}.\n"
+
+msgid "Serial Port"
+msgstr "Serieller Port"
+
+msgid "Auto Format"
+msgstr "Automatisch formatieren"
+
+msgid "Language"
+msgstr "Sprache"
+
+msgid "About Stino"
+msgstr "Über Stino"
+
+msgid "Import Library"
+msgstr "Library importieren"
+
+msgid "Baudrate"
+msgstr "Baudrate"
+
+msgid "Verify/Compile"
+msgstr "Überprüfen/Kompilieren"
+
+msgid "Find in Reference"
+msgstr "In Referenz suchen"
+
+msgid "Troubleshooting"
+msgstr "Fehlersuche"
+
+msgid "Getting Started"
+msgstr "Erste Schritte"
+
+msgid "Burn Bootloader"
+msgstr "Bootloader installieren"
+
+msgid "References"
+msgstr "Hinweise"
+
+msgid "Send"
+msgstr "Senden"
+
+msgid "Change Sketchbook Folder"
+msgstr "Sketchbook Verzeichnis ändern"
+
+msgid "Stop"
+msgstr "Stopp"
+
+msgid "Compilation"
+msgstr "Kompilierung"
+
+msgid "Visit Arduino Website"
+msgstr "Arduino Webseite"
+
+msgid "Examples"
+msgstr "Beispiele"
+
+msgid "Sketchbook"
+msgstr "Sketchbook"
