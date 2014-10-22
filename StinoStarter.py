@@ -303,7 +303,6 @@ class ToggleGlobalSettings(sublime_plugin.WindowCommand):
         stino.settings.set('global_settings', not global_settings)
 
     def is_checked(self):
-        # global_settings = stino.settings.get('global_settings', False)
         return True
 
 
@@ -311,6 +310,7 @@ class ToggleBigProject(sublime_plugin.WindowCommand):
     def run(self):
         big_project = stino.settings.get('big_project', False)
         stino.settings.set('big_project', not big_project)
+        stino.main.update_menu()
 
     def is_checked(self):
         big_project = stino.settings.get('big_project', False)

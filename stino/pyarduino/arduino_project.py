@@ -35,8 +35,16 @@ class Project(base.abs_file.Dir):
             files.insert(0, self.primary_file)
         return files
 
-    def list_cpp_files(self):
-        return self.list_files_of_extensions(arduino_src.CPP_EXTS)
+    def list_cpp_files(self, is_big_project=False):
+        if is_big_project:
+            files = self.recursive_list_files(arduino_src.CPP_EXTS)
+        else:
+            files = self.list_files_of_extensions(arduino_src.CPP_EXTS)
+        return files
 
-    def list_h_files(self):
-        return self.list_files_of_extensions(arduino_src.H_EXTS)
+    def list_h_files(self, is_big_project=False):
+        if is_big_project:
+            files = files = self.recursive_list_files(arduino_src.H_EXTS)
+        else:
+            files = self.list_files_of_extensions(arduino_src.H_EXTS)
+        return files

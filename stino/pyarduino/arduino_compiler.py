@@ -46,8 +46,9 @@ class Compiler(object):
         self.done_build = False
         self.error_occured = False
 
-        settings = base.settings.get_arduino_settings()
-        self.bare_gcc = settings.get('bare_gcc', False)
+        self.settings = base.settings.get_arduino_settings()
+        self.bare_gcc = self.settings.get('bare_gcc', False)
+        self.is_big_project = self.settings.get('big_project', False)
 
     def set_build_path(self, build_path):
         self.build_path = build_path
@@ -97,25 +98,27 @@ class Compiler(object):
         last_build_path = os.path.join(self.build_path, 'last_build.txt')
         last_build_file = base.settings.Settings(last_build_path)
         last_bare_gcc = last_build_file.get('bare_gcc')
+        last_big_project = last_build_file.get('big_project')
         last_ide_path = last_build_file.get('ide_path')
         last_sketchbook_path = last_build_file.get('sketchbook_path')
         last_board_id = last_build_file.get('board_id')
         last_sub_board_ids = last_build_file.get('sub_board_ids')
 
-        settings = base.settings.get_arduino_settings()
-        full_compilation = settings.get('full_compilation', False)
-        bare_gcc = settings.get('bare_gcc', False)
+        full_compilation = self.settings.get('full_compilation', False)
+        bare_gcc = self.settings.get('bare_gcc', False)
+        big_project = self.settings.get('big_project', False)
 
         if full_compilation or ide_path != last_ide_path or \
                 sketchbook_path != last_sketchbook_path or \
                 target_board_id != last_board_id or \
                 target_sub_board_ids != last_sub_board_ids or \
-                bare_gcc != last_bare_gcc:
+                bare_gcc != last_bare_gcc or big_project != last_big_project:
             last_build_file.set('ide_path', ide_path)
             last_build_file.set('sketchbook_path', sketchbook_path)
             last_build_file.set('board_id', target_board_id)
             last_build_file.set('sub_board_ids', target_sub_board_ids)
             last_build_file.set('bare_gcc', bare_gcc)
+            last_build_file.set('big_project', big_project)
             self.is_new_build = True
 
     def prepare_project_src_files(self):
@@ -140,10 +143,12 @@ class Compiler(object):
 
                 self.project_cpp_obj_pairs.append(cpp_obj_pair)
 
-        cpp_files = self.project.list_cpp_files()
-        self.project_obj_paths += gen_obj_paths(self.build_path, cpp_files)
-        cpp_obj_pairs = gen_cpp_obj_pairs(
-            self.build_path, cpp_files, self.is_new_build)
+        cpp_files = self.project.list_cpp_files(self.is_big_project)
+        self.project_obj_paths += gen_obj_paths(
+            self.project.get_path(), self.build_path, 'project', cpp_files)
+        cpp_obj_pairs = gen_cpp_obj_pairs(self.project.get_path(),
+                                          self.build_path, 'project',
+                                          cpp_files, self.is_new_build)
         self.project_cpp_obj_pairs += cpp_obj_pairs
 
         if self.project_cpp_obj_pairs:
@@ -154,37 +159,58 @@ class Compiler(object):
         ino_files = []
         if not self.bare_gcc:
             ino_files = self.project.list_ino_files()
-        cpp_files = self.project.list_cpp_files()
-        h_files = self.project.list_h_files()
+        cpp_files = self.project.list_cpp_files(self.is_big_project)
+        h_files = self.project.list_h_files(self.is_big_project)
         src_files = ino_files + cpp_files + h_files
         self.libraries = arduino_src.list_libraries(
             src_files, self.arduino_info)
-        self.lib_cpp_files = []
-        target_arch = \
-            self.arduino_info.get_target_board_info().get_target_arch()
-        for library in self.libraries:
-            self.lib_cpp_files += library.list_cpp_files(target_arch)
 
     def prepare_core_src_files(self):
-        cpp_files = []
+        self.core_obj_paths = []
+        self.core_cpp_obj_pairs = []
         self.core_src_changed = False
 
         self.prepare_lib_src_files()
-        cpp_files += self.lib_cpp_files
+        target_arch = \
+            self.arduino_info.get_target_board_info().get_target_arch()
+        for library in self.libraries:
+            library_path = library.get_path()
+            library_name = library.get_name()
+            sub_dir_name = 'lib_' + library_name
+            lib_cpp_files = library.list_cpp_files(target_arch)
+            lib_obj_paths = gen_obj_paths(library_path, self.build_path,
+                                          sub_dir_name, lib_cpp_files)
+            lib_cpp_obj_pairs = gen_cpp_obj_pairs(
+                library_path, self.build_path, sub_dir_name, lib_cpp_files,
+                self.is_new_build)
+            self.core_obj_paths += lib_obj_paths
+            self.core_cpp_obj_pairs += lib_cpp_obj_pairs
 
         if not self.bare_gcc:
             core_path = self.params.get('build_core_path')
-            varient_path = self.params.get('build_variant_path')
             core_dir = base.abs_file.Dir(core_path)
-            varient_dir = base.abs_file.Dir(varient_path)
-            cpp_files += core_dir.recursive_list_files(
+            core_cpp_files = core_dir.recursive_list_files(
                 arduino_src.CPP_EXTS)
-            cpp_files += varient_dir.recursive_list_files(
-                arduino_src.CPP_EXTS)
+            core_obj_paths = gen_obj_paths(core_path, self.build_path,
+                                           'core', core_cpp_files)
+            core_cpp_obj_pairs = gen_cpp_obj_pairs(core_path, self.build_path,
+                                                   'core', core_cpp_files,
+                                                   self.is_new_build)
+            self.core_obj_paths += core_obj_paths
+            self.core_cpp_obj_pairs += core_cpp_obj_pairs
 
-        self.core_obj_paths = gen_obj_paths(self.build_path, cpp_files)
-        self.core_cpp_obj_pairs = gen_cpp_obj_pairs(
-            self.build_path, cpp_files, self.is_new_build)
+            varient_path = self.params.get('build_variant_path')
+            varient_dir = base.abs_file.Dir(varient_path)
+            varient_cpp_files = varient_dir.recursive_list_files(
+                arduino_src.CPP_EXTS)
+            varient_obj_paths = gen_obj_paths(varient_path, self.build_path,
+                                              'varient', varient_cpp_files)
+            varient_cpp_obj_pairs = gen_cpp_obj_pairs(
+                varient_path, self.build_path, 'varient',
+                varient_cpp_files, self.is_new_build)
+            self.core_obj_paths += varient_obj_paths
+            self.core_cpp_obj_pairs += varient_cpp_obj_pairs
+
         if self.core_cpp_obj_pairs:
             self.core_src_changed = True
 
@@ -194,8 +220,7 @@ class Compiler(object):
         self.params['build.project_name'] = self.project.get_name()
         self.params['archive_file'] = self.archive_file_name
 
-        settings = base.settings.get_arduino_settings()
-        extra_flag = ' ' + settings.get('extra_flag', '')
+        extra_flag = ' ' + self.settings.get('extra_flag', '')
         c_flags = self.params.get('compiler.c.flags', '') + extra_flag
         cpp_flags = self.params.get('compiler.cpp.flags', '') + extra_flag
         S_flags = self.params.get('compiler.S.flags', '') + extra_flag
@@ -288,8 +313,7 @@ class Compiler(object):
             self.file_cmds_dict[hex_file_path] = [hex_cmd]
 
     def exec_build_cmds(self):
-        settings = base.settings.get_arduino_settings()
-        show_compilation_output = settings.get('build_verbose', False)
+        show_compilation_output = self.settings.get('build_verbose', False)
 
         self.working_dir = self.arduino_info.get_ide_dir().get_path()
         error_occured = False
@@ -379,8 +403,9 @@ def check_ino_change(ino_files, combined_file):
     return ino_changed
 
 
-def gen_cpp_obj_pairs(build_path, cpp_files, new_build=False):
-    obj_paths = gen_obj_paths(build_path, cpp_files)
+def gen_cpp_obj_pairs(src_path, build_path, sub_dir,
+                      cpp_files, new_build=False):
+    obj_paths = gen_obj_paths(src_path, build_path, sub_dir, cpp_files)
     obj_files = [base.abs_file.File(path) for path in obj_paths]
 
     path_pairs = []
@@ -391,9 +416,18 @@ def gen_cpp_obj_pairs(build_path, cpp_files, new_build=False):
     return path_pairs
 
 
-def gen_obj_paths(build_path, cpp_files):
-    obj_names = [f.get_name() + '.o' for f in cpp_files]
-    obj_paths = [os.path.join(build_path, name) for name in obj_names]
+def gen_obj_paths(src_path, build_path, sub_dir, cpp_files):
+    obj_paths = []
+    build_path = os.path.join(build_path, sub_dir)
+    for cpp_file in cpp_files:
+        cpp_file_path = cpp_file.get_path()
+        sub_path = cpp_file_path.replace(src_path, '')[1:] + '.o'
+        obj_path = os.path.join(build_path, sub_path)
+        obj_paths.append(obj_path)
+
+        obj_dir_name = os.path.dirname(obj_path)
+        if not os.path.isdir(obj_dir_name):
+            os.makedirs(obj_dir_name)
     return obj_paths
 
 

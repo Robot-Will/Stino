@@ -130,7 +130,10 @@ class SketchbookDir(ArduinoRootDir):
         self.load_sketch()
 
     def load_sketch(self):
-        self.sketch = arduino_sketchbook.Sketchbook(self.path)
+        settings = base.settings.get_arduino_settings()
+        big_project = settings.get('big_project', False)
+        self.sketch = arduino_sketchbook.Sketchbook(
+            self.path, is_big_project=big_project)
         self.sketch.name = 'Sketchbook'
 
     def get_sketchbook(self):

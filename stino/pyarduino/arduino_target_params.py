@@ -287,6 +287,7 @@ def get_target_platform(arduino_info):
 def add_extra_params(arduino_info, params):
     ide_version = arduino_info.get_ide_dir().get_version()
     ide_path = arduino_info.get_ide_dir().get_path()
+    sketchbook_path = arduino_info.get_sketchbook_dir().get_path()
     target_arch = arduino_info.get_target_board_info().get_target_arch()
     target_platform = get_target_platform(arduino_info)
     target_platform_path = target_platform.get_path()
@@ -294,6 +295,7 @@ def add_extra_params(arduino_info, params):
     params['software'] = 'ARDUINO'
     params['build.arch'] = target_arch.upper()
     params['runtime.ide.version'] = ide_version
+    params['runtime.sketchbook.version'] = sketchbook_path
     params['runtime.ide.path'] = ide_path
     params['runtime.platform.path'] = target_platform_path
 
@@ -357,3 +359,21 @@ def add_extra_params(arduino_info, params):
     # For Teensy
     if 'build.cpu' in params:
         params['build.mcu'] = params['build.cpu']
+
+    if 'build.elide_constructors' in params:
+        if params['build.elide_constructors'] == 'true':
+            params['build.elide_constructors'] = '-felide-constructors'
+        else:
+            params['build.elide_constructors'] = ''
+
+    if 'build.gnu0x' in params:
+        if params['build.gnu0x'] == 'true':
+            params['build.gnu0x'] = '-std=gnu++0x'
+        else:
+            params['build.gnu0x'] = ''
+
+    if 'build.cpp0x' in params:
+        if params['build.cpp0x'] == 'true':
+            params['build.cpp0x'] = '-std=c++0x'
+        else:
+            params['build.cpp0x'] = ''
