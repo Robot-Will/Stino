@@ -30,7 +30,7 @@ def get_os_name():
         os_name = 'windows'
     elif name == 'darwin':
         os_name = 'osx'
-    elif name == 'linux2':
+    elif 'linux' in name:
         os_name = 'linux'
     else:
         os_name = 'other'

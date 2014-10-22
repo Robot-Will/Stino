@@ -267,6 +267,7 @@ def create_boards_menu(arduino_info):
                     menu_dict['caption'] = board.get_caption()
                     menu_dict['command'] = 'select_board'
                     menu_dict['args'] = {'board_id': board.get_id()}
+                    menu_dict['checkbox'] = True
                     menu = Menu(menu_dict)
                     sub_menus.append(menu)
                 sub_menus.append(Menu())
@@ -276,23 +277,25 @@ def create_boards_menu(arduino_info):
 def create_board_options_menu(arduino_info):
     sub_menus = []
     target_board = arduino_info.get_target_board_info().get_target_board()
-    board_options = target_board.get_options()
-    for option_index, option in enumerate(board_options):
-        menu_dict = {}
-        menu_dict['caption'] = option.get_caption()
-        menu_dict['command'] = 'none_command'
-        menu = Menu(menu_dict)
-        sub_menus.append(menu)
-        sub_boards = option.get_items()
-        for sub_board in sub_boards:
+    if target_board:
+        board_options = target_board.get_options()
+        for option_index, option in enumerate(board_options):
             menu_dict = {}
-            menu_dict['caption'] = sub_board.get_caption()
-            menu_dict['command'] = 'select_sub_board'
-            menu_dict['args'] = {'option_index': option_index,
-                                 'sub_board_id': sub_board.get_id()}
+            menu_dict['caption'] = option.get_caption()
+            menu_dict['command'] = 'none_command'
             menu = Menu(menu_dict)
             sub_menus.append(menu)
-        sub_menus.append(Menu())
+            sub_boards = option.get_items()
+            for sub_board in sub_boards:
+                menu_dict = {}
+                menu_dict['caption'] = sub_board.get_caption()
+                menu_dict['command'] = 'select_sub_board'
+                menu_dict['args'] = {'option_index': option_index,
+                                     'sub_board_id': sub_board.get_id()}
+                menu_dict['checkbox'] = True
+                menu = Menu(menu_dict)
+                sub_menus.append(menu)
+            sub_menus.append(Menu())
     write_menu('board_options', sub_menus)
 
 
@@ -313,6 +316,7 @@ def create_programmers_menu(arduino_info):
                     menu_dict['caption'] = programmer.get_params().get('name')
                     menu_dict['command'] = 'select_programmer'
                     menu_dict['args'] = {'programmer_id': programmer.get_id()}
+                    menu_dict['checkbox'] = True
                     menu = Menu(menu_dict)
                     platform_menus.append(menu)
                 if platform_menus:
@@ -330,6 +334,7 @@ def create_serials_menu():
         menu_dict['caption'] = serial_port
         menu_dict['command'] = 'select_serial_port'
         menu_dict['args'] = {'serial_port': serial_port}
+        menu_dict['checkbox'] = True
         menu = Menu(menu_dict)
         sub_menus.append(menu)
     write_menu('serials', sub_menus)
@@ -346,6 +351,7 @@ def create_languages_menu():
         menu_dict['caption'] = caption
         menu_dict['command'] = 'select_language'
         menu_dict['args'] = {'lang_id': lang_id}
+        menu_dict['checkbox'] = True
         menu = Menu(menu_dict)
         sub_menus.append(menu)
     write_menu('languages', sub_menus)

@@ -65,7 +65,7 @@ def list_osx_serial_ports():
     dev_path = '/dev/'
     dev_names = ['tty.*', 'cu.*']
     for dev_name in dev_names:
-        pattern = dev_path + dev_names
+        pattern = dev_path + dev_name
         serial_ports += glob.glob(pattern)
     return serial_ports
 
@@ -75,7 +75,7 @@ def list_linux_serial_ports():
     dev_path = '/dev/'
     dev_names = ['ttyACM*', 'ttyUSB*']
     for dev_name in dev_names:
-        pattern = dev_path + dev_names
+        pattern = dev_path + dev_name
         serial_ports += glob.glob(pattern)
     return serial_ports
 

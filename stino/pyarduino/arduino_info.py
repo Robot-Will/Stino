@@ -54,19 +54,20 @@ class ArduinoInfo(object):
 
     def load_libraries(self):
         self.h_lib_dict = {}
-        target_arch = self.target_board_info.get_target_arch()
-        for root in [self.ide_dir, self.sketchbook_dir]:
-            libraries = root.get_libraries()
-            for library in libraries:
-                arch = library.get_arch()
-                if arch == '*' or arch == target_arch:
-                    self.update_h_lib_dict(library)
-            for package in root.get_packages():
-                for platform in package.get_platforms():
-                    if platform.get_arch() == target_arch:
-                        libraries = platform.get_libraries()
-                        for library in libraries:
-                            self.update_h_lib_dict(library)
+        if self.target_board_info.get_target_board():
+            target_arch = self.target_board_info.get_target_arch()
+            for root in [self.ide_dir, self.sketchbook_dir]:
+                libraries = root.get_libraries()
+                for library in libraries:
+                    arch = library.get_arch()
+                    if arch == '*' or arch == target_arch:
+                        self.update_h_lib_dict(library)
+                for package in root.get_packages():
+                    for platform in package.get_platforms():
+                        if platform.get_arch() == target_arch:
+                            libraries = platform.get_libraries()
+                            for library in libraries:
+                                self.update_h_lib_dict(library)
 
     def get_ide_dir(self):
         return self.ide_dir

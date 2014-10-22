@@ -150,7 +150,8 @@
                     {
                         "caption": "Run",
                         "id": "run_serial_monitor",
-                        "command": "run_serial_monitor"
+                        "command": "run_serial_monitor",
+                        "checkbox": true
                     },
                     {
                         "caption": "Send",
@@ -323,14 +324,10 @@
                         "command": "change_sketchbook_folder"
                     },
                     {
-                        "caption": "Global Settings",
-                        "id": "toggle_global_settings",
-                        "command": "toggle_global_settings"
-                    },
-                    {
                         "caption": "Big Project",
                         "id": "toggle_big_project",
-                        "command": "toggle_big_project"
+                        "command": "toggle_big_project",
+                        "checkbox": true
                     }
                 ]
             },
