@@ -61,6 +61,14 @@ class Compiler(object):
         build_thread.start()
 
     def start_build(self):
+        target_board = \
+            self.arduino_info.get_target_board_info().get_target_board()
+        if not target_board:
+            text = 'No board exists. Please Select Arduino Application Folder '
+            text += 'or Change Arduino Sketchbook Folder in Arduino Menu -> '
+            text += 'Preferences.\n'
+            self.message_queue.put(text)
+            return
         start_time = time.time()
         self.check_new_build()
         self.prepare_project_src_files()

@@ -30,10 +30,13 @@ class TargetParamsInfo(object):
 
     def load(self):
         self.load_params()
-        self.load_paths()
+        if self.target_params:
+            self.load_paths()
 
     def load_params(self):
         self.target_platform_file = get_platform_file(self.arduino_info)
+        if not self.target_platform_file:
+            return
         target_platform_params = self.target_platform_file.get_params()
 
         target_board_info = self.arduino_info.get_target_board_info()
@@ -150,6 +153,7 @@ def get_target_package_id(arduino_info, target_value):
 
 def get_platform_file(arduino_info):
     id_platform_dict = {}
+    target_platform_file = None
     for root_dir in arduino_info.get_root_dirs():
         for package in root_dir.get_packages():
             for platform in package.get_platforms():
@@ -157,13 +161,17 @@ def get_platform_file(arduino_info):
 
     target_board_info = arduino_info.get_target_board_info()
     target_board = target_board_info.get_target_board()
-    target_board_id = target_board.get_id()
-    ids = target_board_id.split('.')[:-1]
-    target_platform_id = '.'.join(ids)
-    target_platform = id_platform_dict.get(target_platform_id)
-    target_platform_file = target_platform.get_platform_file()
+    if target_board:
+        target_board_id = target_board.get_id()
+        ids = target_board_id.split('.')[:-1]
+        target_platform_id = '.'.join(ids)
+        target_platform = id_platform_dict.get(target_platform_id)
+        target_platform_file = target_platform.get_platform_file()
 
-    target_board_name = target_board.get_params().get('name', '')
+        target_board_name = target_board.get_params().get('name', '')
+    else:
+        target_board_name = 'No Board'
+
     board_platform_settings = base.settings.get_user_settings(
         'platform.settings')
     platform_file_name = board_platform_settings.get(target_board_name, '')
@@ -326,19 +334,20 @@ def add_extra_params(arduino_info, params):
         program_extra_params = ''
         target_programmer = \
             arduino_info.get_target_programmer_info().get_target_programmer()
-        target_programmer_id = target_programmer.get_id()
-        programmer_name = target_programmer_id.split('.')[-1]
-        if programmer_name == 'avrisp':
-            program_extra_params = '-P{serial.port}'
-        elif programmer_name == 'avrispmkii':
-            program_extra_params = '-Pusb'
-        elif programmer_name == 'usbasp':
-            program_extra_params = '-Pusb'
-        elif programmer_name == 'parallel':
-            program_extra_params = '-F'
-        elif programmer_name == 'arduinoasisp':
-            program_extra_params = '-P{serial.port} -b{program.speed}'
-        params['program.extra_params'] = program_extra_params
+        if target_programmer:
+            target_programmer_id = target_programmer.get_id()
+            programmer_name = target_programmer_id.split('.')[-1]
+            if programmer_name == 'avrisp':
+                program_extra_params = '-P{serial.port}'
+            elif programmer_name == 'avrispmkii':
+                program_extra_params = '-Pusb'
+            elif programmer_name == 'usbasp':
+                program_extra_params = '-Pusb'
+            elif programmer_name == 'parallel':
+                program_extra_params = '-F'
+            elif programmer_name == 'arduinoasisp':
+                program_extra_params = '-P{serial.port} -b{program.speed}'
+            params['program.extra_params'] = program_extra_params
 
     params['build.usb_manufacturer'] = 'Unknown'
 
