@@ -158,6 +158,12 @@ class PlatformFile(arduino_params_file.ParamsFile):
     def get_tool(self, tool_id):
         return self.tool_set.get_item(tool_id)
 
+    def get_default_tool(self):
+        tool = None
+        if self.tool_set.get_items():
+            tool = self.tool_set.get_items()[0]
+        return tool
+
     def get_tools(self):
         return self.tool_set.get_items()
 

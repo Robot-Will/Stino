@@ -182,10 +182,12 @@ def burn_bootloader(window):
     bootloader.burn()
 
 
-def change_board(board_id):
+def change_board(window, board_id):
     arduino_info = st_base.get_arduino_info()
     arduino_info.change_board(board_id)
     st_menu.create_board_options_menu(arduino_info)
+    view = window.active_view()
+    set_status(view)
 
 
 def change_sub_board(option_index, sub_board_id):
@@ -295,6 +297,8 @@ def set_arduino_ide_path(window, dir_path):
         message_queue.print_screen(one_time=True)
 
         create_menus()
+        view = window.active_view()
+        set_status(view)
         return 0
     else:
         return 1
@@ -383,9 +387,16 @@ def select_dir(window, index=-2, level=0, paths=None,
                                         func, condition_func, is_user)), 5)
 
 
+def update_serial_info():
+    st_menu.create_serials_menu()
+    window = sublime.active_window()
+    view = window.active_view()
+    set_status(view)
+
+
 def get_serial_listener():
     serial_listener = pyarduino.base.serial_listener.SerialListener(
-        func=st_menu.create_serials_menu)
+        func=update_serial_info)
     return serial_listener
 
 
@@ -425,3 +436,26 @@ def send_serial_message(text):
             serial_port, None)
         if serial_monitor and serial_monitor.is_running():
             serial_monitor.send(text)
+
+
+def set_status(view):
+    exts = ['ino', 'pde', 'cpp', 'c', '.S']
+    file_name = view.file_name()
+    if file_name and file_name.split('.')[-1] in exts:
+        arduino_info = st_base.get_arduino_info()
+        version_name = arduino_info.get_ide_dir().get_version_name()
+        target_board = arduino_info.get_target_board_info().get_target_board()
+        if target_board:
+            target_board_caption = target_board.get_caption()
+        else:
+            target_board_caption = 'No board'
+
+        settings = st_base.get_settings()
+        target_serial_port = settings.get('serial_port', 'No serial port')
+        serial_ports = pyarduino.base.serial_port.list_serial_ports()
+        if not target_serial_port in serial_ports:
+            target_serial_port = 'No serial port'
+
+        text = 'Arduino %s, %s on %s' % (
+            version_name, target_board_caption, target_serial_port)
+        view.set_status('Arduino', text)

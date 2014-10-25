@@ -33,8 +33,8 @@ class TargetParamsInfo(object):
         self.load_paths()
 
     def load_params(self):
-        target_platform_file = get_platform_file(self.arduino_info)
-        target_platform_params = target_platform_file.get_params()
+        self.target_platform_file = get_platform_file(self.arduino_info)
+        target_platform_params = self.target_platform_file.get_params()
 
         target_board_info = self.arduino_info.get_target_board_info()
         target_board_params = target_board_info.get_params()
@@ -47,21 +47,24 @@ class TargetParamsInfo(object):
         self.target_params.update(target_programmer_params)
 
         target_upload_tool = self.target_params.get(
-            'upload.tool', 'arduino:avrdude')
+            'upload.tool', '')
         target_upload_params = get_tool_params(
-            self.arduino_info, target_upload_tool, 'upload')
+            self.arduino_info, self.target_platform_file,
+            target_upload_tool, 'upload')
         self.target_params.update(target_upload_params)
 
         target_program_tool = self.target_params.get(
-            'program.tool', 'arduino:avrdude')
+            'program.tool', '')
         target_program_params = get_tool_params(
-            self.arduino_info, target_program_tool, 'program')
+            self.arduino_info, self.target_platform_file,
+            target_program_tool, 'program')
         self.target_params.update(target_program_params)
 
         target_bootloader_tool = self.target_params.get(
-            'bootloader.tool', 'arduino:avrdude')
+            'bootloader.tool', '')
         target_bootloader_params = get_tool_params(
-            self.arduino_info, target_bootloader_tool, 'bootloader')
+            self.arduino_info, self.target_platform_file,
+            target_bootloader_tool, 'bootloader')
         self.target_params.update(target_bootloader_params)
 
         add_extra_params(self.arduino_info, self.target_params)
@@ -164,6 +167,7 @@ def get_platform_file(arduino_info):
     board_platform_settings = base.settings.get_user_settings(
         'platform.settings')
     platform_file_name = board_platform_settings.get(target_board_name, '')
+
     if platform_file_name:
         preset_path = base.settings.get_preset_path()
         user_preset_path = base.settings.get_user_preset_path()
@@ -178,16 +182,18 @@ def get_platform_file(arduino_info):
     return target_platform_file
 
 
-def get_tool_params(arduino_info, target_tool_value, sub_id):
+def get_tool_params(arduino_info, target_platform_file,
+                    target_tool_value, sub_id):
     target_tool_params = {}
 
-    if target_tool_value:
-        id_platform_dict = {}
-        for root_dir in arduino_info.get_root_dirs():
-            for package in root_dir.get_packages():
-                for platform in package.get_platforms():
-                    id_platform_dict[platform.get_id()] = platform
+    tool = None
+    id_platform_dict = {}
+    for root_dir in arduino_info.get_root_dirs():
+        for package in root_dir.get_packages():
+            for platform in package.get_platforms():
+                id_platform_dict[platform.get_id()] = platform
 
+    if target_tool_value:
         target_platform = None
         target_arch = arduino_info.get_target_board_info().get_target_arch()
 
@@ -196,35 +202,26 @@ def get_tool_params(arduino_info, target_tool_value, sub_id):
 
         if target_package_id:
             target_platform_id = target_package_id + '.' + target_arch
-        else:
-            target_board = \
-                arduino_info.get_target_board_info().get_target_board()
-            target_board_id = target_board.get_id()
-            ids = target_board_id.split('.')[:-1]
-            target_platform_id = '.'.join(ids)
-        target_platform = id_platform_dict.get(target_platform_id, None)
-
-        tool = None
-        if target_platform:
-            tool = target_platform.get_tool(target_tool_value)
-        else:
-            target_package_id = 'ide.arduino'
-            target_platform_id = target_package_id + '.' + target_arch
             target_platform = id_platform_dict.get(target_platform_id, None)
             if target_platform:
                 tool = target_platform.get_tool(target_tool_value)
-        if tool:
-            params = tool.get_params()
-            params = std_tool_param_values(params)
-            params = replace_param_values(params)
+        if not tool:
+            tool = target_platform_file.get_tool(target_tool_value)
+    else:
+        tool = target_platform_file.get_default_tool()
 
-            for key in params:
-                if key.startswith(sub_id + '.'):
-                    value = params[key]
-                    target_tool_params[key] = value
-                if sub_id == 'bootloader' and key.startswith('erase.'):
-                    value = params[key]
-                    target_tool_params[key] = value
+    if tool:
+        params = tool.get_params()
+        params = std_tool_param_values(params)
+        params = replace_param_values(params)
+
+        for key in params:
+            if key.startswith(sub_id + '.'):
+                value = params[key]
+                target_tool_params[key] = value
+            if sub_id == 'bootloader' and key.startswith('erase.'):
+                value = params[key]
+                target_tool_params[key] = value
     return target_tool_params
 
 

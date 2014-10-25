@@ -36,6 +36,7 @@ def list_serial_ports():
         serial_ports = list_osx_serial_ports()
     else:
         serial_ports = list_linux_serial_ports()
+    serial_ports.sort()
     return serial_ports
 
 

@@ -87,7 +87,7 @@ class ArduinoIdeDir(ArduinoRootDir):
         version_file = base.abs_file.File(version_file_path)
         self.version_name = version_file.read().strip()
         if not self.version_name:
-            self.version_name = 'Unknown'
+            self.version_name = 'not found'
 
         self.version = ''
         version_txt = self.version_name.replace('.', '')

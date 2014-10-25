@@ -49,6 +49,7 @@ class I18N(object):
             lang_file_names = [os.path.basename(p) for p in lang_file_paths]
             self.lang_ids += [name[5:-4] for name in lang_file_names]
             self.id_path_dict.update(dict(zip(self.lang_ids, lang_file_paths)))
+        self.lang_ids.sort(key=lambda _id: self.lang_params.get(_id)[1])
 
     def change_lang(self, lang_id):
         if lang_id in self.id_path_dict:

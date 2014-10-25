@@ -143,11 +143,12 @@ class Compiler(object):
 
                 self.project_cpp_obj_pairs.append(cpp_obj_pair)
 
+        sub_dir_name = self.project.get_name()
         cpp_files = self.project.list_cpp_files(self.is_big_project)
         self.project_obj_paths += gen_obj_paths(
-            self.project.get_path(), self.build_path, 'project', cpp_files)
+            self.project.get_path(), self.build_path, sub_dir_name, cpp_files)
         cpp_obj_pairs = gen_cpp_obj_pairs(self.project.get_path(),
-                                          self.build_path, 'project',
+                                          self.build_path, sub_dir_name,
                                           cpp_files, self.is_new_build)
         self.project_cpp_obj_pairs += cpp_obj_pairs
 
@@ -191,11 +192,12 @@ class Compiler(object):
             core_dir = base.abs_file.Dir(core_path)
             core_cpp_files = core_dir.recursive_list_files(
                 arduino_src.CPP_EXTS)
+            sub_dir_name = 'core_' + core_dir.get_name()
             core_obj_paths = gen_obj_paths(core_path, self.build_path,
-                                           'core', core_cpp_files)
-            core_cpp_obj_pairs = gen_cpp_obj_pairs(core_path, self.build_path,
-                                                   'core', core_cpp_files,
-                                                   self.is_new_build)
+                                           sub_dir_name, core_cpp_files)
+            core_cpp_obj_pairs = gen_cpp_obj_pairs(
+                core_path, self.build_path, sub_dir_name, core_cpp_files,
+                self.is_new_build)
             self.core_obj_paths += core_obj_paths
             self.core_cpp_obj_pairs += core_cpp_obj_pairs
 
@@ -203,10 +205,11 @@ class Compiler(object):
             varient_dir = base.abs_file.Dir(varient_path)
             varient_cpp_files = varient_dir.recursive_list_files(
                 arduino_src.CPP_EXTS)
+            sub_dir_name = 'varient_' + varient_dir.get_name()
             varient_obj_paths = gen_obj_paths(varient_path, self.build_path,
-                                              'varient', varient_cpp_files)
+                                              sub_dir_name, varient_cpp_files)
             varient_cpp_obj_pairs = gen_cpp_obj_pairs(
-                varient_path, self.build_path, 'varient',
+                varient_path, self.build_path, sub_dir_name,
                 varient_cpp_files, self.is_new_build)
             self.core_obj_paths += varient_obj_paths
             self.core_cpp_obj_pairs += varient_cpp_obj_pairs

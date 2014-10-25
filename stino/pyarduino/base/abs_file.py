@@ -95,6 +95,7 @@ class Dir(AbstractFile):
         paths = glob.glob(os.path.join(self.path, pattern))
         all_files = (AbstractFile(path) for path in paths)
         all_files = [f for f in all_files if not f.is_temp_file()]
+        all_files.sort(key=lambda f: f.get_name().lower())
         return all_files
 
     def list_dirs(self, pattern='*'):

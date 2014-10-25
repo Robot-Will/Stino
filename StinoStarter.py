@@ -26,6 +26,9 @@ else:
 
 
 class SketchListener(sublime_plugin.EventListener):
+    def on_activated(self, view):
+        stino.main.set_status(view)
+
     def on_close(self, view):
         monitor_module = stino.pyarduino.base.serial_monitor
         if stino.st_console.is_monitor_view(view):
@@ -182,7 +185,7 @@ class ChooseBuildFolderCommand(sublime_plugin.WindowCommand):
 
 class SelectBoardCommand(sublime_plugin.WindowCommand):
     def run(self, board_id):
-        stino.main.change_board(board_id)
+        stino.main.change_board(self.window, board_id)
 
     def is_checked(self, board_id):
         target_board_id = stino.settings.get('target_board_id', '')
@@ -216,6 +219,7 @@ class BurnBootloaderCommand(sublime_plugin.WindowCommand):
 class SelectSerialPortCommand(sublime_plugin.WindowCommand):
     def run(self, serial_port):
         stino.settings.set('serial_port', serial_port)
+        stino.main.set_status(self.window.active_view())
 
     def is_checked(self, serial_port):
         target_serial_port = stino.settings.get('serial_port', '')

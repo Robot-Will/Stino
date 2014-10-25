@@ -187,7 +187,8 @@ def create_examples_menu(arduino_info):
         examples = root_dir.get_examples()
         examples_menu = load_sketchbook_menu(examples)
         sub_menus += examples_menu.get_sub_menus()
-        sub_menus.append(Menu())
+        if sub_menus:
+            sub_menus.append(Menu())
 
         libraries = root_dir.get_libraries()
         for library in libraries:
@@ -198,7 +199,8 @@ def create_examples_menu(arduino_info):
             menu = load_sketchbook_menu(examples)
             if menu.has_sub_menus():
                 sub_menus.append(menu)
-        sub_menus.append(Menu())
+        if sub_menus:
+            sub_menus.append(Menu())
         for package in root_dir.get_packages():
             for platform in package.get_platforms():
                 libraries = platform.get_libraries()
@@ -213,7 +215,8 @@ def create_examples_menu(arduino_info):
                     menu = load_sketchbook_menu(examples)
                     if menu.has_sub_menus():
                         sub_menus.append(menu)
-                sub_menus.append(Menu())
+                if sub_menus:
+                    sub_menus.append(Menu())
     write_menu('examples', sub_menus)
 
 
@@ -230,7 +233,8 @@ def create_libraries_menu(arduino_info):
             menu_dict['args'] = {'library_path': library.get_path()}
             menu = Menu(menu_dict)
             sub_menus.append(menu)
-        sub_menus.append(Menu())
+        if sub_menus:
+            sub_menus.append(Menu())
         for package in root_dir.get_packages():
             for platform in package.get_platforms():
                 libraries = platform.get_libraries()
@@ -247,7 +251,8 @@ def create_libraries_menu(arduino_info):
                     menu_dict['args'] = {'library_path': library.get_path()}
                     menu = Menu(menu_dict)
                     sub_menus.append(menu)
-                sub_menus.append(Menu())
+                if sub_menus:
+                    sub_menus.append(Menu())
     write_menu('libraries', sub_menus)
 
 
@@ -287,14 +292,15 @@ def create_board_options_menu(arduino_info):
             sub_menus.append(menu)
             sub_boards = option.get_items()
             for sub_board in sub_boards:
-                menu_dict = {}
-                menu_dict['caption'] = sub_board.get_caption()
-                menu_dict['command'] = 'select_sub_board'
-                menu_dict['args'] = {'option_index': option_index,
-                                     'sub_board_id': sub_board.get_id()}
-                menu_dict['checkbox'] = True
-                menu = Menu(menu_dict)
-                sub_menus.append(menu)
+                if sub_board.get_caption() != 'Unknown':
+                    menu_dict = {}
+                    menu_dict['caption'] = sub_board.get_caption()
+                    menu_dict['command'] = 'select_sub_board'
+                    menu_dict['args'] = {'option_index': option_index,
+                                         'sub_board_id': sub_board.get_id()}
+                    menu_dict['checkbox'] = True
+                    menu = Menu(menu_dict)
+                    sub_menus.append(menu)
             sub_menus.append(Menu())
     write_menu('board_options', sub_menus)
 
