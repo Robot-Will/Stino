@@ -42,14 +42,14 @@ class Uploader(object):
         while not self.compiler.is_finished():
             time.sleep(1)
         if not self.compiler.has_error():
-            self.message_queue.put('[Start uploading...]\n')
+            self.message_queue.put('[Stino - Start uploading...]\n')
             self.params = self.compiler.get_params()
             self.prepare_upload_port(using_programmer)
             self.prepare_cmd(using_programmer)
             self.exec_cmd()
             if not self.error_occured:
                 self.retouch_serial_port()
-                self.message_queue.put('[Done uploading.]\n')
+                self.message_queue.put('[Stino - Done uploading.]\n')
         time.sleep(20)
         self.message_queue.stop_print()
 
@@ -126,7 +126,8 @@ class Uploader(object):
         if stderr:
             self.message_queue.put(stderr + '\n')
         if return_code != 0:
-            self.message_queue.put('[Exit with error code {0}]\n', return_code)
+            self.message_queue.put(
+                '[Stino - Exit with error code {0}]\n', return_code)
             self.error_occured = True
 
     def retouch_serial_port(self):

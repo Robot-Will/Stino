@@ -74,7 +74,8 @@ class Compiler(object):
         self.prepare_project_src_files()
         if self.need_to_build:
             project_name = self.project.get_name()
-            self.message_queue.put('[Start building "{0}"...]\n', project_name)
+            self.message_queue.put(
+                '[Stino - Start building "{0}"...]\n', project_name)
             self.prepare_core_src_files()
             self.prepare_params()
             self.prepare_cmds()
@@ -84,8 +85,9 @@ class Compiler(object):
                 end_time = time.time()
                 diff_time = end_time - start_time
                 diff_time = '%.1f' % diff_time
-                self.message_queue.put('[Done build "{0}" in {1}s.]\n',
-                                       project_name, diff_time)
+                self.message_queue.put(
+                    '[Stino - Done building "{0}" in {1}s.]\n',
+                    project_name, diff_time)
         else:
             self.error_occured = True
         self.done_build = True
@@ -453,7 +455,8 @@ def exec_cmds(working_dir, cmds, message_queue, is_verbose=False):
         if stderr:
             message_queue.put(stderr + '\n')
         if return_code != 0:
-            message_queue.put('[Exit with error code {0}]\n', return_code)
+            message_queue.put(
+                '[Stino - Exit with error code {0}]\n', return_code)
             error_occured = True
             break
     return error_occured

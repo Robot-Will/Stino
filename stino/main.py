@@ -113,12 +113,12 @@ def create_sketch(sketch_name):
 
     preset_path = st_base.get_preset_path()
     template_file_path = os.path.join(preset_path, 'template.ino')
-    template_file = pyarduino.file_base.File(template_file_path)
+    template_file = pyarduino.base.abs_file.File(template_file_path)
     src_code = template_file.read()
 
     ino_file_name = sketch_name + '.ino'
     ino_file_path = os.path.join(sketch_path, ino_file_name)
-    ino_file = pyarduino.file_base.File(ino_file_path)
+    ino_file = pyarduino.base.abs_file.File(ino_file_path)
 
     src_code = src_code.replace('${ino_file_name}', ino_file_name)
     ino_file.write(src_code)
