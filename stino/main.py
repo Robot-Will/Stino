@@ -161,14 +161,20 @@ def import_library(view, edit, library_path):
     view.insert(edit, 0, text)
 
 
-def build_sketch(window, sketch_path):
+def build_sketch(view, sketch_path):
+    regions_key = 'build_' + sketch_path.replace('\\', '/')
+    view.erase_regions(regions_key)
+    window = view.window()
     console_name = 'build.' + str(time.time())
     console = st_console.Console(window, name=console_name)
     compiler = pyarduino.arduino_compiler.Compiler(sketch_path, console)
     compiler.build()
 
 
-def upload_sketch(window, sketch_path, using_programmer=False):
+def upload_sketch(view, sketch_path, using_programmer=False):
+    regions_key = 'build_' + sketch_path.replace('\\', '/')
+    view.erase_regions(regions_key)
+    window = view.window()
     console_name = 'upload.' + str(time.time())
     console = st_console.Console(window, name=console_name)
     uploader = pyarduino.arduino_uploader.Uploader(sketch_path, console)
@@ -289,11 +295,12 @@ def set_arduino_ide_path(window, dir_path):
 
         ide_dir = arduino_info.get_ide_dir()
         version_name = ide_dir.get_version_name()
-        text = 'Arduino {0} is found!\n'
+        text = 'Arduino Application is found at {0}.\\n'
+        text += 'Arduino version is {1}.\\n'
 
         console = st_console.Console(window, str(time.time()))
         message_queue = pyarduino.base.message_queue.MessageQueue(console)
-        message_queue.put(text, version_name)
+        message_queue.put(text, dir_path, version_name)
         message_queue.print_screen(one_time=True)
 
         create_menus()
@@ -308,7 +315,7 @@ def set_sketchbook_path(window, dir_path):
     arduino_info = st_base.get_arduino_info()
     arduino_info.change_sketchbook_path(dir_path)
 
-    text = 'Sketchbook is set to {0}!\n'
+    text = 'Sketchbook is changed to {0}.\\n'
     console = st_console.Console(window, str(time.time()))
     message_queue = pyarduino.base.message_queue.MessageQueue(console)
     message_queue.put(text, dir_path)
@@ -321,7 +328,7 @@ def set_sketchbook_path(window, dir_path):
 def set_build_path(window, dir_path):
     settings = st_base.get_settings()
     settings.set('build_path', dir_path)
-    text = 'Build Folder is set to {0}!\n'
+    text = 'Build folder is changed to {0}.\\n'
     console = st_console.Console(window, str(time.time()))
     message_queue = pyarduino.base.message_queue.MessageQueue(console)
     message_queue.put(text, dir_path)

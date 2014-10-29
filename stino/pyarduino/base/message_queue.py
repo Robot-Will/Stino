@@ -35,6 +35,7 @@ class MessageQueue(object):
 
     def put(self, text, *args):
         text = self.i18n.translate(text, *args)
+        text = text.replace('\\n', '\n')
         self.queue.put(text)
 
     def start_print(self, one_time=False):

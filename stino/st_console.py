@@ -28,12 +28,19 @@ class Console:
             self.panel = self.window.get_output_panel(self.name)
         else:
             self.panel = self.window.create_output_panel(self.name)
+        self.panel.set_name(self.name)
         self.panel.run_command('toggle_setting', {'setting': 'word_wrap'})
 
     def print_screen(self, text):
         sublime.set_timeout(lambda: self.println(text), 0)
 
     def println(self, text):
+        view = self.window.active_view()
+        color_scheme = view.settings().get('color_scheme', '')
+        if not color_scheme:
+            color_scheme = 'Packages/Color Scheme - Default/Eiffel.tmTheme'
+        self.panel.settings().set('color_scheme', color_scheme)
+
         self.panel.run_command('panel_output', {'text': text})
         panel_name = 'output.' + self.name
         self.window.run_command("show_panel", {"panel": panel_name})

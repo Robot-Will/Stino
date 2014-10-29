@@ -212,7 +212,9 @@ def combine_ino_files(ino_files):
 
     combined_src = ''
     cur_file = ino_files[0]
-    first_line = '#line 1 "%s"\n' % cur_file.get_name()
+    path = cur_file.get_path()
+    path = path.replace('\\', '/')
+    first_line = '#line 1 "%s"\n' % path
 
     src_text = cur_file.read()
     index = get_index_of_first_statement(src_text)
@@ -232,7 +234,9 @@ def combine_ino_files(ino_files):
     combined_src += '\n'
 
     for cur_file in ino_files[1:]:
-        first_line = '#line 1 "%s"\n' % cur_file.get_name()
+        path = cur_file.get_path()
+        path = path.replace('\\', '/')
+        first_line = '#line 1 "%s"\n' % path
 
         src_text = cur_file.read()
         combined_src += first_line

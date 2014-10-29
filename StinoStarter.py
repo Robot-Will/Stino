@@ -25,6 +25,21 @@ else:
     from . import stino
 
 
+def get_error_info(text):
+    text = text.split('error:')[0].strip()
+    infos = text.split(':')
+    if ':/' in text:
+        file_path = infos[0] + ':' + infos[1]
+        infos.pop(0)
+        infos.pop(0)
+    else:
+        file_path = infos[0]
+        infos.pop(0)
+    line_no = int(infos[0]) - 1
+    column_no = int(infos[1]) - 1
+    return(file_path, line_no, column_no)
+
+
 class SketchListener(sublime_plugin.EventListener):
     def on_activated(self, view):
         stino.main.set_status(view)
@@ -40,6 +55,57 @@ class SketchListener(sublime_plugin.EventListener):
                 if cur_serial_monitor:
                     cur_serial_monitor.stop()
                 monitor_module.serials_in_use.remove(serial_port)
+
+    def on_selection_modified(self, view):
+        if view.name().startswith('build.'):
+            region = view.sel()[0]
+            region = view.line(region)
+            text = view.substr(region)
+            if 'error:' in text:
+                file_path, line_no, column_no = get_error_info(text)
+                file_view = view.window().open_file(file_path)
+                error_point = file_view.text_point(line_no, column_no)
+                file_view.show(error_point)
+
+    def on_modified(self, view):
+        console_regions = []
+        files = []
+        file_view_dict = {}
+        file_regions_dict = {}
+        if view.name().startswith('build.'):
+            text = view.substr(sublime.Region(0, view.size()))
+            lines = text.split('\n')
+            for line_no, line in enumerate(lines):
+                if 'error:' in line:
+                    cur_point = view.text_point(line_no, 0)
+                    line_region = view.line(cur_point)
+                    console_regions.append(line_region)
+
+                    file_path, line_no, column_no = get_error_info(line)
+                    file_view = view.window().open_file(file_path)
+                    error_point = file_view.text_point(line_no, column_no)
+                    line_region = file_view.line(error_point)
+
+                    if not file_path in files:
+                        files.append(file_path)
+                        file_view_dict[file_path] = file_view
+                    regions = file_regions_dict.setdefault(file_path, [])
+                    if not line_region in regions:
+                        regions.append(line_region)
+                    file_regions_dict[file_path] = regions
+            view.add_regions('build_error', console_regions, 'string',
+                             'circle', sublime.DRAW_NO_FILL)
+            for file_path in files:
+                key = 'build_' + os.path.dirname(file_path)
+                print(key)
+                file_view = file_view_dict.get(file_path)
+                regions = file_regions_dict.get(file_path, [])
+                file_view.add_regions(key, regions, 'string', 'circle',
+                                      sublime.DRAW_NO_FILL)
+
+                if regions:
+                    region = regions[0]
+                    file_view.show(region)
 
 
 class ShowArduinoMenuCommand(sublime_plugin.WindowCommand):
@@ -93,7 +159,7 @@ class CompileSketchCommand(sublime_plugin.TextCommand):
         file_path = self.view.file_name()
         if file_path:
             sketch_path = os.path.dirname(file_path)
-            stino.main.build_sketch(self.view.window(), sketch_path)
+            stino.main.build_sketch(self.view, sketch_path)
 
 
 class UploadSketchCommand(sublime_plugin.TextCommand):
@@ -103,7 +169,7 @@ class UploadSketchCommand(sublime_plugin.TextCommand):
         file_path = self.view.file_name()
         if file_path:
             sketch_path = os.path.dirname(file_path)
-            stino.main.upload_sketch(self.view.window(), sketch_path)
+            stino.main.upload_sketch(self.view, sketch_path)
 
 
 class UploadUsingProgrammerCommand(sublime_plugin.TextCommand):
@@ -114,7 +180,7 @@ class UploadUsingProgrammerCommand(sublime_plugin.TextCommand):
         if file_path:
             sketch_path = os.path.dirname(file_path)
             stino.main.upload_sketch(
-                self.view.window(), sketch_path, using_programmer=True)
+                self.view, sketch_path, using_programmer=True)
 
 
 class SetExtraFlagCommand(sublime_plugin.WindowCommand):
