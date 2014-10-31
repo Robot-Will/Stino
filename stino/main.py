@@ -162,8 +162,6 @@ def import_library(view, edit, library_path):
 
 
 def build_sketch(view, sketch_path):
-    regions_key = 'build_' + sketch_path.replace('\\', '/')
-    view.erase_regions(regions_key)
     window = view.window()
     console_name = 'build.' + str(time.time())
     console = st_console.Console(window, name=console_name)
@@ -172,8 +170,6 @@ def build_sketch(view, sketch_path):
 
 
 def upload_sketch(view, sketch_path, using_programmer=False):
-    regions_key = 'build_' + sketch_path.replace('\\', '/')
-    view.erase_regions(regions_key)
     window = view.window()
     console_name = 'upload.' + str(time.time())
     console = st_console.Console(window, name=console_name)

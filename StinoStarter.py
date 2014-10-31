@@ -41,6 +41,11 @@ def get_error_info(text):
 
 
 class SketchListener(sublime_plugin.EventListener):
+    def __init__(self):
+        super(SketchListener, self).__init__()
+        self.sketch_files_dict = {}
+        self.file_view_dict = {}
+
     def on_activated(self, view):
         stino.main.set_status(view)
 
@@ -57,7 +62,8 @@ class SketchListener(sublime_plugin.EventListener):
                 monitor_module.serials_in_use.remove(serial_port)
 
     def on_selection_modified(self, view):
-        if view.name().startswith('build.'):
+        view_name = view.name()
+        if view_name.startswith('build.') or view_name.startswith('upload.'):
             region = view.sel()[0]
             region = view.line(region)
             text = view.substr(region)
@@ -68,11 +74,25 @@ class SketchListener(sublime_plugin.EventListener):
                 file_view.show(error_point)
 
     def on_modified(self, view):
-        console_regions = []
-        files = []
-        file_view_dict = {}
-        file_regions_dict = {}
-        if view.name().startswith('build.'):
+        if st_version < 3000:
+            flag = sublime.DRAW_OUTLINED
+        else:
+            flag = sublime.DRAW_NO_FILL
+
+        view_name = view.name()
+        if view_name.startswith('build.') or view_name.startswith('upload.'):
+            index = view_name.index('.')
+            sketch_path = view_name[index + 1:]
+            files = self.sketch_files_dict.get(sketch_path, [])
+            for file_path in files:
+                file_view = self.file_view_dict.get(file_path, None)
+                if file_view in sublime.active_window().views():
+                    key = 'stino.' + file_path
+                    file_view.erase_regions(key)
+
+            console_regions = []
+            file_regions_dict = {}
+            files = []
             text = view.substr(sublime.Region(0, view.size()))
             lines = text.split('\n')
             for line_no, line in enumerate(lines):
@@ -88,20 +108,21 @@ class SketchListener(sublime_plugin.EventListener):
 
                     if not file_path in files:
                         files.append(file_path)
-                        file_view_dict[file_path] = file_view
+                        self.file_view_dict[file_path] = file_view
                     regions = file_regions_dict.setdefault(file_path, [])
                     if not line_region in regions:
                         regions.append(line_region)
                     file_regions_dict[file_path] = regions
             view.add_regions('build_error', console_regions, 'string',
-                             'circle', sublime.DRAW_NO_FILL)
+                             'circle', flag)
+
+            self.sketch_files_dict[sketch_path] = files
             for file_path in files:
-                key = 'build_' + os.path.dirname(file_path)
-                print(key)
-                file_view = file_view_dict.get(file_path)
+                key = 'stino.' + file_path
+                file_view = self.file_view_dict.get(file_path)
                 regions = file_regions_dict.get(file_path, [])
                 file_view.add_regions(key, regions, 'string', 'circle',
-                                      sublime.DRAW_NO_FILL)
+                                      flag)
 
                 if regions:
                     region = regions[0]

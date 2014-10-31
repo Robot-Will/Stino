@@ -66,7 +66,7 @@ class Compiler(object):
         if not target_board:
             text = 'No board exists. Please Select Arduino Application Folder '
             text += 'or Change Arduino Sketchbook Folder in Arduino Menu -> '
-            text += 'Preferences.\n'
+            text += 'Preferences.\\n'
             self.message_queue.put(text)
             return
         start_time = time.time()
@@ -75,7 +75,7 @@ class Compiler(object):
         if self.need_to_build:
             project_name = self.project.get_name()
             self.message_queue.put(
-                '[Stino - Start building "{0}"...]\n', project_name)
+                '[Stino - Start building "{0}"...]\\n', project_name)
             self.prepare_core_src_files()
             self.prepare_params()
             self.prepare_cmds()
@@ -86,7 +86,7 @@ class Compiler(object):
                 diff_time = end_time - start_time
                 diff_time = '%.1f' % diff_time
                 self.message_queue.put(
-                    '[Stino - Done building "{0}" in {1}s.]\n',
+                    '[Stino - Done building "{0}" in {1}s.]\\n',
                     project_name, diff_time)
         else:
             self.error_occured = True
@@ -175,6 +175,13 @@ class Compiler(object):
         src_files = ino_files + cpp_files + h_files
         self.libraries = arduino_src.list_libraries(
             src_files, self.arduino_info)
+
+        last_build_path = os.path.join(self.build_path, 'last_build.txt')
+        last_build_file = base.settings.Settings(last_build_path)
+        last_lib_paths = last_build_file.get('lib_paths', [])
+        lib_paths = [lib.get_path() for lib in self.libraries]
+        self.library_src_changed = (lib_paths != last_lib_paths)
+        last_build_file.set('lib_paths', lib_paths)
 
     def prepare_core_src_files(self):
         self.core_obj_paths = []
@@ -293,7 +300,8 @@ class Compiler(object):
         core_changed = False
         core_archive_path = os.path.join(self.build_path,
                                          self.archive_file_name)
-        if self.core_src_changed and os.path.isfile(core_archive_path):
+        if (self.library_src_changed or self.core_src_changed) and \
+                os.path.isfile(core_archive_path):
             os.remove(core_archive_path)
         if not os.path.isfile(core_archive_path):
             core_changed = True
@@ -331,7 +339,7 @@ class Compiler(object):
         self.working_dir = self.arduino_info.get_ide_dir().get_path()
         error_occured = False
         for build_file in self.build_files:
-            self.message_queue.put('Creating {0}...\n', build_file)
+            self.message_queue.put('Creating {0}...\\n', build_file)
             cmds = self.file_cmds_dict.get(build_file)
             error_occured = exec_cmds(self.working_dir, cmds,
                                       self.message_queue,
@@ -360,7 +368,7 @@ class Compiler(object):
         size_total = regular_numner(size_total)
         size_percent = '%.1f' % size_percent
         txt = 'Sketch uses {0} bytes ({1}%) '
-        txt += 'of program storage space. Maximum is {2} bytes.\n'
+        txt += 'of program storage space. Maximum is {2} bytes.\\n'
         self.message_queue.put(txt, size, size_percent, size_total)
 
         size_regex_data = self.params.get('recipe.size.regex.data', '')
@@ -376,7 +384,7 @@ class Compiler(object):
             size_data_percent = '%.1f' % size_data_percent
             txt = 'Global variables use {0} bytes ({1}%) of dynamic memory, '
             txt += 'leaving {2} bytes for local variables. '
-            txt += 'Maximum is {3} bytes.\n'
+            txt += 'Maximum is {3} bytes.\\n'
             self.message_queue.put(txt, size_data, size_data_percent,
                                    size_data_remain, size_data_total)
 
@@ -456,7 +464,7 @@ def exec_cmds(working_dir, cmds, message_queue, is_verbose=False):
             message_queue.put(stderr + '\n')
         if return_code != 0:
             message_queue.put(
-                '[Stino - Exit with error code {0}]\n', return_code)
+                '[Stino - Exit with error code {0}]\\n', return_code)
             error_occured = True
             break
     return error_occured

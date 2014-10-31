@@ -50,7 +50,7 @@ class SerialMonitor(object):
                 monitor_thread.start()
             else:
                 msg = 'Serial port {0} already in use. '
-                msg += 'Try quitting any programs that may be using it.\n'
+                msg += 'Try quitting any programs that may be using it.\\n'
                 self.queue.put(msg, self.port)
                 self.stop()
 
@@ -77,7 +77,7 @@ class SerialMonitor(object):
         line_ending = self.arduino_settings.get('line_ending', '\n')
         out_text += line_ending
 
-        self.queue.put('[SEND] ' + out_text + '\n')
+        self.queue.put('[SEND] {0}\\n', out_text)
         out_text = out_text.encode('utf-8', 'replace')
         self.serial.write(out_text)
 

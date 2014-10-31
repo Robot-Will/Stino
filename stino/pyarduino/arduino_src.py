@@ -80,10 +80,11 @@ def get_index_of_first_statement(src_text):
     Returns:
         index: The index of first statement.
     """
-    pattern_text = whitespace
+    preprocessor_directive = r'\s*#.*?$'
+    pattern_text = preprocessor_directive
     pattern_text += '|' + multi_line_comment
     pattern_text += '|' + single_line_comment
-    pattern_text += '|' + preprocessor_directive
+    pattern_text += '|' + whitespace
 
     pattern = re.compile(pattern_text, re.M | re.S)
     match_iter = pattern.finditer(src_text)

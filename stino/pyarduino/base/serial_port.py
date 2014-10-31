@@ -112,11 +112,11 @@ def wait_for_port(upload_port, before_ports, message_queue):
     while elapsed < 1000:
         now_ports = list_serial_ports()
         diff_ports = remove_ports(now_ports, before_ports)
-        message_queue.put('Ports {{0}}/{{1}} => {{2}}\n', before_ports,
+        message_queue.put('Ports {{0}}/{{1}} => {{2}}\\n', before_ports,
                           now_ports, diff_ports)
         if diff_ports:
             new_port = diff_ports[0]
-            message_queue.put('Found new upload port: {0}.\n', new_port)
+            message_queue.put('Found new upload port: {0}.\\n', new_port)
             break
 
         before_ports = now_ports
@@ -126,15 +126,15 @@ def wait_for_port(upload_port, before_ports, message_queue):
         if ((sys_info.get_os_name() != 'windows' and elapsed >= 500) or
                 elapsed >= 5000) and upload_port in now_ports:
             new_port = upload_port
-            message_queue.put('Uploading using selected port: {0}.\n',
+            message_queue.put('Uploading using selected port: {0}.\\n',
                               upload_port)
             break
 
     if new_port == 'no_serial':
-        txt = 'Couldn\'t find a Leonardo on the selected port.'
-        txt += 'Check that you have the correct port selected.'
-        txt += 'If it is correct, try pressing the board\'s reset button'
-        txt += 'after initiating the upload.\n'
+        txt = "Couldn't find a Leonardo on the selected port. "
+        txt += 'Check that you have the correct port selected. '
+        txt += "If it is correct, try pressing the board's reset button "
+        txt += 'after initiating the upload.\\n'
         message_queue.put(txt)
     return new_port
 

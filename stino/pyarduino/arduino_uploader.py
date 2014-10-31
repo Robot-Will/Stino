@@ -117,18 +117,8 @@ class Uploader(object):
         settings = base.settings.get_arduino_settings()
         show_upload_output = settings.get('upload_verbose', False)
         working_dir = self.compiler.get_ide_path()
-        return_code, stdout, stderr = arduino_compiler.exec_cmd(
-            working_dir, self.cmd)
-        if show_upload_output:
-            self.message_queue.put(self.cmd + '\n')
-            if stdout:
-                self.message_queue.put(stdout + '\n')
-        if stderr:
-            self.message_queue.put(stderr + '\n')
-        if return_code != 0:
-            self.message_queue.put(
-                '[Stino - Exit with error code {0}]\n', return_code)
-            self.error_occured = True
+        self.error_occured = arduino_compiler.exec_cmds(
+            working_dir, [self.cmd], self.message_queue, show_upload_output)
 
     def retouch_serial_port(self):
         if self.do_touch:
