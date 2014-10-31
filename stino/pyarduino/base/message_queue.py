@@ -36,7 +36,7 @@ class MessageQueue(object):
     def put(self, text, *args):
         text = self.i18n.translate(text, *args)
         if text.endswith('\\n'):
-            text = text[:-3] + '\n'
+            text = text[:-2] + '\n'
         self.queue.put(text)
 
     def start_print(self, one_time=False):

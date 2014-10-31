@@ -163,7 +163,7 @@ def import_library(view, edit, library_path):
 
 def build_sketch(view, sketch_path):
     window = view.window()
-    console_name = 'build.' + str(time.time())
+    console_name = 'build|' + sketch_path + '|' + str(time.time())
     console = st_console.Console(window, name=console_name)
     compiler = pyarduino.arduino_compiler.Compiler(sketch_path, console)
     compiler.build()
@@ -171,7 +171,7 @@ def build_sketch(view, sketch_path):
 
 def upload_sketch(view, sketch_path, using_programmer=False):
     window = view.window()
-    console_name = 'upload.' + str(time.time())
+    console_name = 'upload|' + sketch_path + '|' + str(time.time())
     console = st_console.Console(window, name=console_name)
     uploader = pyarduino.arduino_uploader.Uploader(sketch_path, console)
     uploader.upload(using_programmer)

@@ -15,6 +15,7 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
+import re
 import sublime
 import sublime_plugin
 
@@ -25,26 +26,14 @@ else:
     from . import stino
 
 
-def get_error_info(text):
-    text = text.split('error:')[0].strip()
-    infos = text.split(':')
-    if ':/' in text:
-        file_path = infos[0] + ':' + infos[1]
-        infos.pop(0)
-        infos.pop(0)
-    else:
-        file_path = infos[0]
-        infos.pop(0)
-    line_no = int(infos[0]) - 1
-    column_no = int(infos[1]) - 1
-    return(file_path, line_no, column_no)
-
-
 class SketchListener(sublime_plugin.EventListener):
     def __init__(self):
         super(SketchListener, self).__init__()
         self.sketch_files_dict = {}
         self.file_view_dict = {}
+
+        pattern_text = r'^(\S*?):([0-9]+?):'
+        self.pattern = re.compile(pattern_text, re.M | re.S)
 
     def on_activated(self, view):
         stino.main.set_status(view)
@@ -63,14 +52,23 @@ class SketchListener(sublime_plugin.EventListener):
 
     def on_selection_modified(self, view):
         view_name = view.name()
-        if view_name.startswith('build.') or view_name.startswith('upload.'):
-            region = view.sel()[0]
+        if view_name.startswith('build|') or view_name.startswith('upload|'):
+            view_selection = view.sel()
+            region = view_selection[0]
             region = view.line(region)
             text = view.substr(region)
-            if 'error:' in text:
-                file_path, line_no, column_no = get_error_info(text)
+            matches = list(self.pattern.finditer(text))
+            if matches:
+                view_selection.clear()
+                view_selection.add(region)
+                match = matches[0]
+                file_path, line_no = match.groups()
                 file_view = view.window().open_file(file_path)
-                error_point = file_view.text_point(line_no, column_no)
+                error_point = file_view.text_point(int(line_no) - 1, 0)
+                region = file_view.line(error_point)
+                selection = file_view.sel()
+                selection.clear()
+                selection.add(region)
                 file_view.show(error_point)
 
     def on_modified(self, view):
@@ -80,9 +78,8 @@ class SketchListener(sublime_plugin.EventListener):
             flag = sublime.DRAW_NO_FILL
 
         view_name = view.name()
-        if view_name.startswith('build.') or view_name.startswith('upload.'):
-            index = view_name.index('.')
-            sketch_path = view_name[index + 1:]
+        if view_name.startswith('build|') or view_name.startswith('upload|'):
+            sketch_path = view_name.split('|')[1]
             files = self.sketch_files_dict.get(sketch_path, [])
             for file_path in files:
                 file_view = self.file_view_dict.get(file_path, None)
@@ -94,25 +91,24 @@ class SketchListener(sublime_plugin.EventListener):
             file_regions_dict = {}
             files = []
             text = view.substr(sublime.Region(0, view.size()))
-            lines = text.split('\n')
-            for line_no, line in enumerate(lines):
-                if 'error:' in line:
-                    cur_point = view.text_point(line_no, 0)
-                    line_region = view.line(cur_point)
-                    console_regions.append(line_region)
+            matches = self.pattern.finditer(text)
+            for match in matches:
+                cur_point = match.start()
+                line_region = view.line(cur_point)
+                console_regions.append(line_region)
 
-                    file_path, line_no, column_no = get_error_info(line)
-                    file_view = view.window().open_file(file_path)
-                    error_point = file_view.text_point(line_no, column_no)
-                    line_region = file_view.line(error_point)
+                file_path, line_no = match.groups()
+                file_view = view.window().open_file(file_path)
+                error_point = file_view.text_point(int(line_no) - 1, 0)
+                line_region = file_view.line(error_point)
 
-                    if not file_path in files:
-                        files.append(file_path)
-                        self.file_view_dict[file_path] = file_view
-                    regions = file_regions_dict.setdefault(file_path, [])
-                    if not line_region in regions:
-                        regions.append(line_region)
-                    file_regions_dict[file_path] = regions
+                if not file_path in files:
+                    files.append(file_path)
+                    self.file_view_dict[file_path] = file_view
+                regions = file_regions_dict.setdefault(file_path, [])
+                if not line_region in regions:
+                    regions.append(line_region)
+                file_regions_dict[file_path] = regions
             view.add_regions('build_error', console_regions, 'string',
                              'circle', flag)
 
