@@ -209,7 +209,6 @@ def generate_prototypes_from_files(files):
 
 def combine_ino_files(ino_files):
     prototypes = generate_prototypes_from_files(ino_files)
-    # headerOffset = len(prototypes) + 1
 
     combined_src = ''
     cur_file = ino_files[0]

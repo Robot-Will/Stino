@@ -223,8 +223,8 @@ class Compiler(object):
             varient_cpp_files = varient_dir.recursive_list_files(
                 arduino_src.CPP_EXTS)
             sub_dir_name = 'varient_' + varient_dir.get_name()
-            varient_obj_paths = gen_obj_paths(varient_path, self.build_path,
-                                              sub_dir_name, varient_cpp_files)
+            varient_obj_paths = gen_obj_paths(
+                varient_path, self.build_path, sub_dir_name, varient_cpp_files)
             varient_cpp_obj_pairs = gen_cpp_obj_pairs(
                 varient_path, self.build_path, sub_dir_name,
                 varient_cpp_files, self.is_new_build)
@@ -471,6 +471,7 @@ def exec_cmds(working_dir, cmds, message_queue, is_verbose=False):
 
 
 def exec_cmd(working_dir, cmd):
+    os.environ['CYGWIN'] = 'nodosfilewarning'
     if cmd:
         os.chdir(working_dir)
         cmd = formatCommand(cmd)

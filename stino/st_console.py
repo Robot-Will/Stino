@@ -41,9 +41,11 @@ class Console:
             color_scheme = 'Packages/Color Scheme - Default/Eiffel.tmTheme'
         self.panel.settings().set('color_scheme', color_scheme)
 
+        self.panel.set_read_only(False)
         self.panel.run_command('panel_output', {'text': text})
         panel_name = 'output.' + self.name
         self.window.run_command("show_panel", {"panel": panel_name})
+        self.panel.set_read_only(True)
 
 
 class MonitorView:
