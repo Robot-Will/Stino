@@ -328,6 +328,12 @@
                         "id": "toggle_big_project",
                         "command": "toggle_big_project",
                         "checkbox": true
+                    },
+                    {
+                        "caption": "Open Sketch in New Window",
+                        "id": "toggle_open_project_in_new_window",
+                        "command": "toggle_open_project_in_new_window",
+                        "checkbox": true
                     }
                 ]
             },

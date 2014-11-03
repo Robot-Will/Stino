@@ -4,7 +4,7 @@
         "Afar"
     ],
     "ab": [
-        "\u0430\u04a7\u0441\u0443\u0430 \u0431\u044b\u0437\u0448\u04d9\u0430",
+        "аҧсуа бызшәа",
         "Abkhaz"
     ],
     "ae": [
@@ -20,23 +20,23 @@
         "Akan"
     ],
     "am": [
-        "\u12a0\u121b\u122d\u129b",
+        "አማርኛ",
         "Amharic"
     ],
     "an": [
-        "aragon\u00e9s",
+        "aragonés",
         "Aragonese"
     ],
     "ar": [
-        "\u0627\u0644\u0639\u0631\u0628\u064a\u0629",
+        "العربية",
         "Arabic"
     ],
     "as": [
-        "\u0985\u09b8\u09ae\u09c0\u09af\u09bc\u09be",
+        "অসমীয়া",
         "Assamese"
     ],
     "av": [
-        "\u0430\u0432\u0430\u0440 \u043c\u0430\u0446\u04c0",
+        "авар мацӀ",
         "Avaric"
     ],
     "ay": [
@@ -44,23 +44,23 @@
         "Aymara"
     ],
     "az": [
-        "az\u0259rbaycan dili",
+        "azərbaycan dili",
         "Azerbaijani"
     ],
     "ba": [
-        "\u0431\u0430\u0448\u04a1\u043e\u0440\u0442 \u0442\u0435\u043b\u0435",
+        "башҡорт теле",
         "Bashkir"
     ],
     "be": [
-        "\u0431\u0435\u043b\u0430\u0440\u0443\u0441\u043a\u0430\u044f \u043c\u043e\u0432\u0430",
+        "беларуская мова",
         "Belarusian"
     ],
     "bg": [
-        "\u0431\u044a\u043b\u0433\u0430\u0440\u0441\u043a\u0438 \u0435\u0437\u0438\u043a",
+        "български език",
         "Bulgarian"
     ],
     "bh": [
-        "\u092d\u094b\u091c\u092a\u0941\u0930\u0940",
+        "भोजपुरी",
         "Bihari"
     ],
     "bi": [
@@ -72,11 +72,11 @@
         "Bambara"
     ],
     "bn": [
-        "\u09ac\u09be\u0982\u09b2\u09be",
+        "বাংলা",
         "Bengali"
     ],
     "bo": [
-        "\u0f56\u0f7c\u0f51\u0f0b\u0f61\u0f72\u0f42",
+        "བོད་ཡིག",
         "Tibetan Standard"
     ],
     "br": [
@@ -88,11 +88,11 @@
         "Bosnian"
     ],
     "ca": [
-        "catal\u00e0",
+        "català",
         "Catalan"
     ],
     "ce": [
-        "\u043d\u043e\u0445\u0447\u0438\u0439\u043d \u043c\u043e\u0442\u0442",
+        "нохчийн мотт",
         "Chechen"
     ],
     "ch": [
@@ -104,19 +104,19 @@
         "Corsican"
     ],
     "cr": [
-        "\u14c0\u1426\u1403\u152d\u140d\u140f\u1423",
+        "ᓀᐦᐃᔭᐍᐏᐣ",
         "Cree"
     ],
-    "cs": [
-        "\u010de\u0161tina",
+    "cs_cz": [
+        "čeština",
         "Czech"
     ],
     "cu": [
-        "\u0469\u0437\u044b\u043a\u044a \u0441\u043b\u043e\u0432\u0463\u043d\u044c\u0441\u043a\u044a",
+        "ѩзыкъ словѣньскъ",
         "Old Church Slavonic"
     ],
     "cv": [
-        "\u0447\u04d1\u0432\u0430\u0448 \u0447\u04d7\u043b\u0445\u0438",
+        "чӑваш чӗлхи",
         "Chuvash"
     ],
     "cy": [
@@ -132,19 +132,19 @@
         "German"
     ],
     "dv": [
-        "\u078b\u07a8\u0788\u07ac\u0780\u07a8",
+        "ދިވެހި",
         "Divehi"
     ],
     "dz": [
-        "\u0f62\u0fab\u0f7c\u0f44\u0f0b\u0f41",
+        "རྫོང་ཁ",
         "Dzongkha"
     ],
     "ee": [
-        "E\u028begbe",
+        "Eʋegbe",
         "Ewe"
     ],
     "el": [
-        "\u03b5\u03bb\u03bb\u03b7\u03bd\u03b9\u03ba\u03ac",
+        "ελληνικά",
         "Greek"
     ],
     "en": [
@@ -156,7 +156,7 @@
         "Esperanto"
     ],
     "es": [
-        "espa\u00f1ol",
+        "español",
         "Spanish"
     ],
     "et": [
@@ -168,7 +168,7 @@
         "Basque"
     ],
     "fa": [
-        "\u0641\u0627\u0631\u0633\u06cc",
+        "فارسی",
         "Persian"
     ],
     "ff": [
@@ -184,11 +184,19 @@
         "Fijian"
     ],
     "fo": [
-        "f\u00f8royskt",
+        "føroyskt",
         "Faroese"
     ],
     "fr": [
-        "fran\u00e7ais",
+        "français",
+        "French"
+    ],
+    "fr_ca": [
+        "français - Canada",
+        "French"
+    ],
+    "fr_fr": [
+        "français - French",
         "French"
     ],
     "fy": [
@@ -200,7 +208,7 @@
         "Irish"
     ],
     "gd": [
-        "G\u00e0idhlig",
+        "Gàidhlig",
         "Scottish Gaelic"
     ],
     "gl": [
@@ -208,11 +216,11 @@
         "Galician"
     ],
     "gn": [
-        "Ava\u00f1e'\u1ebd",
+        "Avañe'ẽ",
         "Guarani"
     ],
     "gu": [
-        "\u0a97\u0ac1\u0a9c\u0ab0\u0abe\u0aa4\u0ac0",
+        "ગુજરાતી",
         "Gujarati"
     ],
     "gv": [
@@ -224,23 +232,23 @@
         "Hausa"
     ],
     "he": [
-        "\u05e2\u05d1\u05e8\u05d9\u05ea",
+        "עברית",
         "Hebrew"
     ],
     "hi": [
-        "\u0939\u093f\u0928\u094d\u0926\u0940",
+        "हिन्दी",
         "Hindi"
     ],
     "ho": [
         "Hiri Motu",
         "Hiri Motu"
     ],
-    "hr": [
+    "hr_hr": [
         "hrvatski jezik",
         "Croatian"
     ],
     "ht": [
-        "Krey\u00f2l ayisyen",
+        "Kreyòl ayisyen",
         "Haitian"
     ],
     "hu": [
@@ -248,7 +256,7 @@
         "Hungarian"
     ],
     "hy": [
-        "\u0540\u0561\u0575\u0565\u0580\u0565\u0576",
+        "Հայերեն",
         "Armenian"
     ],
     "hz": [
@@ -264,19 +272,19 @@
         "Indonesian"
     ],
     "ie": [
-        "Originally called\u00a0Occidental",
+        "Originally called Occidental",
         "Interlingue"
     ],
     "ig": [
-        "As\u1ee5s\u1ee5 Igbo",
+        "Asụsụ Igbo",
         "Igbo"
     ],
     "ii": [
-        "\ua188\ua320\ua4bf Nuosuhxop",
+        "ꆈꌠ꒿ Nuosuhxop",
         "Nuosu"
     ],
     "ik": [
-        "I\u00f1upiaq",
+        "Iñupiaq",
         "Inupiaq"
     ],
     "io": [
@@ -284,7 +292,7 @@
         "Ido"
     ],
     "is": [
-        "\u00cdslenska",
+        "Íslenska",
         "Icelandic"
     ],
     "it": [
@@ -292,19 +300,19 @@
         "Italian"
     ],
     "iu": [
-        "\u1403\u14c4\u1483\u144e\u1450\u1466",
+        "ᐃᓄᒃᑎᑐᑦ",
         "Inuktitut"
     ],
     "ja": [
-        "\u65e5\u672c\u8a9e",
+        "日本語",
         "Japanese"
     ],
     "jv": [
         "basa Jawa",
         "Javanese"
     ],
-    "ka": [
-        "\u10e5\u10d0\u10e0\u10d7\u10e3\u10da\u10d8",
+    "ka_ge": [
+        "ქართული",
         "Georgian"
     ],
     "kg": [
@@ -312,7 +320,7 @@
         "Kongo"
     ],
     "ki": [
-        "G\u0129k\u0169y\u0169",
+        "Gĩkũyũ",
         "Kikuyu"
     ],
     "kj": [
@@ -320,7 +328,7 @@
         "Kwanyama"
     ],
     "kk": [
-        "\u049b\u0430\u0437\u0430\u049b \u0442\u0456\u043b\u0456",
+        "қазақ тілі",
         "Kazakh"
     ],
     "kl": [
@@ -328,15 +336,15 @@
         "Kalaallisut"
     ],
     "km": [
-        "\u1781\u17d2\u1798\u17c2\u179a",
+        "ខ្មែរ",
         "Khmer"
     ],
     "kn": [
-        "\u0c95\u0ca8\u0ccd\u0ca8\u0ca1",
+        "ಕನ್ನಡ",
         "Kannada"
     ],
     "ko": [
-        "\ud55c\uad6d\uc5b4",
+        "한국어",
         "Korean"
     ],
     "kr": [
@@ -344,15 +352,15 @@
         "Kanuri"
     ],
     "ks": [
-        "\u0915\u0936\u094d\u092e\u0940\u0930\u0940",
+        "कश्मीरी",
         "Kashmiri"
     ],
     "ku": [
-        "Kurd\u00ee",
+        "Kurdî",
         "Kurdish"
     ],
     "kv": [
-        "\u043a\u043e\u043c\u0438 \u043a\u044b\u0432",
+        "коми кыв",
         "Komi"
     ],
     "kw": [
@@ -360,7 +368,7 @@
         "Cornish"
     ],
     "ky": [
-        "\u041a\u044b\u0440\u0433\u044b\u0437\u0447\u0430",
+        "Кыргызча",
         "Kyrgyz"
     ],
     "la": [
@@ -368,7 +376,7 @@
         "Latin"
     ],
     "lb": [
-        "L\u00ebtzebuergesch",
+        "Lëtzebuergesch",
         "Luxembourgish"
     ],
     "lg": [
@@ -380,15 +388,15 @@
         "Limburgish"
     ],
     "ln": [
-        "Ling\u00e1la",
+        "Lingála",
         "Lingala"
     ],
     "lo": [
-        "\u0e9e\u0eb2\u0eaa\u0eb2\u0ea5\u0eb2\u0ea7",
+        "ພາສາລາວ",
         "Lao"
     ],
     "lt": [
-        "lietuvi\u0173 kalba",
+        "lietuvių kalba",
         "Lithuanian"
     ],
     "lu": [
@@ -396,7 +404,7 @@
         "Luba-Katanga"
     ],
     "lv": [
-        "latvie\u0161u valoda",
+        "latviešu valoda",
         "Latvian"
     ],
     "mg": [
@@ -404,31 +412,31 @@
         "Malagasy"
     ],
     "mh": [
-        "Kajin M\u0327aje\u013c",
+        "Kajin M̧ajeļ",
         "Marshallese"
     ],
     "mi": [
-        "te reo M\u0101ori",
+        "te reo Māori",
         "Maori"
     ],
     "mk": [
-        "\u043c\u0430\u043a\u0435\u0434\u043e\u043d\u0441\u043a\u0438 \u0458\u0430\u0437\u0438\u043a",
+        "македонски јазик",
         "Macedonian"
     ],
     "ml": [
-        "\u0d2e\u0d32\u0d2f\u0d3e\u0d33\u0d02",
+        "മലയാളം",
         "Malayalam"
     ],
     "mn": [
-        "\u043c\u043e\u043d\u0433\u043e\u043b",
+        "монгол",
         "Mongolian"
     ],
     "mr": [
-        "\u092e\u0930\u093e\u0920\u0940",
+        "मराठी",
         "Marathi"
     ],
     "ms": [
-        "\u0628\u0647\u0627\u0633 \u0645\u0644\u0627\u064a\u0648\u200e",
+        "بهاس ملايو‎",
         "Malay"
     ],
     "mt": [
@@ -436,23 +444,23 @@
         "Maltese"
     ],
     "my": [
-        "\u1017\u1019\u102c\u1005\u102c",
+        "ဗမာစာ",
         "Burmese"
     ],
     "na": [
-        "Ekakair\u0169 Naoero",
+        "Ekakairũ Naoero",
         "Nauru"
     ],
-    "nb": [
-        "Norsk bokm\u00e5l",
-        "Norwegian Bokm\u00e5l"
+    "nb_no": [
+        "Norsk bokmål",
+        "Norwegian Bokmål"
     ],
     "nd": [
         "isiNdebele",
         "North Ndebele"
     ],
     "ne": [
-        "\u0928\u0947\u092a\u093e\u0932\u0940",
+        "नेपाली",
         "Nepali"
     ],
     "ng": [
@@ -480,11 +488,11 @@
         "South Ndebele"
     ],
     "nv": [
-        "Din\u00e9 bizaad",
+        "Diné bizaad",
         "Navajo"
     ],
     "ny": [
-        "chiChe\u0175a",
+        "chiCheŵa",
         "Chichewa"
     ],
     "oc": [
@@ -492,7 +500,7 @@
         "Occitan"
     ],
     "oj": [
-        "\u140a\u14c2\u1511\u14c8\u142f\u14a7\u140e\u14d0",
+        "ᐊᓂᔑᓈᐯᒧᐎᓐ",
         "Ojibwe"
     ],
     "om": [
@@ -500,39 +508,39 @@
         "Oromo"
     ],
     "or": [
-        "\u0b13\u0b21\u0b3c\u0b3f\u0b06",
+        "ଓଡ଼ିଆ",
         "Oriya"
     ],
     "os": [
-        "\u0438\u0440\u043e\u043d \u00e6\u0432\u0437\u0430\u0433",
+        "ирон æвзаг",
         "Ossetian"
     ],
     "pa": [
-        "\u0a2a\u0a70\u0a1c\u0a3e\u0a2c\u0a40,\u00a0\u067e\u0646\u062c\u0627\u0628\u06cc\u200e",
+        "ਪੰਜਾਬੀ, پنجابی‎",
         "Panjabi"
     ],
     "pi": [
-        "\u092a\u093e\u0934\u093f",
-        "P\u0101li"
+        "पाऴि",
+        "Pāli"
     ],
     "pl": [
-        "j\u0119zyk polski",
+        "język polski",
         "Polish"
     ],
     "ps": [
-        "\u067e\u069a\u062a\u0648",
+        "پښتو",
         "Pashto"
     ],
     "pt": [
-        "portugu\u00eas",
+        "português",
         "Portuguese"
     ],
     "pt_br": [
-        "portugu\u00eas - Brazil",
+        "português - Brazil",
         "Portuguese"
     ],
     "pt_pt": [
-        "portugu\u00eas - Portugal",
+        "português - Portugal",
         "Portuguese"
     ],
     "qu": [
@@ -548,11 +556,11 @@
         "Kirundi"
     ],
     "ro": [
-        "limba rom\u00e2n\u0103",
+        "limba română",
         "Romanian"
     ],
     "ru": [
-        "\u0440\u0443\u0441\u0441\u043a\u0438\u0439 \u044f\u0437\u044b\u043a",
+        "русский язык",
         "Russian"
     ],
     "rw": [
@@ -560,7 +568,7 @@
         "Kinyarwanda"
     ],
     "sa": [
-        "\u0938\u0902\u0938\u094d\u0915\u0943\u0924\u092e\u094d",
+        "संस्कृतम्",
         "Sanskrit"
     ],
     "sc": [
@@ -568,23 +576,23 @@
         "Sardinian"
     ],
     "sd": [
-        "\u0938\u093f\u0928\u094d\u0927\u0940",
+        "सिन्धी",
         "Sindhi"
     ],
     "se": [
-        "Davvis\u00e1megiella",
+        "Davvisámegiella",
         "Northern Sami"
     ],
     "sg": [
-        "y\u00e2ng\u00e2 t\u00ee s\u00e4ng\u00f6",
+        "yângâ tî sängö",
         "Sango"
     ],
     "si": [
-        "\u0dc3\u0dd2\u0d82\u0dc4\u0dbd",
+        "සිංහල",
         "Sinhala"
     ],
     "sk": [
-        "sloven\u010dina",
+        "slovenčina",
         "Slovak"
     ],
     "sl": [
@@ -608,7 +616,7 @@
         "Albanian"
     ],
     "sr": [
-        "\u0441\u0440\u043f\u0441\u043a\u0438 \u0458\u0435\u0437\u0438\u043a",
+        "српски језик",
         "Serbian"
     ],
     "ss": [
@@ -632,27 +640,27 @@
         "Swahili"
     ],
     "ta": [
-        "\u0ba4\u0bae\u0bbf\u0bb4\u0bcd",
+        "தமிழ்",
         "Tamil"
     ],
     "te": [
-        "\u0c24\u0c46\u0c32\u0c41\u0c17\u0c41",
+        "తెలుగు",
         "Telugu"
     ],
     "tg": [
-        "\u0442\u043e\u04b7\u0438\u043a\u04e3",
+        "тоҷикӣ",
         "Tajik"
     ],
     "th": [
-        "\u0e44\u0e17\u0e22",
+        "ไทย",
         "Thai"
     ],
     "ti": [
-        "\u1275\u130d\u122d\u129b",
+        "ትግርኛ",
         "Tigrinya"
     ],
     "tk": [
-        "T\u00fcrkmen",
+        "Türkmen",
         "Turkmen"
     ],
     "tl": [
@@ -668,7 +676,7 @@
         "Tonga"
     ],
     "tr": [
-        "T\u00fcrk\u00e7e",
+        "Türkçe",
         "Turkish"
     ],
     "ts": [
@@ -676,7 +684,7 @@
         "Tsonga"
     ],
     "tt": [
-        "\u0442\u0430\u0442\u0430\u0440 \u0442\u0435\u043b\u0435",
+        "татар теле",
         "Tatar"
     ],
     "tw": [
@@ -688,15 +696,15 @@
         "Tahitian"
     ],
     "ug": [
-        "Uy\u01a3urq\u0259",
+        "Uyƣurqə",
         "Uighur"
     ],
     "uk": [
-        "\u0443\u043a\u0440\u0430\u0457\u043d\u0441\u044c\u043a\u0430 \u043c\u043e\u0432\u0430",
+        "українська мова",
         "Ukrainian"
     ],
     "ur": [
-        "\u0627\u0631\u062f\u0648",
+        "اردو",
         "Urdu"
     ],
     "uz": [
@@ -704,15 +712,15 @@
         "Uzbek"
     ],
     "ve": [
-        "Tshiven\u1e13a",
+        "Tshivenḓa",
         "Venda"
     ],
     "vi": [
-        "Ti\u1ebfng Vi\u1ec7t",
+        "Tiếng Việt",
         "Vietnamese"
     ],
     "vo": [
-        "Volap\u00fck",
+        "Volapük",
         "Volapuk"
     ],
     "wa": [
@@ -728,19 +736,19 @@
         "Xhosa"
     ],
     "yi": [
-        "\u05d9\u05d9\u05b4\u05d3\u05d9\u05e9",
+        "ייִדיש",
         "Yiddish"
     ],
     "yo": [
-        "Yor\u00f9b\u00e1",
+        "Yorùbá",
         "Yoruba"
     ],
     "za": [
-        "Sa\u026f cue\u014b\u0185",
+        "Saɯ cueŋƅ",
         "Zhuang"
     ],
     "zh": [
-        "\u4e2d\u6587",
+        "中文",
         "Chinese"
     ],
     "zh_cn": [
@@ -748,7 +756,7 @@
         "Chinese Simplified"
     ],
     "zh_tw": [
-        "\u7e41\u4f53\u4e2d\u6587",
+        "繁体中文",
         "Chinese Traditional"
     ],
     "zu": [
