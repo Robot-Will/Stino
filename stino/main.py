@@ -161,6 +161,37 @@ def import_library(view, edit, library_path):
     view.insert(edit, 0, text)
 
 
+def handle_sketch(view, func, using_programmer=False):
+    if view.file_name() is None:
+        tmp_path = pyarduino.base.sys_path.get_tmp_path()
+        tmp_path = os.path.join(tmp_path, 'Arduino')
+        name = str(time.time()).split('.')[1]
+        sketch_path = os.path.join(tmp_path, name)
+        os.makedirs(sketch_path)
+        ino_file_name = name + '.ino'
+        ino_file_path = os.path.join(sketch_path, ino_file_name)
+
+        region = sublime.Region(0, view.size())
+        text = view.substr(region)
+        ino_file = pyarduino.base.abs_file.File(ino_file_path)
+        ino_file.write(text)
+
+        view.set_scratch(True)
+        window = view.window()
+        window.run_command('close')
+        view = window.open_file(ino_file_path)
+
+    if view.is_dirty():
+        view.run_command('save')
+    file_path = view.file_name()
+    if file_path:
+        sketch_path = os.path.dirname(file_path)
+        if using_programmer:
+            func(view, sketch_path, True)
+        else:
+            func(view, sketch_path)
+
+
 def build_sketch(view, sketch_path):
     window = view.window()
     console_name = 'build|' + sketch_path + '|' + str(time.time())
@@ -192,9 +223,11 @@ def change_board(window, board_id):
     set_status(view)
 
 
-def change_sub_board(option_index, sub_board_id):
+def change_sub_board(window, option_index, sub_board_id):
     arduino_info = st_base.get_arduino_info()
     arduino_info.change_sub_board(option_index, sub_board_id)
+    view = window.active_view()
+    set_status(view)
 
 
 def change_programmer(programmer_id):
@@ -203,11 +236,11 @@ def change_programmer(programmer_id):
 
 
 def archive_sketch(window, sketch_path):
+    sketch_name = os.path.basename(sketch_path)
     console = st_console.Console(window, str(time.time()))
     message_queue = pyarduino.base.message_queue.MessageQueue(console)
-    message_queue.put('Archive {0}\n', sketch_path)
+    message_queue.put('Archive Sketch {0}...\\n', sketch_name)
 
-    sketch_name = os.path.basename(sketch_path)
     zip_file_name = sketch_name + '.zip'
     document_path = pyarduino.base.sys_path.get_document_path()
     zip_file_path = os.path.join(document_path, zip_file_name)
@@ -219,12 +252,14 @@ def archive_sketch(window, sketch_path):
         opened_zipfile = zipfile.ZipFile(zip_file_path,
                                          'w', zipfile.ZIP_DEFLATED)
     except IOError:
-        message_queue.put('Error occured while writing {0}.\n', zip_file_path)
+        text = 'Archiving the sketch has been canceled because '
+        text += "the sketch couldn't save properly.\\n"
+        message_queue.put(text)
     else:
         for file_name in file_names:
             opened_zipfile.write(file_name)
         opened_zipfile.close()
-        message_queue.put('Done writing {0}.\n', zip_file_path)
+        message_queue.put('Done writing {0}.\\n', zip_file_path)
     message_queue.print_screen(one_time=True)
 
 
@@ -291,12 +326,11 @@ def set_arduino_ide_path(window, dir_path):
 
         ide_dir = arduino_info.get_ide_dir()
         version_name = ide_dir.get_version_name()
-        text = 'Arduino Application is found at {0}.\\n'
-        text += 'Arduino version is {1}.\\n'
+        text = 'Arduino {0} is found at {1}.\\n'
 
         console = st_console.Console(window, str(time.time()))
         message_queue = pyarduino.base.message_queue.MessageQueue(console)
-        message_queue.put(text, dir_path, version_name)
+        message_queue.put(text, version_name, dir_path)
         message_queue.print_screen(one_time=True)
 
         create_menus()
@@ -442,23 +476,41 @@ def send_serial_message(text):
 
 
 def set_status(view):
+    infos = []
     exts = ['ino', 'pde', 'cpp', 'c', '.S']
     file_name = view.file_name()
     if file_name and file_name.split('.')[-1] in exts:
         arduino_info = st_base.get_arduino_info()
         version_name = arduino_info.get_ide_dir().get_version_name()
-        target_board = arduino_info.get_target_board_info().get_target_board()
+        version_text = 'Arduino %s' % version_name
+        infos.append(version_text)
+
+        target_board_info = arduino_info.get_target_board_info()
+        target_board = target_board_info.get_target_board()
         if target_board:
             target_board_caption = target_board.get_caption()
+            infos.append(target_board_caption)
+
+            if target_board.has_options():
+                target_sub_boards = target_board_info.get_target_sub_boards()
+                for index, target_sub_board in enumerate(target_sub_boards):
+                    caption_text = target_sub_board.get_caption()
+                    if index == 0:
+                        caption_text = '[' + caption_text
+                    if index == len(target_sub_boards) - 1:
+                        caption_text += ']'
+                    infos.append(caption_text)
         else:
             target_board_caption = 'No board'
+            infos.append(target_board_caption)
 
         settings = st_base.get_settings()
         target_serial_port = settings.get('serial_port', 'No serial port')
         serial_ports = pyarduino.base.serial_port.list_serial_ports()
         if not target_serial_port in serial_ports:
             target_serial_port = 'No serial port'
+        serial_text = 'on %s' % target_serial_port
+        infos.append(serial_text)
 
-        text = 'Arduino %s, %s on %s' % (
-            version_name, target_board_caption, target_serial_port)
+        text = ', '.join(infos)
         view.set_status('Arduino', text)

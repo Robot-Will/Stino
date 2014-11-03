@@ -166,22 +166,3 @@ class PlatformFile(arduino_params_file.ParamsFile):
 
     def get_tools(self):
         return self.tool_set.get_items()
-
-
-
-# def std_platform_params(platform_params):
-#     os_name = sys_base.get_os_name()
-#     std_params = {}
-#     for key in platform_params:
-#         value = platform_params[key]
-#         if key.startswith('tools.'):
-#             key = key.replace('tools.', '')
-#             index = key.index('.')
-#             key = key[index + 1:]
-#         std_params[key] = value
-#     for key in std_params:
-#         if key.endswith(os_name):
-#             value = std_params[key]
-#             key = key.replace('.' + os_name, '')
-#             std_params[key] = value
-#     return std_params

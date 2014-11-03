@@ -58,13 +58,16 @@ class MonitorView:
             self.view = self.window.new_file()
             self.view.set_name(self.name)
         self.view.run_command('toggle_setting', {'setting': 'word_wrap'})
+        self.view.set_scratch(True)
         self.window.focus_view(self.view)
 
     def print_screen(self, text):
         sublime.set_timeout(lambda: self.println(text), 0)
 
     def println(self, text):
+        self.view.set_read_only(False)
         self.view.run_command('panel_output', {'text': text})
+        self.view.set_read_only(True)
 
 
 def find_in_opend_view(view_name):

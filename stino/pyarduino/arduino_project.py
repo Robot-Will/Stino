@@ -37,10 +37,17 @@ class Project(base.abs_file.Dir):
 
     def list_cpp_files(self, is_big_project=False):
         if is_big_project:
-            files = self.recursive_list_files(arduino_src.CPP_EXTS)
+            cpp_files = self.recursive_list_files(arduino_src.CPP_EXTS)
         else:
-            files = self.list_files_of_extensions(arduino_src.CPP_EXTS)
-        return files
+            cpp_files = self.list_files_of_extensions(arduino_src.CPP_EXTS)
+
+        primary_file_path = self.primary_file.get_path()
+        for cpp_file in cpp_files:
+            cpp_file_path = cpp_file.get_path()
+            if cpp_file_path.startswith(primary_file_path):
+                cpp_files.remove(cpp_file)
+                break
+        return cpp_files
 
     def list_h_files(self, is_big_project=False):
         if is_big_project:

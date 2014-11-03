@@ -42,14 +42,14 @@ class Uploader(object):
         while not self.compiler.is_finished():
             time.sleep(1)
         if not self.compiler.has_error():
-            self.message_queue.put('[Stino - Start uploading...]\n')
+            self.message_queue.put('[Stino - Start uploading...]\\n')
             self.params = self.compiler.get_params()
             self.prepare_upload_port(using_programmer)
             self.prepare_cmd(using_programmer)
             self.exec_cmd()
             if not self.error_occured:
                 self.retouch_serial_port()
-                self.message_queue.put('[Stino - Done uploading.]\n')
+                self.message_queue.put('[Stino - Done uploading.]\\n')
         time.sleep(20)
         self.message_queue.stop_print()
 
@@ -82,9 +82,9 @@ class Uploader(object):
             if self.do_touch:
                 before_ports = base.serial_port.list_serial_ports()
                 if self.upload_port in before_ports:
-                    self.message_queue.put(
-                        'Forcing reset using 1200bps open/close on port {0}\n',
-                        self.upload_port)
+                    text = 'Forcing reset using 1200bps open/close '
+                    text += 'on port {0}.\\n'
+                    self.message_queue.put(text, self.upload_port)
                     base.serial_port.touch_port(self.upload_port, 1200)
                 if self.wait_for_upload_port:
                     if base.sys_info.get_os_name() != 'osx':

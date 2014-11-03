@@ -37,7 +37,8 @@ class JSONFile(abs_file.File):
         try:
             self.data = json.loads(text)
         except (ValueError):
-            print('Error while loading Json file %s.' % self.path)
+            pass
+            # print('Error while loading Json file %s.' % self.path)
 
     def save(self):
         text = json.dumps(self.data, sort_keys=True, indent=4)

@@ -152,7 +152,13 @@ class NewSketchCommand(sublime_plugin.WindowCommand):
 
 class OpenSketchCommand(sublime_plugin.WindowCommand):
     def run(self, sketch_path):
-        stino.main.open_sketch(self.window, sketch_path)
+        new_window = stino.settings.get('open_project_in_new_window', False)
+        if new_window:
+            sublime.run_command('new_window')
+            window = sublime.windows()[-1]
+        else:
+            window = self.window
+        stino.main.open_sketch(window, sketch_path)
 
 
 class ImportLibraryCommand(sublime_plugin.TextCommand):
@@ -171,33 +177,18 @@ class ShowSketchFolderCommand(sublime_plugin.TextCommand):
 
 class CompileSketchCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        if self.view.is_dirty():
-            self.view.run_command('save')
-        file_path = self.view.file_name()
-        if file_path:
-            sketch_path = os.path.dirname(file_path)
-            stino.main.build_sketch(self.view, sketch_path)
+        stino.main.handle_sketch(self.view, stino.main.build_sketch)
 
 
 class UploadSketchCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        if self.view.is_dirty():
-            self.view.run_command('save')
-        file_path = self.view.file_name()
-        if file_path:
-            sketch_path = os.path.dirname(file_path)
-            stino.main.upload_sketch(self.view, sketch_path)
+        stino.main.handle_sketch(self.view, stino.main.upload_sketch)
 
 
 class UploadUsingProgrammerCommand(sublime_plugin.TextCommand):
     def run(self, edit):
-        if self.view.is_dirty():
-            self.view.run_command('save')
-        file_path = self.view.file_name()
-        if file_path:
-            sketch_path = os.path.dirname(file_path)
-            stino.main.upload_sketch(
-                self.view, sketch_path, using_programmer=True)
+        stino.main.handle_sketch(self.view, stino.main.upload_sketch,
+                                 using_programmer=True)
 
 
 class SetExtraFlagCommand(sublime_plugin.WindowCommand):
@@ -277,7 +268,7 @@ class SelectBoardCommand(sublime_plugin.WindowCommand):
 
 class SelectSubBoardCommand(sublime_plugin.WindowCommand):
     def run(self, option_index, sub_board_id):
-        stino.main.change_sub_board(option_index, sub_board_id)
+        stino.main.change_sub_board(self.window, option_index, sub_board_id)
 
     def is_checked(self, option_index, sub_board_id):
         target_board_id = stino.settings.get('target_board_id', '')
@@ -402,6 +393,17 @@ class ToggleBigProject(sublime_plugin.WindowCommand):
     def is_checked(self):
         big_project = stino.settings.get('big_project', False)
         return big_project
+
+
+class ToggleOpenProjectInNewWindow(sublime_plugin.WindowCommand):
+    def run(self):
+        new_window = stino.settings.get('open_project_in_new_window', False)
+        stino.settings.set('open_project_in_new_window', not new_window)
+        stino.main.update_menu()
+
+    def is_checked(self):
+        new_window = stino.settings.get('open_project_in_new_window', False)
+        return new_window
 
 
 class SelectLanguageCommand(sublime_plugin.WindowCommand):

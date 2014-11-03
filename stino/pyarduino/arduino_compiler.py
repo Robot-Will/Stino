@@ -464,7 +464,7 @@ def exec_cmds(working_dir, cmds, message_queue, is_verbose=False):
             message_queue.put(stderr + '\n')
         if return_code != 0:
             message_queue.put(
-                '[Stino - Exit with error code {0}]\\n', return_code)
+                '[Stino - Exit with error code {0}.]\\n', return_code)
             error_occured = True
             break
     return error_occured

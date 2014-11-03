@@ -70,3 +70,11 @@ def get_document_path():
     else:
         document_path = os.getenv('HOME')
     return document_path
+
+
+def get_tmp_path():
+    tmp_path = '/tmp'
+    os_name = sys_info.get_os_name()
+    if os_name == 'windows':
+        tmp_path = os.environ['tmp']
+    return tmp_path
