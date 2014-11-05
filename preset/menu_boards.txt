@@ -1,7 +1,7 @@
 [
    {
         "caption": "Arduino",
-        "mnemonic": "a",
+        "mnemonic": "A",
         "id": "arduino",
         "children":
         [
