@@ -107,6 +107,14 @@ class Library(base.abs_file.Dir):
         if os.path.isdir(arch_path):
             arch_dir = base.abs_file.Dir(arch_path)
             src_dirs.append(arch_dir)
+
+        utility_dirs = []
+        for src_dir in src_dirs:
+            utility_path = os.path.join(src_dir.get_path(), 'utility')
+            if os.path.isdir(utility_path):
+                utility_dir = base.abs_file.Dir(utility_path)
+                utility_dirs.append(utility_dir)
+        src_dirs += utility_dirs
         return src_dirs
 
     def list_files(self, EXTS, target_arch='avr'):
@@ -114,10 +122,6 @@ class Library(base.abs_file.Dir):
         src_dirs = self.list_src_dirs(target_arch)
         for src_dir in src_dirs:
             files += src_dir.list_files_of_extensions(EXTS)
-            utility_path = os.path.join(src_dir.get_path(), 'utility')
-            if os.path.isdir(utility_path):
-                utility_dir = base.abs_file.Dir(utility_path)
-                files += utility_dir.list_files_of_extensions(EXTS)
         return files
 
     def list_h_files(self, target_arch='avr'):
