@@ -168,6 +168,10 @@ def import_library(view, edit, library_path):
 
 
 def handle_sketch(view, func, using_programmer=False):
+    window = view.window()
+    views = window.views()
+    if view not in views:
+        view = window.active_view()
     if view.file_name() is None:
         tmp_path = pyarduino.base.sys_path.get_tmp_path()
         tmp_path = os.path.join(tmp_path, 'Arduino')

@@ -38,6 +38,7 @@ class TargetBoardInfo(object):
                 self.settings.set('target_board_id', target_board_id)
             index = board_ids.index(target_board_id)
             self.target_board = boards[index]
+            self.target_sub_boards = []
             if self.target_board.has_options():
                 self.check_target_sub_boards()
 

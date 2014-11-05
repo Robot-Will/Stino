@@ -329,9 +329,10 @@ class Compiler(object):
                 self.build_files.append(eep_file_path)
                 self.file_cmds_dict[eep_file_path] = [eep_cmd]
 
-            hex_file_path = self.project.get_name() + '.hex'
-            self.build_files.append(hex_file_path)
-            self.file_cmds_dict[hex_file_path] = [hex_cmd]
+            if hex_cmd:
+                hex_file_path = self.project.get_name() + '.hex'
+                self.build_files.append(hex_file_path)
+                self.file_cmds_dict[hex_file_path] = [hex_cmd]
 
     def exec_build_cmds(self):
         show_compilation_output = self.settings.get('build_verbose', False)
@@ -482,7 +483,7 @@ def exec_cmd(working_dir, cmd):
         stdout = result[0].decode(base.sys_info.get_sys_encoding())
         stderr = result[1].decode(base.sys_info.get_sys_encoding())
     else:
-        return_code = -1
+        return_code = 0
         stdout = ''
         stderr = ''
     return (return_code, stdout, stderr)
