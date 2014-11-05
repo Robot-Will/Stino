@@ -1,0 +1,51 @@
+[
+    {"keys": ["alt+a", "alt+s"], "command": "show_arduino_menu"},
+    {"keys": ["alt+a", "alt+r"], "command": "update_menu"},
+    {"keys": ["alt+a", "alt+n"], "command": "new_sketch"},
+    {"keys": ["alt+a", "alt+d"], "command": "show_sketch_folder"},
+    {"keys": ["alt+a", "alt+b"], "command": "compile_sketch"},
+    {"keys": ["alt+a", "alt+u"], "command": "upload_sketch"},
+    {"keys": ["alt+a", "alt+p"], "command": "upload_using_programmer"},
+    {"keys": ["alt+a", "alt+e"], "command": "set_extra_flag"},
+    {"keys": ["alt+b", "alt+b"], "command": "burn_bootloader"},
+
+    {"keys": ["alt+m", "alt+r"], "command": "run_serial_monitor"},
+    {"keys": ["alt+m", "alt+m"], "command": "send_serial_message"},
+
+    {"keys": ["alt+t", "alt+a"], "command": "auto_format"},
+    {"keys": ["alt+t", "alt+z"], "command": "archive_sketch"},
+
+    {"keys": ["alt+t", "alt+f"], "command": "toggle_full_compilation"},
+    {"keys": ["alt+t", "alt+b"], "command": "show_compilation_output"},
+    {"keys": ["alt+t", "alt+u"], "command": "show_upload_output"},
+    {"keys": ["alt+t", "alt+v"], "command": "verify_code"},
+    {"keys": ["alt+t", "alt+g"], "command": "toggle_bare_gcc_only"},
+    {"keys": ["alt+t", "alt+p"], "command": "toggle_big_project"},
+    {"keys": ["alt+t", "alt+w"], "command": "toggle_open_project_in_new_window"},
+
+    {"keys": ["alt+c", "alt+a"], "command": "choose_arduino_folder"},
+    {"keys": ["alt+c", "alt+s"], "command": "change_sketchbook_folder"},
+    {"keys": ["alt+c", "alt+b"], "command": "choose_build_folder"},
+
+    {"keys": ["alt+r", "alt+s"], "command": "open_ref", "args": {"url": "Guide_index"}},
+    {"keys": ["alt+r", "alt+t"], "command": "open_ref", "args": {"url": "Guide_Troubleshooting"}},
+    {"keys": ["alt+r", "alt+r"], "command": "open_ref", "args": {"url": "index"}},
+    {"keys": ["alt+r", "alt+f"], "command": "find_in_reference"},
+    {"keys": ["alt+r", "alt+q"], "command": "open_ref", "args": {"url": "FAQ"}},
+
+    {"keys": ["alt+h", "alt+a"], "command": "open_url", "args": {"url": "http://arduino.cc"}},
+    {"keys": ["alt+h", "alt+d"], "command": "stino_documents"},
+    {"keys": ["alt+h", "alt+s"], "command": "about_stino"},
+
+    {"keys": ["alt+l", "alt+s"], "command": "show_sketch_list"},
+    {"keys": ["alt+l", "alt+e"], "command": "show_example_list"},
+    {"keys": ["alt+l", "alt+i"], "command": "show_library_list"},
+    {"keys": ["alt+l", "alt+b"], "command": "show_board_list"},
+    {"keys": ["alt+l", "alt+o"], "command": "show_sub_board_list"},
+    {"keys": ["alt+l", "alt+g"], "command": "show_programmer_list"},
+    {"keys": ["alt+l", "alt+p"], "command": "show_serial_list"},
+    {"keys": ["alt+l", "alt+b"], "command": "show_baudrate_list"},
+    {"keys": ["alt+l", "alt+x"], "command": "show_line_end_list"},
+    {"keys": ["alt+l", "alt+m"], "command": "show_mode_list"},
+    {"keys": ["alt+l", "alt+l"], "command": "show_language_list"}
+]

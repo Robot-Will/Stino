@@ -242,7 +242,7 @@ class VerifyCodeCommand(sublime_plugin.WindowCommand):
         return verify_code
 
 
-class ToggleBareGccOnly(sublime_plugin.WindowCommand):
+class ToggleBareGccOnlyCommand(sublime_plugin.WindowCommand):
     def run(self):
         bare_gcc = stino.settings.get('bare_gcc', False)
         stino.settings.set('bare_gcc', not bare_gcc)
@@ -395,11 +395,10 @@ class ToggleBigProject(sublime_plugin.WindowCommand):
         return big_project
 
 
-class ToggleOpenProjectInNewWindow(sublime_plugin.WindowCommand):
+class ToggleOpenProjectInNewWindowCommand(sublime_plugin.WindowCommand):
     def run(self):
         new_window = stino.settings.get('open_project_in_new_window', False)
         stino.settings.set('open_project_in_new_window', not new_window)
-        stino.main.update_menu()
 
     def is_checked(self):
         new_window = stino.settings.get('open_project_in_new_window', False)
