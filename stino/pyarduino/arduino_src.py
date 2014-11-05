@@ -204,6 +204,10 @@ def generate_prototypes_from_files(files):
         src_text = f.read()
         prototypes = generate_prototypes_from_src(src_text)
         all_prototypes += prototypes
+    if 'void setup()' in all_prototypes:
+        all_prototypes.remove('void setup()')
+    if 'void loop()' in all_prototypes:
+        all_prototypes.remove('void loop()')
     return all_prototypes
 
 

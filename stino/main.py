@@ -154,10 +154,16 @@ def import_library(view, edit, library_path):
     target_arch = arduino_info.get_target_board_info().get_target_arch()
     library = pyarduino.arduino_library.Library(library_path)
     h_files = library.list_h_files(target_arch)
-    text = ''
-    for h_file in h_files:
-        text += '#include <%s>\n' % h_file.get_name()
-    text += '\n'
+
+    region = sublime.Region(0, view.size())
+    src_text = view.substr(region)
+    headers = pyarduino.arduino_src.list_headers_from_src(src_text)
+    h_files = [f for f in h_files if not f.get_name() in headers]
+
+    includes = ['#include ' + f.get_name() for f in h_files]
+    text = '\n'.join(includes)
+    if text:
+        text += '\n'
     view.insert(edit, 0, text)
 
 
@@ -259,7 +265,7 @@ def archive_sketch(window, sketch_path):
         for file_name in file_names:
             opened_zipfile.write(file_name)
         opened_zipfile.close()
-        message_queue.put('Done writing {0}.\\n', zip_file_path)
+        message_queue.put('Archive sketch as: {0}.\\n', zip_file_path)
     message_queue.print_screen(one_time=True)
 
 

@@ -20,12 +20,36 @@ import time
 from . import pyserial
 from . import sys_info
 from . import settings
+from . import board_port
+
 
 if sys_info.get_os_name() == 'windows':
     if sys_info.get_python_version() < 3:
         import _winreg as winreg
     else:
         import winreg
+
+
+def list_board_ports():
+    board_ports = []
+    serial_ports = list_serial_ports()
+    for serial_port in serial_ports:
+        board_name = resolve_device_attached_to(serial_port)
+        label = serial_port
+        if board_name:
+            label += '(%s)' % board_name
+        port = board_port.BoardPort()
+        port.set_address(serial_port)
+        port.set_protocol('serial')
+        port.set_board_name(board_name)
+        port.set_label(label)
+        board_ports.append(port)
+    return board_ports
+
+
+def resolve_device_attached_to(serial_port):
+    device_name = ''
+    return device_name
 
 
 def list_serial_ports():
@@ -64,7 +88,8 @@ def list_win_serial_ports():
 def list_osx_serial_ports():
     serial_ports = []
     dev_path = '/dev/'
-    dev_names = ['tty.*', 'cu.*']
+    dev_names = ['tty.usbserial-*', 'cu.usbserial-*',
+                 'tty.usbmodem*', 'cu.usbmodem*']
     for dev_name in dev_names:
         pattern = dev_path + dev_name
         serial_ports += glob.glob(pattern)
