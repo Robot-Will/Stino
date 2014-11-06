@@ -451,3 +451,8 @@ class PanelOutputCommand(sublime_plugin.TextCommand):
         pos = self.view.size()
         self.view.insert(edit, pos, text)
         self.view.show(pos)
+
+
+class ShowItemListCommand(sublime_plugin.WindowCommand):
+    def run(self, item_type):
+        print(item_type)

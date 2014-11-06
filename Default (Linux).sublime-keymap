@@ -37,15 +37,15 @@
     {"keys": ["alt+h", "alt+d"], "command": "stino_documents"},
     {"keys": ["alt+h", "alt+s"], "command": "about_stino"},
 
-    {"keys": ["alt+l", "alt+s"], "command": "show_sketch_list"},
-    {"keys": ["alt+l", "alt+e"], "command": "show_example_list"},
-    {"keys": ["alt+l", "alt+i"], "command": "show_library_list"},
-    {"keys": ["alt+l", "alt+b"], "command": "show_board_list"},
-    {"keys": ["alt+l", "alt+o"], "command": "show_sub_board_list"},
-    {"keys": ["alt+l", "alt+g"], "command": "show_programmer_list"},
-    {"keys": ["alt+l", "alt+p"], "command": "show_serial_list"},
-    {"keys": ["alt+l", "alt+b"], "command": "show_baudrate_list"},
-    {"keys": ["alt+l", "alt+x"], "command": "show_line_end_list"},
-    {"keys": ["alt+l", "alt+m"], "command": "show_mode_list"},
-    {"keys": ["alt+l", "alt+l"], "command": "show_language_list"}
+    {"keys": ["alt+l", "alt+s"], "command": "show_item_list", "args": {"item_type": "sketch"}},
+    {"keys": ["alt+l", "alt+e"], "command": "show_item_list", "args": {"item_type": "example"}},
+    {"keys": ["alt+l", "alt+i"], "command": "show_item_list", "args": {"item_type": "library"}},
+    {"keys": ["alt+l", "alt+b"], "command": "show_item_list", "args": {"item_type": "board"}},
+    {"keys": ["alt+l", "alt+o"], "command": "show_item_list", "args": {"item_type": "sub_board"}},
+    {"keys": ["alt+l", "alt+g"], "command": "show_item_list", "args": {"item_type": "programmer"}},
+    {"keys": ["alt+l", "alt+p"], "command": "show_item_list", "args": {"item_type": "serial"}},
+    {"keys": ["alt+l", "alt+r"], "command": "show_item_list", "args": {"item_type": "baudrate"}},
+    {"keys": ["alt+l", "alt+x"], "command": "show_item_list", "args": {"item_type": "line_ending"}},
+    {"keys": ["alt+l", "alt+m"], "command": "show_item_list", "args": {"item_type": "display_mode"}},
+    {"keys": ["alt+l", "alt+l"], "command": "show_item_list", "args": {"item_type": "language"}}
 ]

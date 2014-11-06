@@ -148,6 +148,14 @@ def open_sketch(window, sketch_path):
     if views:
         window.focus_view(views[0])
 
+    project_params = window.project_data()
+    if project_params is None:
+        project_params = {}
+    folders = project_params.setdefault('folders', [])
+    folders.append({'follow_symlinks': True, 'path': sketch_path})
+    project_params['folders'] = folders
+    window.set_project_data(project_params)
+
 
 def import_library(view, edit, library_path):
     arduino_info = st_base.get_arduino_info()
