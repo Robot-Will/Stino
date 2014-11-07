@@ -30,13 +30,13 @@ def list_win_volume():
 
 def list_os_root_path():
     root_list = []
+    home_path = os.getenv('HOME')
     os_name = sys_info.get_os_name()
     if os_name == 'windows':
         root_list = list_win_volume()
     elif os_name == 'osx':
-        root_list = ['/Applications']
+        root_list = [home_path, '/Applications']
     else:
-        home_path = os.getenv('HOME')
         root_list = [home_path, '/usr', '/opt']
     return root_list
 
