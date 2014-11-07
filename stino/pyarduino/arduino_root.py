@@ -141,6 +141,7 @@ class SketchbookDir(ArduinoRootDir):
 
 
 def update_ide_path(path):
+    arduino_path = path
     if path and base.sys_info.get_os_name() == 'osx':
         arduino_path = os.path.join(path, 'Contents/Resources/Java')
         if not os.path.isdir(arduino_path):

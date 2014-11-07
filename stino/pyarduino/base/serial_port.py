@@ -128,11 +128,12 @@ def touch_port(serial_port, baudrate):
     time.sleep(0.022)
     ser.setDTR(False)
     ser.close()
-    time.sleep(3)
+    time.sleep(1)
 
 
 def wait_for_port(upload_port, before_ports, message_queue):
     elapsed = 0
+    os_name = sys_info.get_os_name()
     new_port = 'no_serial'
     while elapsed < 1000:
         now_ports = list_serial_ports()
@@ -148,8 +149,8 @@ def wait_for_port(upload_port, before_ports, message_queue):
         time.sleep(0.25)
         elapsed += 25
 
-        if ((sys_info.get_os_name() != 'windows' and elapsed >= 500) or
-                elapsed >= 5000) and upload_port in now_ports:
+        if ((os_name != 'windows' and elapsed >= 500) or elapsed >= 5000)\
+                and (upload_port in now_ports):
             new_port = upload_port
             message_queue.put('Uploading using selected port: {0}.\\n',
                               upload_port)
