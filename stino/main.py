@@ -38,28 +38,59 @@ def set_pyarduino():
     settings.set('user_path', user_path)
 
 
+def load_keywords():
+    arduino_info = st_base.get_arduino_info()
+    ide_dir = arduino_info.get_ide_dir()
+    keywords = ide_dir.get_keywords()
+
+    for root in arduino_info.get_root_dirs():
+        libraries = root.get_libraries()
+        for library in libraries:
+            keywords += library.get_keywords()
+        for package in root.get_packages():
+            for platform in package.get_platforms():
+                libraries = platform.get_libraries()
+                for library in libraries:
+                    keywords += library.get_keywords()
+    return keywords
+
+
 def create_completions():
     user_path = st_base.get_stino_user_path()
     file_path = os.path.join(user_path, 'Stino.sublime-completions')
     completions_file = pyarduino.base.json_file.JSONFile(file_path)
 
-    arduino_info = st_base.get_arduino_info()
-    ide_dir = arduino_info.get_ide_dir()
-    keyword_ids = ide_dir.get_keyword_ids()
-
-    for root in arduino_info.get_root_dirs():
-        libraries = root.get_libraries()
-        for library in libraries:
-            keyword_ids += library.get_keyword_ids()
-        for package in root.get_packages():
-            for platform in package.get_platforms():
-                libraries = platform.get_libraries()
-                for library in libraries:
-                    keyword_ids += library.get_keyword_ids()
-
+    keywords = load_keywords()
+    keyword_ids = [k.get_id() for k in keywords]
     completions_dict = {'scope': 'source.arduino'}
     completions_dict['completions'] = keyword_ids
     completions_file.set_data(completions_dict)
+
+
+def create_syntax_file():
+    keywords = load_keywords()
+    LITERAL1s = [k.get_id() for k in keywords if k.get_type() == 'LITERAL1']
+    KEYWORD1s = [k.get_id() for k in keywords if k.get_type() == 'KEYWORD1']
+    KEYWORD2s = [k.get_id() for k in keywords if k.get_type() == 'KEYWORD2']
+    KEYWORD3s = [k.get_id() for k in keywords if k.get_type() == 'KEYWORD3']
+    LITERAL1_text = '|'.join(LITERAL1s)
+    KEYWORD1_text = '|'.join(KEYWORD1s)
+    KEYWORD2_text = '|'.join(KEYWORD2s)
+    KEYWORD3_text = '|'.join(KEYWORD3s)
+
+    preset_path = st_base.get_preset_path()
+    file_path = os.path.join(preset_path, 'Arduino.syntax')
+    template_file = pyarduino.base.abs_file.File(file_path)
+    text = template_file.read()
+    text = text.replace('${LITERAL1}', LITERAL1_text)
+    text = text.replace('${KEYWORD1}', KEYWORD1_text)
+    text = text.replace('${KEYWORD2}', KEYWORD2_text)
+    text = text.replace('${KEYWORD3}', KEYWORD3_text)
+
+    user_path = st_base.get_stino_user_path()
+    file_path = os.path.join(user_path, 'Arduino.tmLanguage')
+    syntax_file = pyarduino.base.abs_file.File(file_path)
+    syntax_file.write(text)
 
 
 def create_sub_menus():
@@ -95,6 +126,7 @@ def update_menu():
     i18n.load()
     create_menus()
     create_completions()
+    create_syntax_file()
 
 
 def create_sketch(sketch_name):
@@ -532,3 +564,11 @@ def set_status(view):
 
         text = ', '.join(infos)
         view.set_status('Arduino', text)
+
+
+def show_items_panel(window, item_type):
+    sublime.set_timeout(lambda: window.show_quick_panel(['1', '2'], ppp))
+
+
+def ppp(index):
+    print(index)
