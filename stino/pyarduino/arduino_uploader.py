@@ -73,6 +73,7 @@ class Uploader(object):
             bootloader_file = self.params.get('bootloader.file', '')
             if 'caterina' in bootloader_file.lower():
                 self.do_touch = True
+                self.wait_for_upload_port = True
             elif self.params.get('upload.use_1200bps_touch') == 'true':
                 self.do_touch = True
 

@@ -211,8 +211,11 @@ def generate_prototypes_from_files(files):
     return all_prototypes
 
 
-def combine_ino_files(ino_files):
+def combine_ino_files(arduino_version, ino_files):
     prototypes = generate_prototypes_from_files(ino_files)
+    arduino_include = '#include "Arduino.h"\n'
+    if arduino_version < 100:
+        arduino_include = '#include "WProgram.h"\n'
 
     combined_src = ''
     cur_file = ino_files[0]
@@ -229,7 +232,7 @@ def combine_ino_files(ino_files):
 
     combined_src += first_line
     combined_src += header
-    combined_src += '#include "Arduino.h"\n'
+    combined_src += arduino_include
     for prototype in prototypes:
         combined_src += prototype
         combined_src += ';\n'

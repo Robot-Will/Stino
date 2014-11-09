@@ -312,8 +312,9 @@ def add_extra_params(arduino_info, params):
         build_board = (target_arch + '_' + board_name).upper()
         params['build.board'] = build_board
 
-    if 'build.vid' in params and not 'build.extra_flags' in params:
-        params['build.extra_flags'] = '{build.usb_flags}'
+    if 'build.vid' in params and not params['build.extra_flags']:
+        params['build.extra_flags'] = \
+            '-DUSB_VID={build.vid} -DUSB_PID={build.pid}'
 
     if not 'upload.maximum_data_size' in params:
         params['upload.maximum_data_size'] = '0'

@@ -147,7 +147,10 @@ class Compiler(object):
 
             ino_changed = check_ino_change(ino_files, combined_file)
             if self.is_new_build or ino_changed:
-                combined_src = arduino_src.combine_ino_files(ino_files)
+                ide_dir = self.arduino_info.get_ide_dir()
+                arduino_version = int(ide_dir.get_version())
+                combined_src = arduino_src.combine_ino_files(
+                    arduino_version, ino_files)
                 combined_file.write(combined_src)
                 cpp_obj_pair = (combined_file_path, combined_obj_path)
 
