@@ -89,14 +89,15 @@ class ArduinoIdeDir(ArduinoRootDir):
         if not self.version_name:
             self.version_name = 'not found'
 
-        self.version = ''
+        version_txt = self.version_name
+        if ':' in version_txt:
+            version_txt = version_txt.split(':')[1]
         version_txt = self.version_name.replace('.', '')
+        self.version = '0'
         for char in version_txt:
             if not char in '0123456789':
                 break
             self.version += char
-        if not self.version:
-            self.version = '000'
 
     def load_keywords(self):
         lib_path = os.path.join(self.path, 'lib')
@@ -172,12 +173,15 @@ def get_default_arduino_ide_path():
         path = '/usr/share/arduino'
     elif os_name == 'osx':
         path = '/Applications/arduino.app'
+        if not os.path.isdir(path):
+            home_path = os.getenv('HOME')
+            path = os.path.join(home_path, 'Applications/arduino.app')
     elif os_name == 'windows':
         path = r'c:\program files (x86)\arduino'
         if not os.path.isdir(path):
             path = r'c:\program files\arduino'
     if not is_arduino_ide_path(update_ide_path(path)):
-        path = ''
+        path = get_sketchbook_path()
     return path
 
 
