@@ -92,12 +92,13 @@ class ArduinoIdeDir(ArduinoRootDir):
         version_txt = self.version_name
         if ':' in version_txt:
             version_txt = version_txt.split(':')[1]
-        version_txt = self.version_name.replace('.', '')
+        version_txt = version_txt.replace('.', '')
         self.version = '0'
         for char in version_txt:
             if not char in '0123456789':
                 break
             self.version += char
+        self.version = str(int(self.version))
 
     def load_keywords(self):
         lib_path = os.path.join(self.path, 'lib')
