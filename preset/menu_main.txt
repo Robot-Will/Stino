@@ -24,7 +24,7 @@
                             {
                                 "caption": "Settings - User",
                                 "command": "open_file",
-                                "args": {"file": "${packages}/User/stino/Preferences.stino-settings"}
+                                "args": {"file": "${packages}/User/Stino/Preferences.stino-settings"}
                             },
                             {"caption": "-"},
                             {
@@ -55,7 +55,7 @@
                                 "caption": "Key Bindings - User",
                                 "command": "open_file",
                                 "args": {
-                                    "file": "${packages}/User/stino/Default (OSX).sublime-keymap",
+                                    "file": "${packages}/User/Stino/Default (OSX).sublime-keymap",
                                     "platform": "OSX"
                                 }
                             },
@@ -63,7 +63,7 @@
                                 "caption": "Key Bindings - User",
                                 "command": "open_file",
                                 "args": {
-                                    "file": "${packages}/User/stino/Default (Linux).sublime-keymap",
+                                    "file": "${packages}/User/Stino/Default (Linux).sublime-keymap",
                                     "platform": "Linux"
                                 }
                             },
@@ -71,7 +71,7 @@
                                 "caption": "Key Bindings - User",
                                 "command": "open_file",
                                 "args": {
-                                    "file": "${packages}/User/stino/Default (Windows).sublime-keymap",
+                                    "file": "${packages}/User/Stino/Default (Windows).sublime-keymap",
                                     "platform": "Windows"
                                 }
                             },
