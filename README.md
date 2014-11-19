@@ -11,11 +11,11 @@ Stino is a [Sublime Text](http://www.sublimetext.com) plugin, which provides an 
 
 
 ## Installation
-This version Stino can only be installed by manual installation. If you installed the previous version via Package Control, please remove or disable it firstly (see issue #179). Manual installation has only two steps:
+This version Stino can only be installed by manual installation. If you installed the previous version via Package Control, please remove or disable it firstly (see issue [#179](https://github.com/Robot-Will/Stino/issues/179)). Manual installation has only two steps:
 
 1. Click menu `Preferences`->`Browse Packages...` to open the packages folder.
 
-2. Download [zip file](https://github.com/Robot-Will/Stino/archive/new-stino.zip), and extract the folder to the packages folder, and the Arduino menu appears.
+2. Download [zip file](https://github.com/Robot-Will/Stino/archive/new-stino.zip), extract the folder to the packages folder, rename it from `Stino-new-stino` to `Stino` and the Arduino menu appears.
 
 
 ## License
