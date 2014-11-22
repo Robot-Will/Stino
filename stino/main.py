@@ -200,7 +200,7 @@ def import_library(view, edit, library_path):
     headers = pyarduino.arduino_src.list_headers_from_src(src_text)
     h_files = [f for f in h_files if not f.get_name() in headers]
 
-    includes = ['#include ' + f.get_name() for f in h_files]
+    includes = ['#include <%s>' % f.get_name() for f in h_files]
     text = '\n'.join(includes)
     if text:
         text += '\n'
