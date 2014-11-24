@@ -69,7 +69,7 @@ class Uploader(object):
             if serial_monitor:
                 serial_monitor.stop()
 
-        if not using_programmer or not self.params.get('upload.protocol'):
+        if not using_programmer and self.params.get('upload.protocol'):
             bootloader_file = self.params.get('bootloader.file', '')
             if 'caterina' in bootloader_file.lower():
                 self.do_touch = True
@@ -104,7 +104,7 @@ class Uploader(object):
         self.params = arduino_target_params.replace_param_values(self.params)
 
     def prepare_cmd(self, using_programmer):
-        if not using_programmer or not self.params.get('upload.protocol'):
+        if not using_programmer and self.params.get('upload.protocol'):
             self.cmd = self.params.get('upload.pattern')
         else:
             self.cmd = self.params.get('program.pattern')

@@ -143,17 +143,25 @@ def create_sketch(sketch_name):
         index += 1
     os.makedirs(sketch_path)
 
-    preset_path = st_base.get_preset_path()
-    template_file_path = os.path.join(preset_path, 'template.ino')
-    template_file = pyarduino.base.abs_file.File(template_file_path)
-    src_code = template_file.read()
+    settings = st_base.get_settings()
+    bare_gcc = settings.get('bare_gcc', False)
 
-    ino_file_name = sketch_name + '.ino'
-    ino_file_path = os.path.join(sketch_path, ino_file_name)
-    ino_file = pyarduino.base.abs_file.File(ino_file_path)
+    if bare_gcc:
+        ext = '.cpp'
+        src_code = '//${ino_file_name}\n'
+    else:
+        ext = '.ino'
+        preset_path = st_base.get_preset_path()
+        template_file_path = os.path.join(preset_path, 'template.ino')
+        template_file = pyarduino.base.abs_file.File(template_file_path)
+        src_code = template_file.read()
 
-    src_code = src_code.replace('${ino_file_name}', ino_file_name)
-    ino_file.write(src_code)
+    src_file_name = sketch_name + ext
+    src_file_path = os.path.join(sketch_path, src_file_name)
+    src_file = pyarduino.base.abs_file.File(src_file_path)
+
+    src_code = src_code.replace('${ino_file_name}', src_file_name)
+    src_file.write(src_code)
 
     arduino_info.reload()
     arduino_info.update()
@@ -218,31 +226,34 @@ def handle_sketch(view, func, using_programmer=False):
         name = str(time.time()).split('.')[1]
         sketch_path = os.path.join(tmp_path, name)
         os.makedirs(sketch_path)
-        ino_file_name = name + '.ino'
-        ino_file_path = os.path.join(sketch_path, ino_file_name)
+
+        settings = st_base.get_settings()
+        bare_gcc = settings.get('bare_gcc', False)
+        if bare_gcc:
+            ext = '.cpp'
+        else:
+            ext = '.ino'
+        src_file_name = name + ext
+        src_file_path = os.path.join(sketch_path, src_file_name)
 
         region = sublime.Region(0, view.size())
         text = view.substr(region)
-        ino_file = pyarduino.base.abs_file.File(ino_file_path)
-        ino_file.write(text)
+        src_file = pyarduino.base.abs_file.File(src_file_path)
+        src_file.write(text)
 
         view.set_scratch(True)
         window = view.window()
         window.run_command('close')
-        view = window.open_file(ino_file_path)
+        view = window.open_file(src_file_path)
 
     if view.is_dirty():
         view.run_command('save')
     file_path = view.file_name()
-    if file_path:
-        sketch_path = os.path.dirname(file_path)
-        if using_programmer:
-            func(view, sketch_path, True)
-        else:
-            func(view, sketch_path)
+    sketch_path = os.path.dirname(file_path)
+    func(view, sketch_path, using_programmer)
 
 
-def build_sketch(view, sketch_path):
+def build_sketch(view, sketch_path, using_programmer=False):
     window = view.window()
     console_name = 'build|' + sketch_path + '|' + str(time.time())
     console = st_console.Console(window, name=console_name)
@@ -250,7 +261,7 @@ def build_sketch(view, sketch_path):
     compiler.build()
 
 
-def upload_sketch(view, sketch_path, using_programmer=False):
+def upload_sketch(view, sketch_path, using_programmer):
     window = view.window()
     console_name = 'upload|' + sketch_path + '|' + str(time.time())
     console = st_console.Console(window, name=console_name)
