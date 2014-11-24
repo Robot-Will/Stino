@@ -18,8 +18,16 @@ This version Stino can only be installed by manual installation. If you installe
 2. Download [zip file](https://github.com/Robot-Will/Stino/archive/new-stino.zip), and extract the folder to the packages folder, and the Arduino menu appears.
 
 
-## Contributes
-Special thanks to all of [contributors](https://github.com/Robot-Will/Stino/blob/new-stino/CONTRIBUTORS.md).
+## Contribution
+Special thanks to all of [contributors](https://github.com/Robot-Will/Stino/blob/new-stino/CONTRIBUTORS.md). As the author is not a programmer and is not a native English speaker,  you might help him to improve this plugin.
+
+1. Star the plugin
+2. Documents
+3. Translation
+4. Bug fix
+5. Electronic boards
+6. Donation
+
 
 ## License
 Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated documentation files (the "Software"), to deal in the Software without restriction, including without limitation the rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit persons to whom the Software is
