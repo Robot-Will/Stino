@@ -64,6 +64,22 @@ class Menu(object):
         if not self.params:
             self.params = {'caption': '-'}
 
+        plugin_path = st_base.get_plugin_path()
+        dir_name = os.path.basename(plugin_path)
+        args = self.params.get('args', {})
+        if args:
+            for key in args:
+                value = args.get(key)
+                try:
+                    value + 'str'
+                except TypeError:
+                    continue
+                else:
+                    if '${Stino}' in value:
+                        value = value.replace('${Stino}', dir_name)
+                        args[key] = value
+        self.params['args'] = args
+
         self.sub_menus = []
         menu_dicts = self.params.get('children', [])
         for menu_dict in menu_dicts:
