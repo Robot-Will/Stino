@@ -72,6 +72,15 @@ class TargetParamsInfo(object):
 
         add_extra_params(self.arduino_info, self.target_params)
 
+        for key in self.target_params:
+            value = self.target_params.get(key)
+            if '-P{serial.port}' in value:
+                value = value.replace('-P{serial.port}', '"-P{serial.port}"')
+            if '--port={serial.port.file}' in value:
+                value = value.replace('--port={serial.port.file}',
+                                      '"--port={serial.port.file}"')
+            self.target_params[key] = value
+
     def load_paths(self):
         target_board_info = self.arduino_info.get_target_board_info()
         target_board_params = target_board_info.get_params()
