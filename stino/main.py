@@ -148,19 +148,20 @@ def create_sketch(sketch_name):
 
     if bare_gcc:
         ext = '.cpp'
-        src_code = '//${ino_file_name}\n'
     else:
         ext = '.ino'
-        preset_path = st_base.get_preset_path()
-        template_file_path = os.path.join(preset_path, 'template.ino')
-        template_file = pyarduino.base.abs_file.File(template_file_path)
-        src_code = template_file.read()
+
+    template_file_name = 'template' + ext
+    preset_path = st_base.get_preset_path()
+    template_file_path = os.path.join(preset_path, template_file_name)
+    template_file = pyarduino.base.abs_file.File(template_file_path)
+    src_code = template_file.read()
 
     src_file_name = sketch_name + ext
     src_file_path = os.path.join(sketch_path, src_file_name)
     src_file = pyarduino.base.abs_file.File(src_file_path)
 
-    src_code = src_code.replace('${ino_file_name}', src_file_name)
+    src_code = src_code.replace('${src_file_name}', src_file_name)
     src_file.write(src_code)
 
     arduino_info.reload()

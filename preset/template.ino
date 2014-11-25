@@ -1,4 +1,4 @@
-//${ino_file_name}
+//${src_file_name}
 
 int led = 13;
 
