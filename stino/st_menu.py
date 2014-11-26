@@ -78,7 +78,7 @@ class Menu(object):
                     if '${Stino}' in value:
                         value = value.replace('${Stino}', dir_name)
                         args[key] = value
-        self.params['args'] = args
+            self.params['args'] = args
 
         self.sub_menus = []
         menu_dicts = self.params.get('children', [])
