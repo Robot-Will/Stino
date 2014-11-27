@@ -1,0 +1,8 @@
+<snippet>
+    <content><![CDATA[
+if ${1:constant-expression}
+]]></content>
+    <tabTrigger>if</tabTrigger>
+    <scope>source.arduino</scope>
+    <description>Arduino Macro if</description>
+</snippet>

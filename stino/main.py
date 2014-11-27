@@ -60,8 +60,13 @@ def create_completions():
     file_path = os.path.join(user_path, 'Stino.sublime-completions')
     completions_file = pyarduino.base.json_file.JSONFile(file_path)
 
+    cpp_keywords = ['define', 'error', 'include', 'elif', 'endif']
+    cpp_keywords += ['ifdef', 'ifndef', 'undef', 'line', 'pragma']
+
     keywords = load_keywords()
     keyword_ids = [k.get_id() for k in keywords]
+    keyword_ids += cpp_keywords
+
     completions_dict = {'scope': 'source.arduino'}
     completions_dict['completions'] = keyword_ids
     completions_file.set_data(completions_dict)
