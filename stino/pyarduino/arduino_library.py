@@ -101,31 +101,32 @@ class Library(base.abs_file.Dir):
         properties_file = arduino_params_file.ParamsFile(properties_file_path)
         self.property_dict = properties_file.get_params()
 
-    def list_src_dirs(self, target_arch='avr'):
+    def list_src_dirs(self, target_arch='avr', with_util=True):
         src_dirs = [self.src_dir]
         arch_path = os.path.join(self.src_path, target_arch)
         if os.path.isdir(arch_path):
             arch_dir = base.abs_file.Dir(arch_path)
             src_dirs.append(arch_dir)
 
-        utility_dirs = []
-        for src_dir in src_dirs:
-            utility_path = os.path.join(src_dir.get_path(), 'utility')
-            if os.path.isdir(utility_path):
-                utility_dir = base.abs_file.Dir(utility_path)
-                utility_dirs.append(utility_dir)
-        src_dirs += utility_dirs
+        if with_util:
+            utility_dirs = []
+            for src_dir in src_dirs:
+                utility_path = os.path.join(src_dir.get_path(), 'utility')
+                if os.path.isdir(utility_path):
+                    utility_dir = base.abs_file.Dir(utility_path)
+                    utility_dirs.append(utility_dir)
+            src_dirs += utility_dirs
         return src_dirs
 
-    def list_files(self, EXTS, target_arch='avr'):
+    def list_files(self, EXTS, target_arch='avr', with_util=True):
         files = []
-        src_dirs = self.list_src_dirs(target_arch)
+        src_dirs = self.list_src_dirs(target_arch, with_util)
         for src_dir in src_dirs:
             files += src_dir.list_files_of_extensions(EXTS)
         return files
 
     def list_h_files(self, target_arch='avr'):
-        return self.list_files(arduino_src.H_EXTS, target_arch)
+        return self.list_files(arduino_src.H_EXTS, target_arch, False)
 
     def list_cpp_files(self, target_arch='avr'):
         return self.list_files(arduino_src.CPP_EXTS, target_arch)

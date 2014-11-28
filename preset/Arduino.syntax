@@ -6,6 +6,8 @@
 	<array>
 		<string>ino</string>
 		<string>pde</string>
+		<string>c</string>
+		<string>cpp</string>
 	</array>
 	<key>foldingStartMarker</key>
 	<string>/\*\*|\{\s*$</string>
@@ -23,31 +25,31 @@
 			<key>match</key>
 			<string>\b(${KEYWORD1})\b</string>
 			<key>name</key>
-			<string>storage.type.source.arduino</string>
+			<string>storage.type.arduino</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(${LITERAL1})\b</string>
 			<key>name</key>
-			<string>constant.language.source.arduino</string>
+			<string>constant.language.arduino</string>
 		</dict>
 		<dict>
 			<key>match</key>
-			<string>\b(${KEYWORD1})</string>
+			<string>\b(${KEYWORD1})\b</string>
 			<key>name</key>
-			<string>storage.modifier.source.arduino</string>
+			<string>storage.modifier.arduino</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(${KEYWORD2})\b</string>
 			<key>name</key>
-			<string>support.function.source.arduino</string>
+			<string>support.function.arduino</string>
 		</dict>
 		<dict>
 			<key>match</key>
 			<string>\b(${KEYWORD3})\b</string>
 			<key>name</key>
-			<string>support.class.source.arduino</string>
+			<string>support.class.arduino</string>
 		</dict>
 	</array>
 	<key>scopeName</key>

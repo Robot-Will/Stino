@@ -88,8 +88,7 @@ def list_win_serial_ports():
 def list_osx_serial_ports():
     serial_ports = []
     dev_path = '/dev/'
-    dev_names = ['tty.usbserial-*', 'cu.usbserial-*',
-                 'tty.usbmodem*', 'cu.usbmodem*']
+    dev_names = ['tty.*', 'cu.*']
     for dev_name in dev_names:
         pattern = dev_path + dev_name
         serial_ports += glob.glob(pattern)
