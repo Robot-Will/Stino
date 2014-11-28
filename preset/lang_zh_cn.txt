@@ -1,0 +1,264 @@
+# LANGUAGE: 简体中文 (Chinese Simplified)
+# Chinese Simplified translations for Stino Plugin.
+# Copyright (C) 2012-2013 Robot-Will
+# This file is distributed under the same license as the Stino Plugin.
+# Robot Will <EMAIL@ADDRESS>
+#
+
+msgid "New Sketch"
+msgstr "新建项目"
+
+msgid "Serial Monitor"
+msgstr "串口监视器"
+
+msgid "Select Build Folder"
+msgstr "选择编译目录"
+
+msgid "Show Arduino Menu"
+msgstr "显示Arduino菜单"
+
+msgid "Programmer"
+msgstr "编程器"
+
+msgid "Select Arduino Application Folder"
+msgstr "选择Arduino程序目录"
+
+msgid "Extra compilation flags:"
+msgstr "额外编译参数:"
+
+msgid "Extra Flags"
+msgstr "额外编译参数"
+
+msgid "Frequently Asked Questions"
+msgstr "常见问题"
+
+msgid "Preferences"
+msgstr "参数设置"
+
+msgid "Full Compilation"
+msgstr "完全编译"
+
+msgid "Show Verbose Output"
+msgstr "显示详细输出"
+
+msgid "Reference"
+msgstr "参考手册"
+
+msgid "Arduino {0} is found at {1}.\n"
+msgstr "在{1}发现Arduino {0}.\n"
+
+msgid "Build folder is changed to {0}.\n"
+msgstr "编译目录设置为{0}.\n"
+
+msgid "Upload"
+msgstr "下载"
+
+msgid "Archive Sketch"
+msgstr "打包项目"
+
+msgid "Global Setting"
+msgstr "全局设置"
+
+msgid "Upload by Using Programmer"
+msgstr "使用编程器下载"
+
+msgid "Sketchbook is changed to {0}.\n"
+msgstr "项目库目录设置为{0}.\n"
+
+msgid "Serial Port"
+msgstr "串口"
+
+msgid "Auto Format"
+msgstr "自动格式化"
+
+msgid "Language"
+msgstr "语言"
+
+msgid "About Stino"
+msgstr "关于Stino"
+
+msgid "Import Library"
+msgstr "导入库"
+
+msgid "Baudrate"
+msgstr "波特率"
+
+msgid "Verify/Compile"
+msgstr "验证/编译"
+
+msgid "Find in Reference"
+msgstr "在参考手册中查找"
+
+msgid "Troubleshooting"
+msgstr "解决问题"
+
+msgid "Getting Started"
+msgstr "快速入门"
+
+msgid "Burn Bootloader"
+msgstr "烧录Bootloader"
+
+msgid "References"
+msgstr "参考手册"
+
+msgid "Send"
+msgstr "发送"
+
+msgid "Change Sketchbook Folder"
+msgstr "更改项目库目录"
+
+msgid "Stop"
+msgstr "停止"
+
+msgid "Compilation"
+msgstr "编译"
+
+msgid "Visit Arduino Website"
+msgstr "访问Arduino网站"
+
+msgid "Examples"
+msgstr "示例"
+
+msgid "Sketchbook"
+msgstr "项目库"
+
+msgid "Show Sketch Folder"
+msgstr "打开项目目录"
+
+msgid "Board"
+msgstr "主控板"
+
+msgid "Help"
+msgstr "帮助"
+
+msgid "Update Menu"
+msgstr "更新菜单"
+
+msgid "Build Options"
+msgstr "编译选项"
+
+msgid "Board Options"
+msgstr "主控板选项"
+
+msgid "None"
+msgstr "无"
+
+msgid "Documents"
+msgstr "文档"
+
+msgid "Processor"
+msgstr "处理器"
+
+msgid "USB Type"
+msgstr "USB类型"
+
+msgid "CPU Speed"
+msgstr "CPU速度"
+
+msgid "Keyboard Layout"
+msgstr "键盘布局"
+
+msgid "Show Compilation Output"
+msgstr "显示编译详细信息"
+
+msgid "Show Upload Output"
+msgstr "显示下载详细信息"
+
+msgid "Verify Code after Upload"
+msgstr "下载后校验代码"
+
+msgid "Line Ending"
+msgstr "行尾"
+
+msgid "New Line"
+msgstr "换行"
+
+msgid "Carriage Return"
+msgstr "回车"
+
+msgid "Both NL & CR"
+msgstr "换行和回车"
+
+msgid "Text"
+msgstr "文本"
+
+msgid "Hex"
+msgstr "十六进制"
+
+msgid "Display Mode"
+msgstr "显示模式"
+
+msgid "Run"
+msgstr "运行"
+
+msgid "Bare GCC Build (No Arduino code-munging)"
+msgstr "仅用GCC编译(不使用Arduino核心代码)"
+
+msgid "Big Project"
+msgstr "大型项目"
+
+msgid "Serial port {0} already in use. Try quitting any programs that may be using it.\n"
+msgstr "串口{0}正在使用中。请尝试关闭可能使用此串口的程序。\n"
+
+msgid "[SEND] {0}\n"
+msgstr "[发送] {0}\n"
+
+msgid "Ports {{0}}/{{1}} => {{2}}\n"
+msgstr "串口{{0}}/{{1}} => {{2}}\n"
+
+msgid "Found new upload port: {0}.\n"
+msgstr "发现新的串口：{0}。\n"
+
+msgid "Uploading using selected port: {0}.\n"
+msgstr "用串口{0}下载。\n"
+
+msgid "Couldn't find a Leonardo on the selected port. Check that you have the correct port selected. If it is correct, try pressing the board's reset button after initiating the upload.\n"
+msgstr "在所选的串口不能识别Leonardo主控板。请检查你是否选择了正确的串口。如果没错，请尝试在开始下载后，按一下主控板上的重启按钮。\n"
+
+msgid "Open Sketch in New Window"
+msgstr "在新窗口里打开项目"
+
+msgid "[Stino - Start  burning bootloader...]\n"
+msgstr "[Stino - 开始下载bootloader...]\n"
+
+msgid "[Stino - Done  burning bootloader.]\n"
+msgstr "[Stino - 下载bootloader完成。]\n"
+
+msgid "No board exists. Please Select Arduino Application Folder or Change Arduino Sketchbook Folder in Arduino Menu -> Preferences.\n"
+msgstr "没有发现主控板。请在菜单 Arduino -> 参数设置 下选择Arduino程序目录或更改项目库目录。\n"
+
+msgid "[Stino - Start building "{0}"...]\n"
+msgstr "[Stino - 开始编译"{0}"...]\n"
+
+msgid "[Stino - Done building "{0}" in {1}s.]\n"
+msgstr "[Stino - 编译"{0}"完成，共耗时{1}秒。]\n"
+
+msgid "Creating {0}...\n"
+msgstr "创建{0}...\n"
+
+msgid "Sketch uses {0} bytes ({1}%) of program storage space. Maximum is {2} bytes.\n"
+msgstr "本项目使用了{0}字节({1}%)程序存储空间，共有{2}字节。\n"
+
+msgid "Global variables use {0} bytes ({1}%) of dynamic memory, leaving {2} bytes for local variables. Maximum is {3} bytes.\n"
+msgstr "全局变量使用了{0}字节({1}%)内存，剩余{2}字节给局部变量，共有{3}字节。\n"
+
+msgid "[Stino - Exit with error code {0}.]\n"
+msgstr "[Stino - 发生错误，错误代码{0}。]\n"
+
+msgid "[Stino - Start uploading...]\n"
+msgstr "[Stino - 开始下载...]\n"
+
+msgid "[Stino - Done uploading.]\n"
+msgstr "[Stino - 下载完成。]\n"
+
+msgid "Forcing reset using 1200bps open/close on port {0}.\n"
+msgstr "用1200bps打开/关闭串口{0}使其强制重启。\n"
+
+msgid "Archive Sketch {0}...\n"
+msgstr "正在打包项目{0}...\n"
+
+msgid "Error occured while writing {0}.\n"
+msgstr "创建{0}错误。\n"
+
+msgid "Done writing {0}.\n"
+msgstr "创建{0}完成。\n"

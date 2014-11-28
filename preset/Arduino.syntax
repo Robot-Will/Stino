@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<key>fileTypes</key>
+	<array>
+		<string>ino</string>
+		<string>pde</string>
+		<string>c</string>
+		<string>cpp</string>
+	</array>
+	<key>foldingStartMarker</key>
+	<string>/\*\*|\{\s*$</string>
+	<key>foldingStopMarker</key>
+	<string>\*\*/|^\s*\}</string>
+	<key>name</key>
+	<string>Arduino</string>
+	<key>patterns</key>
+	<array>
+		<dict>
+			<key>include</key>
+			<string>source.c++</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b(${KEYWORD1})\b</string>
+			<key>name</key>
+			<string>storage.type.arduino</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b(${LITERAL1})\b</string>
+			<key>name</key>
+			<string>constant.language.arduino</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b(${KEYWORD1})\b</string>
+			<key>name</key>
+			<string>storage.modifier.arduino</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b(${KEYWORD2})\b</string>
+			<key>name</key>
+			<string>support.function.arduino</string>
+		</dict>
+		<dict>
+			<key>match</key>
+			<string>\b(${KEYWORD3})\b</string>
+			<key>name</key>
+			<string>support.class.arduino</string>
+		</dict>
+	</array>
+	<key>scopeName</key>
+	<string>source.arduino</string>
+	<key>uuid</key>
+	<string>1bbff54e-052a-4bca-a9e4-3bc11c7d6e62</string>
+</dict>
+</plist>

@@ -1,0 +1,8 @@
+<snippet>
+    <content><![CDATA[
+undef ${1:constant-expression}
+]]></content>
+    <tabTrigger>undef</tabTrigger>
+    <scope>source.arduino</scope>
+    <description>Arduino Macro undef</description>
+</snippet>
