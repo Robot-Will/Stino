@@ -1,8 +1,8 @@
 {
-    "teensy1": "platform_teensy.txt",
-    "teensy2": "platform_teensy.txt",
-    "teensy3": "platform_teensy3.txt",
-    "teensy31": "platform_teensy3.txt",
-    "teensypp1": "platform_teensy.txt",
-    "teensypp2": "platform_teensy.txt"
+    "Teensy 1.0": "platform_teensy.txt",
+    "Teensy++ 1.0": "platform_teensy.txt",
+    "Teensy 2.0": "platform_teensy.txt",
+    "Teensy++ 2.0": "platform_teensy.txt",
+    "Teensy 3.0": "platform_teensy3.txt",
+    "Teensy 3.1": "platform_teensy3.txt"
 }

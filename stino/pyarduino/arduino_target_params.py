@@ -16,6 +16,7 @@ from __future__ import unicode_literals
 
 import os
 import re
+import time
 
 from . import base
 from . import arduino_platform
@@ -373,23 +374,30 @@ def add_extra_params(arduino_info, params):
             params[key] = value
 
     # For Teensy
-    if 'build.cpu' in params:
-        params['build.mcu'] = params['build.cpu']
+    build_elide_constructors = params.get('build.elide_constructors', '')
+    if build_elide_constructors:
+        build_elide_constructors = '-felide-constructors'
+    params['build.elide_constructors'] = build_elide_constructors
 
-    if 'build.elide_constructors' in params:
-        if params['build.elide_constructors'] == 'true':
-            params['build.elide_constructors'] = '-felide-constructors'
-        else:
-            params['build.elide_constructors'] = ''
+    build_gnu0x = params.get('build.gnu0x', '')
+    if build_gnu0x:
+        build_gnu0x = '-std=gnu++0x'
+    params['build.gnu0x'] = build_gnu0x
 
-    if 'build.gnu0x' in params:
-        if params['build.gnu0x'] == 'true':
-            params['build.gnu0x'] = '-std=gnu++0x'
-        else:
-            params['build.gnu0x'] = ''
+    build_cpp0x = params.get('build.cpp0x', '')
+    if build_cpp0x:
+        build_cpp0x = '-std=c++0x'
+    params['build.cpp0x'] = build_cpp0x
 
-    if 'build.cpp0x' in params:
-        if params['build.cpp0x'] == 'true':
-            params['build.cpp0x'] = '-std=c++0x'
-        else:
-            params['build.cpp0x'] = ''
+    build_time_t = params.get('build.time_t', '')
+    if build_time_t:
+        build_time_t = '-DTIME_T=%d' % int(time.time())
+    params['build.time_t'] = build_time_t
+
+    build_serial_number = params.get('build.serial_number')
+    if build_serial_number:
+        build_serial_number = '-DSERIALNUM=%d' % int(time.time())
+    params['build.serial_number'] = build_serial_number
+
+    if 'upload.maximum_ram_size' in params:
+        params['maximum_data_size'] = params['upload.maximum_ram_size']
