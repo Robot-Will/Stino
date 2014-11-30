@@ -71,6 +71,12 @@ class TargetParamsInfo(object):
             target_bootloader_tool, 'bootloader')
         self.target_params.update(target_bootloader_params)
 
+        # For Teensy
+        target_post_compile_params = get_tool_params(
+            self.arduino_info, self.target_platform_file,
+            'teensy', 'post_compile')
+        self.target_params.update(target_post_compile_params)
+
         add_extra_params(self.arduino_info, self.target_params)
 
         for key in self.target_params:

@@ -77,13 +77,14 @@ recipe.size.regex.eeprom=^(?:\.eeprom)\s+([0-9]+).*
 # AVR Uploader/Programmers tools
 # ------------------------------
 
-tools.teensy.cmd=teensy_reboot
+tools.teensy.cmd={upload.avrdude_wrapper}
 tools.teensy.path={runtime.ide.path}/hardware/tools
+
+tools.teensy.post_compile.pattern="{path}/{build.post_compile_script}" -file="{build.project_name}" -path="{build.path}" -tools="{path}"
 
 tools.teensy.upload.params.verbose=-v -v -v -v
 tools.teensy.upload.params.quiet=-q -q
 tools.teensy.upload.pattern="{path}/{cmd}" {upload.verbose} -p{build.mcu} -c{upload.protocol} -P{serial.port} -b{upload.speed} -D "-Uflash:w:{build.path}/{build.project_name}.hex:i"
-
 
 # USB Default Flags
 # Default blank usb manufacturer will be filled it at compile time

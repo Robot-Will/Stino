@@ -45,8 +45,8 @@ class Uploader(object):
             self.message_queue.put('[Stino - Start uploading...]\\n')
             self.params = self.compiler.get_params()
             self.prepare_upload_port(using_programmer)
-            self.prepare_cmd(using_programmer)
-            self.exec_cmd()
+            self.prepare_cmds(using_programmer)
+            self.exec_cmds()
             if not self.error_occured:
                 self.retouch_serial_port()
                 self.message_queue.put('[Stino - Done uploading.]\\n')
@@ -103,23 +103,26 @@ class Uploader(object):
                 self.params['serial.port.file'] = self.upload_port_file
         self.params = arduino_target_params.replace_param_values(self.params)
 
-    def prepare_cmd(self, using_programmer):
+    def prepare_cmds(self, using_programmer):
+        self.cmds = []
         if not using_programmer and self.params.get('upload.protocol'):
-            self.cmd = self.params.get('upload.pattern')
+            if 'post_compile.pattern' in self.params:
+                self.cmds.append(self.params.get('post_compile.pattern'))
+            self.cmds.append(self.params.get('upload.pattern'))
         else:
-            self.cmd = self.params.get('program.pattern')
+            self.cmds.append(self.params.get('program.pattern'))
 
         settings = base.settings.get_arduino_settings()
         verify_code = settings.get('verify_code', False)
         if verify_code:
             self.cmd += ' -V'
 
-    def exec_cmd(self):
+    def exec_cmds(self):
         settings = base.settings.get_arduino_settings()
         show_upload_output = settings.get('upload_verbose', False)
         working_dir = self.compiler.get_ide_path()
         self.error_occured = arduino_compiler.exec_cmds(
-            working_dir, [self.cmd], self.message_queue, show_upload_output)
+            working_dir, self.cmds, self.message_queue, show_upload_output)
 
     def retouch_serial_port(self):
         if self.do_touch:

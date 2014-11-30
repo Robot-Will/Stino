@@ -22,7 +22,7 @@ compiler.ar.cmd=arm-none-eabi-ar
 compiler.ar.flags=rcs
 compiler.objcopy.cmd=arm-none-eabi-objcopy
 compiler.objcopy.eep.flags=-O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0
-compiler.elf2hex.flags=-O binary
+compiler.elf2hex.flags=-O ihex -R .eeprom
 compiler.elf2hex.cmd=arm-none-eabi-objcopy
 compiler.ldflags=
 compiler.size.cmd=arm-none-eabi-size
@@ -63,10 +63,10 @@ recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} {compil
 recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -mcpu={build.cpu} {build.linkoption1} "-T{build_core_path}/{build.linkscript}" -o "{build.path}/{build.project_name}.elf" {object_files} "{build.path}/{archive_file}" "-L{build.path}" {build.additionalobject1} -lm -gcc
 
 ## Create eeprom
-recipe.objcopy.eep.pattern=
+recipe.objcopy.eep.pattern="{compiler.path}{compiler.objcopy.cmd}" {compiler.objcopy.eep.flags} {compiler.objcopy.eep.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.eep"
 
 ## Create hex
-recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} {compiler.elf2hex.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
+recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} {compiler.elf2hex.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.hex"
 
 ## Compute size
 recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build.project_name}.elf"
@@ -76,11 +76,11 @@ recipe.size.regex=\.text\s+([0-9]+).*
 # SAM3 Uploader tools
 # -------------------
 
-tools.teensy.cmd=teensy_reboot
+tools.teensy.cmd={upload.avrdude_wrapper}
 tools.teensy.path={runtime.ide.path}/hardware/tools
+
+tools.teensy.post_compile.pattern="{path}/{build.post_compile_script}" -file="{build.project_name}" -path="{build.path}" -tools="{path}"
 
 tools.teensy.upload.params.verbose=-v -v -v -v
 tools.teensy.upload.params.quiet=-q -q
 tools.teensy.upload.pattern="{path}/{cmd}" {upload.verbose} -p{build.mcu} -c{upload.protocol} -P{serial.port} -b{upload.speed} -D "-Uflash:w:{build.path}/{build.project_name}.hex:i"
-
-
