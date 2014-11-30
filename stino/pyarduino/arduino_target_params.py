@@ -394,7 +394,7 @@ def add_extra_params(arduino_info, params):
         build_time_t = '-DTIME_T=%d' % int(time.time())
     params['build.time_t'] = build_time_t
 
-    build_serial_number = params.get('build.serial_number')
+    build_serial_number = params.get('build.serial_number', '')
     if build_serial_number:
         build_serial_number = '-DSERIALNUM=%d' % int(time.time())
     params['build.serial_number'] = build_serial_number
