@@ -86,6 +86,8 @@ class TargetParamsInfo(object):
             if '--port={serial.port.file}' in value:
                 value = value.replace('--port={serial.port.file}',
                                       '"--port={serial.port.file}"')
+            if ' {serial.port} ' in value:
+                value = value.replace(' {serial.port} ', ' "{serial.port}" ')
             self.target_params[key] = value
 
     def load_paths(self):
@@ -101,6 +103,7 @@ class TargetParamsInfo(object):
             self.arduino_info, 'variants', target_build_var_dir_name)
         self.target_params['build_core_path'] = target_build_core_path
         self.target_params['build_variant_path'] = target_build_var_path
+        self.target_params['build.variant.path'] = target_build_var_path
 
     def replace_values(self):
         self.target_params = replace_param_values(self.target_params)
@@ -312,6 +315,7 @@ def add_extra_params(arduino_info, params):
     target_arch = arduino_info.get_target_board_info().get_target_arch()
     target_platform = get_target_platform(arduino_info)
     target_platform_path = target_platform.get_path()
+    target_system_path = os.path.join(target_platform_path, 'system')
 
     params['software'] = 'ARDUINO'
     params['build.arch'] = target_arch.upper()
@@ -319,6 +323,7 @@ def add_extra_params(arduino_info, params):
     params['runtime.sketchbook.version'] = sketchbook_path
     params['runtime.ide.path'] = ide_path
     params['runtime.platform.path'] = target_platform_path
+    params['build.system.path'] = target_system_path
 
     # For Arduino
     if not 'build.board' in params:
