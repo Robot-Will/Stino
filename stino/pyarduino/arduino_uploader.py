@@ -69,7 +69,8 @@ class Uploader(object):
             if serial_monitor:
                 serial_monitor.stop()
 
-        if not using_programmer and self.params.get('upload.protocol'):
+        if not by_using_programmer(using_programmer,
+                                   self.params.get('upload.protocol')):
             bootloader_file = self.params.get('bootloader.file', '')
             if 'caterina' in bootloader_file.lower():
                 self.do_touch = True
@@ -105,7 +106,8 @@ class Uploader(object):
 
     def prepare_cmds(self, using_programmer):
         self.cmds = []
-        if not using_programmer and self.params.get('upload.protocol'):
+        if not by_using_programmer(using_programmer,
+                                   self.params.get('upload.protocol')):
             if 'post_compile.pattern' in self.params:
                 self.cmds.append(self.params.get('post_compile.pattern'))
             self.cmds.append(self.params.get('upload.pattern'))
@@ -137,3 +139,7 @@ class Uploader(object):
                     time.sleep(0.25)
             else:
                 base.serial_port.touch_port(self.upload_port, 9600)
+
+
+def by_using_programmer(using_programmer, upload_protocol):
+    return using_programmer or upload_protocol is None

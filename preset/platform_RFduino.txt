@@ -58,5 +58,5 @@ tools.RFDLoader.cmd=RFDLoader
 tools.RFDLoader.cmd.windows=RFDLoader.exe
 tools.RFDLoader.upload.params.verbose=
 tools.RFDLoader.upload.params.quiet=
-tools.RFDLoader.path={runtime.ide.path}/hardware/arduino/RFduino
+tools.RFDLoader.path={runtime.platform.path}
 tools.RFDLoader.upload.pattern="{path}/{cmd}" -q {serial.port} "{build.path}/{build.project_name}.hex"
