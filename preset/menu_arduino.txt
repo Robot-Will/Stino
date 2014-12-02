@@ -103,7 +103,38 @@
                         "caption": "Select Build Folder",
                         "id": "choose_build_folder",
                         "command": "choose_build_folder"
-                    }
+                    },
+                    {"caption": "-"},
+                    {
+                        "caption": "Platform File Settings - Default",
+                        "command": "open_file",
+                        "args": {
+                            "file": "${packages}/${Stino}/preset/platform.settings"
+                        }
+                    },
+                    {
+                        "caption": "Platform File Settings - User",
+                        "command": "open_file",
+                        "args": {
+                            "file": "${packages}/User/Stino/preset/platform.settings"
+                        }
+                    },
+                    {"caption": "-"},
+                    {
+                        "caption": "Ram Size Settings - Default",
+                        "command": "open_file",
+                        "args": {
+                            "file": "${packages}/${Stino}/preset/ram_size.settings"
+                        }
+                    },
+                    {
+                        "caption": "Ram Size Settings - User",
+                        "command": "open_file",
+                        "args": {
+                            "file": "${packages}/User/Stino/preset/ram_size.settings"
+                        }
+                    },
+                    {"caption": "-"}
                 ]
             },
             {"caption": "-"},
