@@ -1,4 +1,5 @@
 {
+    "Digistump DigiX": "platform_DigiX.txt",
     "RFduino": "platform_RFduino.txt",
     "Teensy 1.0": "platform_teensy.txt",
     "Teensy++ 1.0": "platform_teensy.txt",

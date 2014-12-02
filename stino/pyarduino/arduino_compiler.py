@@ -306,6 +306,7 @@ class Compiler(object):
         if (self.library_src_changed or self.core_src_changed) and \
                 os.path.isfile(core_archive_path):
             os.remove(core_archive_path)
+
         if not os.path.isfile(core_archive_path):
             core_changed = True
             cmds = []
@@ -315,25 +316,35 @@ class Compiler(object):
             self.build_files.append(core_archive_path)
             self.file_cmds_dict[core_archive_path] = cmds
 
+
+        project_file_base_path = os.path.join(self.build_path,
+                                              self.project.get_name())
+        elf_file_path = project_file_base_path + '.elf'
         if self.project_src_changed or core_changed:
-            obj_paths = ' '.join(self.project_obj_paths)
+            if os.path.isfile(elf_file_path):
+                os.remove(elf_file_path)
+
+        if not os.path.isfile(elf_file_path):
+            obj_paths = ' '.join(['"%s"' % p for p in self.project_obj_paths])
             cmd = combine_cmd.replace('{object_files}', obj_paths)
             if not self.core_obj_paths:
                 core_archive_path = \
                     self.build_path + '/' + self.archive_file_name
                 text = '"' + core_archive_path + '"'
                 cmd = cmd.replace(text, '')
-            elf_file_path = self.project.get_name() + '.elf'
             self.build_files.append(elf_file_path)
             self.file_cmds_dict[elf_file_path] = [cmd]
 
             if eep_cmd:
-                eep_file_path = self.project.get_name() + '.eep'
+                eep_file_path = project_file_base_path + '.eep'
                 self.build_files.append(eep_file_path)
                 self.file_cmds_dict[eep_file_path] = [eep_cmd]
 
             if hex_cmd:
-                hex_file_path = self.project.get_name() + '.hex'
+                ext = '.bin'
+                if '.hex' in hex_cmd:
+                    ext = '.hex'
+                hex_file_path = project_file_base_path + ext
                 self.build_files.append(hex_file_path)
                 self.file_cmds_dict[hex_file_path] = [hex_cmd]
 
@@ -342,8 +353,12 @@ class Compiler(object):
 
         self.working_dir = self.arduino_info.get_ide_dir().get_path()
         error_occured = False
-        for build_file in self.build_files:
-            self.message_queue.put('Creating {0}...\\n', build_file)
+
+        total_file_number = len(self.build_files)
+        for index, build_file in enumerate(self.build_files):
+            percent = str(int(100 * (index + 1) / total_file_number ))
+            self.message_queue.put('Creating {0}... [{1}%]\\n',
+                                   build_file, percent)
             cmds = self.file_cmds_dict.get(build_file)
             error_occured = exec_cmds(self.working_dir, cmds,
                                       self.message_queue,
