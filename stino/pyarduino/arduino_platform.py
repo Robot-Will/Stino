@@ -21,6 +21,7 @@ from . import base
 from . import arduino_item
 from . import arduino_library
 from . import arduino_params_file
+from . import arduino_sketchbook
 
 
 class Platform(base.abs_file.Dir):
@@ -31,6 +32,7 @@ class Platform(base.abs_file.Dir):
         self.load_boards()
         self.load_programmers()
         self.load_libraries()
+        self.load_examples()
 
     def load_arch(self, package_id):
         self.arch = self.name.lower()
@@ -38,8 +40,7 @@ class Platform(base.abs_file.Dir):
         if self.name.lower() == package_name.lower():
             self.arch = 'avr'
         self.id = package_id + '.' + self.arch
-        self.caption = '%s %s Boards' % (package_name.upper(),
-                                         self.arch.upper())
+        self.caption = '%s Boards' % package_name.upper()
 
     def load_platform_params(self):
         is_default_platform = False
@@ -84,6 +85,10 @@ class Platform(base.abs_file.Dir):
         libraries_path = os.path.join(self.path, 'libraries')
         self.library_set = arduino_library.LibrarySet(self.id, libraries_path)
 
+    def load_examples(self):
+        examples_path = os.path.join(self.path, 'examples')
+        self.example_set = arduino_sketchbook.Sketchbook(examples_path)
+
     def get_id(self):
         return self.id
 
@@ -116,6 +121,9 @@ class Platform(base.abs_file.Dir):
 
     def get_library(self, library_id):
         return self.library_set.get_library(library_id)
+
+    def get_examples(self):
+        return self.example_set
 
     def get_tools(self):
         return self.tool_set.get_items()
