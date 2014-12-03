@@ -1,6 +1,6 @@
 # LANGUAGE: 简体中文 (Chinese Simplified)
 # Chinese Simplified translations for Stino Plugin.
-# Copyright (C) 2012-2013 Robot-Will
+# Copyright (C) 2012-2014 Robot-Will
 # This file is distributed under the same license as the Stino Plugin.
 # Robot Will <EMAIL@ADDRESS>
 #
@@ -218,10 +218,10 @@ msgstr "在所选的串口不能识别Leonardo主控板。请检查你是否选�
 msgid "Open Sketch in New Window"
 msgstr "在新窗口里打开项目"
 
-msgid "[Stino - Start  burning bootloader...]\n"
+msgid "[Stino - Start burning bootloader...]\n"
 msgstr "[Stino - 开始下载bootloader...]\n"
 
-msgid "[Stino - Done  burning bootloader.]\n"
+msgid "[Stino - Done burning bootloader.]\n"
 msgstr "[Stino - 下载bootloader完成。]\n"
 
 msgid "No board exists. Please Select Arduino Application Folder or Change Arduino Sketchbook Folder in Arduino Menu -> Preferences.\n"
