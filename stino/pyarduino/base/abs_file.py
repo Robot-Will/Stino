@@ -117,11 +117,12 @@ class Dir(AbstractFile):
             all_files += self.list_files_of_extension(ext)
         return all_files
 
-    def recursive_list_files(self, exts=['']):
+    def recursive_list_files(self, exts=[''], exclude_dirs=[]):
         all_files = self.list_files_of_extensions(exts)
         dirs = self.list_dirs()
         for cur_dir in dirs:
-            all_files += cur_dir.recursive_list_files(exts)
+            if cur_dir.get_name() not in exclude_dirs:
+                all_files += cur_dir.recursive_list_files(exts)
         return all_files
 
     def has_file(self, file_name):

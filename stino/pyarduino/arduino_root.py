@@ -74,31 +74,25 @@ class ArduinoIdeDir(ArduinoRootDir):
     def __init__(self, path):
         super(ArduinoIdeDir, self).__init__(path, 'ide')
         self.load_version()
+        self.load_teensy_version()
         self.load_keywords()
 
     def reload(self):
         self.load()
         self.load_version()
+        self.load_teensy_version()
         self.load_keywords()
 
     def load_version(self):
-        lib_path = os.path.join(self.path, 'lib')
-        version_file_path = os.path.join(lib_path, 'version.txt')
-        version_file = base.abs_file.File(version_file_path)
-        self.version_name = version_file.read().strip()
-        if not self.version_name:
-            self.version_name = 'not found'
+        self.version_name, self.version = read_version(
+            self.path, 'build-version.txt')
+        if self.version_name == 'unknown version':
+            self.version_name, self.version = read_version(
+                self.path, 'version.txt')
 
-        version_txt = self.version_name
-        if ':' in version_txt:
-            version_txt = version_txt.split(':')[1]
-        version_txt = version_txt.replace('.', '')
-        self.version = '0'
-        for char in version_txt:
-            if not char in '0123456789':
-                break
-            self.version += char
-        self.version = str(int(self.version))
+    def load_teensy_version(self):
+        self.teensy_version_name, self.teensy_version = read_version(
+            self.path, 'teensyduino.txt')
 
     def load_keywords(self):
         lib_path = os.path.join(self.path, 'lib')
@@ -110,6 +104,9 @@ class ArduinoIdeDir(ArduinoRootDir):
 
     def get_version_name(self):
         return self.version_name
+
+    def get_teensy_version(self):
+        return self.teensy_version
 
     def get_keywords(self):
         return self.keywords_file.get_keywords()
@@ -155,8 +152,11 @@ def is_arduino_ide_path(path):
     state = False
     hardware_path = os.path.join(path, 'hardware')
     lib_path = os.path.join(path, 'lib')
-    version_file_path = os.path.join(lib_path, 'version.txt')
-    if os.path.isdir(hardware_path) and os.path.isfile(version_file_path):
+    # version_file_path = os.path.join(lib_path, 'version.txt')
+    # build_version_file_path = os.path.join(lib_path, 'build-version.txt')
+    # if os.path.isdir(hardware_path) and (os.path.isfile(version_file_path) or
+            # os.path.isfile(build_version_file_path)):
+    if os.path.isdir(hardware_path) and os.path.isdir(lib_path):
         state = True
     return state
 
@@ -203,3 +203,26 @@ def get_arduino_ide_path():
         if arduino_ide_path:
             settings.set('arduino_ide_path', arduino_ide_path)
     return arduino_ide_path
+
+
+def read_version(ide_path, version_file_name):
+    lib_path = os.path.join(ide_path, 'lib')
+    version_file_path = os.path.join(lib_path, version_file_name)
+    version_file = base.abs_file.File(version_file_path)
+    version_name = version_file.read().strip()
+    if not version_name:
+        version_name = 'unknown version'
+
+    version_txt = version_name
+    if ':' in version_txt:
+        version_txt = version_txt.split(':')[1]
+    if version_txt.startswith('v'):
+        version_txt = version_txt[1:]
+    version_txt = version_txt.replace('.', '')
+    version = '0'
+    for char in version_txt:
+        if not char in '0123456789':
+            break
+        version += char
+    version = str(int(version))
+    return (version_name, version)

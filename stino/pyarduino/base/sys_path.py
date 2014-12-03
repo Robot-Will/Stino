@@ -18,6 +18,7 @@ import os
 
 from . import sys_info
 
+ROOT_PATH = 'System Root(/)'
 
 def list_win_volume():
     vol_list = []
@@ -35,9 +36,9 @@ def list_os_root_path():
     if os_name == 'windows':
         root_list = list_win_volume()
     elif os_name == 'osx':
-        root_list = [home_path, '/Applications', '/']
+        root_list = [home_path, '/Applications', ROOT_PATH]
     else:
-        root_list = [home_path, '/usr', '/opt', '/']
+        root_list = [home_path, '/usr', '/opt', ROOT_PATH]
     return root_list
 
 
@@ -48,7 +49,7 @@ def list_user_root_path():
         root_list = list_win_volume()
     else:
         home_path = os.getenv('HOME')
-        root_list = [home_path, '/']
+        root_list = [home_path, ROOT_PATH]
     return root_list
 
 

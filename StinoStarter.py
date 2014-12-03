@@ -63,13 +63,14 @@ class SketchListener(sublime_plugin.EventListener):
                 view_selection.add(region)
                 match = matches[0]
                 file_path, line_no = match.groups()
-                file_view = view.window().open_file(file_path)
-                error_point = file_view.text_point(int(line_no) - 1, 0)
-                region = file_view.line(error_point)
-                selection = file_view.sel()
-                selection.clear()
-                selection.add(region)
-                file_view.show(error_point)
+                if os.path.isfile(file_path):
+                    file_view = view.window().open_file(file_path)
+                    error_point = file_view.text_point(int(line_no) - 1, 0)
+                    region = file_view.line(error_point)
+                    selection = file_view.sel()
+                    selection.clear()
+                    selection.add(region)
+                    file_view.show(error_point)
 
     def on_modified(self, view):
         if st_version < 3000:
@@ -455,4 +456,4 @@ class PanelOutputCommand(sublime_plugin.TextCommand):
 
 class ShowItemListCommand(sublime_plugin.WindowCommand):
     def run(self, item_type):
-        print(item_type)
+        stino.main.show_items_panel(self.window, item_type)

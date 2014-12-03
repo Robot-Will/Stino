@@ -219,13 +219,17 @@ def create_examples_menu(arduino_info):
             sub_menus.append(Menu())
         for package in root_dir.get_packages():
             for platform in package.get_platforms():
+                examples = platform.get_examples()
+                examples_menu = load_sketchbook_menu(examples)
                 libraries = platform.get_libraries()
-                if libraries:
+
+                if examples_menu.get_sub_menus() or libraries:
                     menu_dict = {}
                     menu_dict['caption'] = platform.get_caption()
                     menu_dict['command'] = 'none_command'
                     menu = Menu(menu_dict)
                     sub_menus.append(menu)
+                sub_menus += examples_menu.get_sub_menus()
                 for library in libraries:
                     examples = library.get_examples()
                     menu = load_sketchbook_menu(examples)

@@ -44,9 +44,11 @@ class KeywordsFile(base.abs_file.File):
         lines = text.split('\n')
         for line in lines:
             line = line.strip()
-            if line and not line.startswith('#'):
+            if line and not line.startswith('#') and not line.startswith('//'):
                 word_list = line.split()
-                if len(word_list) == 2:
+                if len(word_list) > 3:
+                    continue
+                elif len(word_list) == 2:
                     if not ('LITERAL' in word_list[1] or
                             'KEYWORD' in word_list[1]):
                         word_list.insert(1, '')

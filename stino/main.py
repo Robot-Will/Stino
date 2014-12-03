@@ -474,7 +474,10 @@ def select_dir(window, index=-2, level=0, paths=None,
             else:
                 paths = pyarduino.base.sys_path.list_os_root_path()
         else:
-            dir_path = os.path.abspath(paths[index])
+            sel_path = paths[index]
+            if sel_path == pyarduino.base.sys_path.ROOT_PATH:
+                sel_path = '/'
+            dir_path = os.path.abspath(sel_path)
             if condition_func and condition_func(dir_path):
                 func(window, dir_path)
                 return

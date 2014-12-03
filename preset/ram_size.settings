@@ -6,6 +6,7 @@
     "atmega1284": "16384",
     "atmega1284p": "16384",
     "atmega168": "1024",
+    "atmega168p": "1024",
     "atmega2560": "8196",
     "atmega256rfr2": "32784",
     "atmega128rfa1": "16392",

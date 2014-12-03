@@ -14,6 +14,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 
+import os
 import re
 
 H_EXTS = ['.h']
@@ -211,11 +212,13 @@ def generate_prototypes_from_files(files):
     return all_prototypes
 
 
-def combine_ino_files(arduino_version, ino_files):
-    prototypes = generate_prototypes_from_files(ino_files)
-    arduino_include = '#include "Arduino.h"\n'
-    if arduino_version < 100:
-        arduino_include = '#include "WProgram.h"\n'
+def combine_ino_files(core_path, ino_files):
+    core_h_names = ['Arduino.h', 'WProgram.h', 'Wiring.h']
+    for core_h_name in core_h_names:
+        core_h_path = os.path.join(core_path, core_h_name)
+        if os.path.isfile(core_h_path):
+            break
+    arduino_include = '#include <%s>\n' % core_h_name
 
     combined_src = ''
     cur_file = ino_files[0]
@@ -233,6 +236,8 @@ def combine_ino_files(arduino_version, ino_files):
     combined_src += first_line
     combined_src += header
     combined_src += arduino_include
+
+    prototypes = generate_prototypes_from_files(ino_files)
     for prototype in prototypes:
         combined_src += prototype
         combined_src += ';\n'
