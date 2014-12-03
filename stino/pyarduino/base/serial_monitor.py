@@ -92,13 +92,21 @@ def convert_mode(in_text, str_len=0):
     elif display_mode == 'Hex':
         for (index, character) in enumerate(in_text):
             text += u'%02X ' % character
-            if (index + str_len + 1) % 10 == 0:
+            if (index + str_len + 1) % 8 == 0:
                 text += '\t'
-            if (index + str_len + 1) % 20 == 0:
+            if (index + str_len + 1) % 16 == 0:
                 text += '\n'
     else:
         text = in_text.decode('utf-8', 'replace')
     return text
+
+
+def convert_to_ascii_mode():
+    pass
+
+
+def convert_to_hex_mode():
+    pass
 
 
 def is_serial_available(serial_port):

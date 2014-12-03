@@ -101,8 +101,7 @@ class TargetParamsInfo(object):
             self.arduino_info, 'cores', target_build_core_dir_name)
         target_build_var_path = get_target_path(
             self.arduino_info, 'variants', target_build_var_dir_name)
-        self.target_params['build_core_path'] = target_build_core_path
-        self.target_params['build_variant_path'] = target_build_var_path
+        self.target_params['build.core.path'] = target_build_core_path
         self.target_params['build.variant.path'] = target_build_var_path
 
     def replace_values(self):
@@ -113,7 +112,12 @@ class TargetParamsInfo(object):
 
 
 def get_target_path(arduino_info, dirs_name, target_build_dir_name):
-    target_build_dir_path = ''
+    ide_path = arduino_info.get_ide_dir().get_path()
+    parent_path = os.path.join(ide_path, dirs_name)
+    sub_name = target_build_dir_name
+    if ':' in sub_name:
+        sub_name = sub_name.split(':')[1]
+    target_build_dir_path = os.path.join(parent_path, sub_name)
 
     id_platform_dict = {}
     for root_dir in arduino_info.get_root_dirs():
@@ -371,7 +375,7 @@ def add_extra_params(arduino_info, params):
                 program_extra_params = '-P{serial.port} -b{program.speed}'
             params['program.extra_params'] = program_extra_params
 
-    params['build.usb_manufacturer'] = 'Unknown'
+    params['build.usb_manufacturer'] = '"Unknown"'
 
     settings = base.settings.get_arduino_settings()
     show_upload_output = settings.get('upload_verbose', False)
