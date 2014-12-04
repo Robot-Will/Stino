@@ -522,9 +522,9 @@ def regular_numner(num):
 
 def gen_core_objs(core_path, folder_prefix, build_path, is_new_build):
     core_dir = base.abs_file.Dir(core_path)
-    # core_cpp_files = core_dir.recursive_list_files(
-    #     arduino_src.CPP_EXTS, ['libraries'])
-    core_cpp_files = core_dir.list_files_of_extensions(arduino_src.CPP_EXTS)
+    core_cpp_files = core_dir.recursive_list_files(
+        arduino_src.CPP_EXTS, ['libraries'])
+    # core_cpp_files = core_dir.list_files_of_extensions(arduino_src.CPP_EXTS)
     sub_dir_name = folder_prefix + core_dir.get_name()
     core_obj_paths = gen_obj_paths(core_path, build_path,
                                    sub_dir_name, core_cpp_files)

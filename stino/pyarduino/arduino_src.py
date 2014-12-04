@@ -213,7 +213,7 @@ def generate_prototypes_from_files(files):
 
 
 def combine_ino_files(core_path, ino_files):
-    core_h_names = ['Arduino.h', 'WProgram.h', 'Wiring.h']
+    core_h_names = ['Arduino.h', 'WProgram.h', 'Waspmote.h', 'Wiring.h']
     for core_h_name in core_h_names:
         core_h_path = os.path.join(core_path, core_h_name)
         if os.path.isfile(core_h_path):
