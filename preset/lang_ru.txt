@@ -120,19 +120,13 @@ msgid "Examples"
 msgstr "Примеры"
 
 msgid "Sketchbook"
-msgstr "Sketchbook"
+msgstr "Библиотека скетчей"
+
+msgid "Show Sketch Folder"
+msgstr "Показать папку со скетчем"
 
 msgid "Verify Code after Upload"
 msgstr "Проверить код после загрузки"
 
 msgid "Line Ending"
 msgstr "Новая строка"
-
-msgid "Display as"
-msgstr "Показать как"
-
-msgid "Show Sketch Folder"
-msgstr "Показать папку со скетчем"
-
-msgid "Sketchbook"
-msgstr "Библиотека скетчей"
