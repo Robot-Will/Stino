@@ -1,15 +1,15 @@
 # LANGUAGE: Français (French)
 # French translations for Stino Plugin.
-# Copyright (C) 2012-2013 Robot-Will
+# Copyright (C) 2012-2014 Robot-Will
 # This file is distributed under the same license as the Stino Plugin.
-# AUTHOR <fabrice@weeple.fr>
+# AUTHOR <fabrice@weeple.fr>, gonzoid <littlebmxdevil@gmail.com>
 #
+
+msgid "New Sketch"
+msgstr "Nouveau projet"
 
 msgid "Serial Monitor"
 msgstr "Moniteur série"
-
-msgid "Start"
-msgstr "Démarrer"
 
 msgid "Select Build Folder"
 msgstr "Sélectionner le dossier de compilation"
@@ -21,13 +21,13 @@ msgid "Programmer"
 msgstr "Programmateur"
 
 msgid "Select Arduino Application Folder"
-msgstr "Selectionner le dossier d'application Arduino"
+msgstr "Sélectionner le dossier d'application Arduino"
 
 msgid "Extra compilation flags:"
-msgstr "Extra compilation flags:"
+msgstr "Drapeaux de compilation supplémentaires :"
 
 msgid "Extra Flags"
-msgstr "Extra Flags"
+msgstr "Drapeaux supplémentaires"
 
 msgid "Frequently Asked Questions"
 msgstr "Questions fréquentes"
@@ -44,8 +44,8 @@ msgstr "Afficher la sortie détaillée"
 msgid "Reference"
 msgstr "Référence"
 
-msgid "Arduino Application is found at {0}.\n"
-msgstr "L'application Arduino a été trouvé dans {0}.\n"
+msgid "Arduino {0} is found at {1}.\n"
+msgstr "Arduino {0} a été trouvé dans {1}.\n"
 
 msgid "Build folder is changed to {0}.\n"
 msgstr "Le dossier de compilation est changé en {0}.\n"
@@ -54,25 +54,25 @@ msgid "Upload"
 msgstr "Téléverser"
 
 msgid "Archive Sketch"
-msgstr "Archive Sketch"
+msgstr "Archiver le projet"
 
 msgid "Global Setting"
-msgstr "Paramètre globaux"
+msgstr "Paramètres globaux"
 
 msgid "Upload by Using Programmer"
 msgstr "Téléverser en utilisant un programmateur"
 
 msgid "Sketchbook is changed to {0}.\n"
-msgstr "Le carnet de croquis est changé dans {0}.\n"
+msgstr "Le dossier de projets est changé en {0}.\n"
 
 msgid "Serial Port"
 msgstr "Port série"
 
 msgid "Auto Format"
-msgstr "Formattage automatique"
+msgstr "Formatage automatique"
 
 msgid "Language"
-msgstr "Languages"
+msgstr "Langues"
 
 msgid "About Stino"
 msgstr "A propos de Stino"
@@ -81,13 +81,13 @@ msgid "Import Library"
 msgstr "Importer une librairie"
 
 msgid "Baudrate"
-msgstr "Baudrate"
+msgstr "Vitesse de transfert"
 
 msgid "Verify/Compile"
 msgstr "Vérifier/Compiler"
 
 msgid "Find in Reference"
-msgstr "Trouver dans Référence"
+msgstr "Trouver dans la documentation"
 
 msgid "Troubleshooting"
 msgstr "Résolution des problèmes"
@@ -96,19 +96,19 @@ msgid "Getting Started"
 msgstr "Pour commencer"
 
 msgid "Burn Bootloader"
-msgstr "Graver la séquence d'initialisation"
+msgstr "Ecrire la séquence d'initialisation"
 
 msgid "References"
-msgstr "Références"
+msgstr "Documentation"
 
 msgid "Send"
 msgstr "Envoyer"
 
 msgid "Change Sketchbook Folder"
-msgstr "Changer le dossier de croquis"
+msgstr "Changer le dossier de projets"
 
 msgid "Stop"
-msgstr "Arrêt"
+msgstr "Arrêter"
 
 msgid "Compilation"
 msgstr "Compilation"
@@ -120,4 +120,145 @@ msgid "Examples"
 msgstr "Exemples"
 
 msgid "Sketchbook"
-msgstr "Carnet de croquis"
+msgstr "Dossier de projets"
+
+msgid "Show Sketch Folder"
+msgstr "Ouvrir le dossier du projet"
+
+msgid "Board"
+msgstr "Carte"
+
+msgid "Help"
+msgstr "Aide"
+
+msgid "Update Menu"
+msgstr "Rafraîchir le menu"
+
+msgid "Build Options"
+msgstr "Options de compilation"
+
+msgid "Board Options"
+msgstr "Options de carte"
+
+msgid "None"
+msgstr "Aucun"
+
+msgid "Documents"
+msgstr "Documents"
+
+msgid "Processor"
+msgstr "Processeur"
+
+msgid "USB Type"
+msgstr "Type USB"
+
+msgid "CPU Speed"
+msgstr "Vitesse CPU"
+
+msgid "Keyboard Layout"
+msgstr "Disposition clavier"
+
+msgid "Show Compilation Output"
+msgstr "Montrer sortie de compilation"
+
+msgid "Show Upload Output"
+msgstr "Montrer sortie de téléversement"
+
+msgid "Verify Code after Upload"
+msgstr "Vérifier programme après téléversement"
+
+msgid "Line Ending"
+msgstr "Saut de ligne"
+
+msgid "New Line"
+msgstr "Nouvelle ligne (LF)"
+
+msgid "Carriage Return"
+msgstr "Retour chariot (CR)"
+
+msgid "Both NL & CR"
+msgstr "Les deux (CR+LF)"
+
+msgid "Text"
+msgstr "Texte"
+
+msgid "Hex"
+msgstr "Hexadécimal"
+
+msgid "Display Mode"
+msgstr "Mode d'affichage"
+
+msgid "Run"
+msgstr "Démarrer"
+
+msgid "Bare GCC Build (No Arduino code-munging)"
+msgstr "Compilation GCC brute (sans couche Arduino)"
+
+msgid "Big Project"
+msgstr "Projet multifichier"
+
+msgid "Serial port {0} already in use. Try quitting any programs that may be using it.\n"
+msgstr "Le port série {0} est occupé. Quittez tout programme qui pourrait s'en servir.\n"
+
+msgid "[SEND] {0}\n"
+msgstr "[ENVOI] {0}\n"
+
+msgid "Ports {{0}}/{{1}} => {{2}}\n"
+msgstr "Ports {{0}}/{{1}} => {{2}}\n"
+
+msgid "Found new upload port: {0}.\n"
+msgstr "Nouveau port d'envoi découvert ： {0}.\n"
+
+msgid "Uploading using selected port: {0}.\n"
+msgstr "Envoi en cours sur le port sélectionné : {0}.\n"
+
+msgid "Couldn't find a Leonardo on the selected port. Check that you have the correct port selected. If it is correct, try pressing the board's reset button after initiating the upload.\n"
+msgstr "Aucun Leonardo n'a été trouvé sur le port sélectionné. Vérifiez que vous avez sélectionné le port adéquat. Si c'est le cas, appuyez sur le bouton reset de la carte après avoir démarré l'envoi'.\n"
+
+msgid "Open Sketch in New Window"
+msgstr "Ouvrir projet dans une nouvelle fenêtre"
+
+msgid "[Stino - Start burning bootloader...]\n"
+msgstr "[Stino - Ecriture de la séquence d'initialisation en cours...]\n"
+
+msgid "[Stino - Done burning bootloader.]\n"
+msgstr "[Stino - Ecriture de la séquence d'initialisation terminée.]\n"
+
+msgid "No board exists. Please Select Arduino Application Folder or Change Arduino Sketchbook Folder in Arduino Menu -> Preferences.\n"
+msgstr "Aucune carte existante. Veuillez utiliser 'Sélectionner le dossier d'application Arduino' ou 'Changer le dossier de projets' dans le menu Arduino -> Préférences.\n"
+
+msgid "[Stino - Start building "{0}"...]\n"
+msgstr "[Stino - Compilation de "{0}" en cours...]\n"
+
+msgid "[Stino - Done building "{0}" in {1}s.]\n"
+msgstr "[Stino - Compilation de "{0}" terminée en {1}s.]\n"
+
+msgid "[{1}%] Creating {0}...\n"
+msgstr "[{1}%] Création de {0}...\n"
+
+msgid "Sketch uses {0} bytes ({1}%) of program storage space. Maximum is {2} bytes.\n"
+msgstr "Ce projet utilise {0} octets ({1}%) de mémoire sur les {2} octets disponibles.\n"
+
+msgid "Global variables use {0} bytes ({1}%) of dynamic memory, leaving {2} bytes for local variables. Maximum is {3} bytes.\n"
+msgstr "Les variables globales utilisent {0} octets ({1}%) de mémoire dynamique, laissant {2} octets pour les variables locales. Le total disponible étant de {3} octets.\n"
+
+msgid "[Stino - Exit with error code {0}.]\n"
+msgstr "[Stino - Terminé avec le code d'erreur {0}.]\n"
+
+msgid "[Stino - Start uploading...]\n"
+msgstr "[Stino - Téléversement en cours...]\n"
+
+msgid "[Stino - Done uploading.]\n"
+msgstr "[Stino - Téléversement terminé.]\n"
+
+msgid "Forcing reset using 1200bps open/close on port {0}.\n"
+msgstr "Réinitialisation forcée en ouvrant/fermant le port {0} à 1200b/s.\n"
+
+msgid "Archive Sketch {0}...\n"
+msgstr "Archivage du projet {0} en cours...\n"
+
+msgid "Error occured while writing {0}.\n"
+msgstr "Une erreur s'est produite en écrivant {0}.\n"
+
+msgid "Done writing {0}.\n"
+msgstr "Ecriture de {0} terminée.\n"

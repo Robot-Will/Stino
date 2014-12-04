@@ -32,14 +32,14 @@ def load_trans_dict(text):
     lines = text.split('\n')
     lines = [line.strip() for line in lines if lines if line.strip() and
              not line.strip().startswith('#')]
-    blocks = spilt_lines(lines)
+    blocks = split_lines(lines)
     for block in blocks:
         key, value = load_trans_pair(block)
         trans_dict[key] = value
     return trans_dict
 
 
-def spilt_lines(lines):
+def split_lines(lines):
     blocks = []
     block = []
     for line in lines:

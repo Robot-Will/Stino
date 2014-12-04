@@ -15,7 +15,7 @@ This version Stino can only be installed by manual installation. If you installe
 
 1. Click menu `Preferences`->`Browse Packages...` to open the packages folder.
 
-2. Download [zip file](https://github.com/Robot-Will/Stino/archive/new-stino.zip), and extract the folder to the packages folder, and the Arduino menu appears.
+2. Download [zip file](https://github.com/Robot-Will/Stino/archive/new-stino.zip), extract the folder to the packages folder, rename it from `Stino-new-stino` to `Stino` and the Arduino menu appears.
 
 
 ## Contribution
