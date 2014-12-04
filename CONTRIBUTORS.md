@@ -31,6 +31,8 @@ nl: [peterrus](https://github.com/peterrus)
 
 pt_br: [Renato Tavares](https://github.com/RenatoTavares)
 
+ru: [misterDOGG](https://github.com/misterDOGG)
+
 
 #### Bugs
 Issue [#11](https://github.com/Robot-Will/Stino/pull/11): [Peter Kadlot](https://github.com/daralthus)
