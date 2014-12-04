@@ -1,15 +1,15 @@
 # LANGUAGE: Português (Portuguese)
 # Brazilian portuguese translations for Stino Plugin.
-# Copyright (C) 2012-2013 Robot-Will
+# Copyright (C) 2012-2014 Robot-Will
 # This file is distributed under the same license as the Stino Plugin.
 # AUTHOR <aron.bordin@gmail.com>
 #
 
+msgid "New Sketch"
+msgstr "Nova Sketch"
+
 msgid "Serial Monitor"
 msgstr "Monitor Serial"
-
-msgid "Start"
-msgstr "Iniciar"
 
 msgid "Select Build Folder"
 msgstr "Selecionar Pasta de Compilação"
@@ -44,8 +44,8 @@ msgstr "Mostrar Saída Verbosa"
 msgid "Reference"
 msgstr "Referência"
 
-msgid "Arduino Application is found at {0}.\n"
-msgstr "Arduino é encontrado em {0}.\n"
+msgid "Arduino {0} is found at {1}.\n"
+msgstr "Arduino {0} é encontrado em {1}.\n"
 
 msgid "Build folder is changed to {0}.\n"
 msgstr "Pasta de compilação modificada para {0}.\n"
@@ -122,29 +122,14 @@ msgstr "Exemplos"
 msgid "Sketchbook"
 msgstr "Sketchbook"
 
-msgid "New Sketch"
-msgstr "Nova Sketch"
-
-msgid "Bare GCC Build (No Arduino code-munging)"
-msgstr "Compilação GCC crua (Sem melhora de código Arduino)"
-
-msgid "Line Ending"
-msgstr "Fim de linha"
-
-msgid "Writing {0} done.\n"
-msgstr "{0} escrito com sucesso.\n"
+msgid "Show Sketch Folder"
+msgstr "Mostrar pasta Sketch"
 
 msgid "Verify Code after Upload"
 msgstr "Verificar Código após Upload"
 
-msgid "Display as"
-msgstr "Mostrar como"
+msgid "Line Ending"
+msgstr "Fim de linha"
 
-msgid "Name for New Sketch"
-msgstr "Nome para Nova Sketch"
-
-msgid "Writing {0} failed.\n"
-msgstr "Falha ao escrever {0} .\n"
-
-msgid "Show Sketch Folder"
-msgstr "Mostrar pasta Sketch"
+msgid "Bare GCC Build (No Arduino code-munging)"
+msgstr "Compilação GCC crua (Sem melhora de código Arduino)"
