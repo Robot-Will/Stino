@@ -15,6 +15,8 @@
 
 
 #### Translations
+Issue [#214](https://github.com/Robot-Will/Stino/pull/214): [Gonzoid](https://github.com/gonzoid)
+
 br: [Aron Barreira Bordin](https://github.com/aron-bordin)
 
 de: [DCEM](https://github.com/DCEM)
@@ -31,7 +33,7 @@ nl: [peterrus](https://github.com/peterrus)
 
 pt_br: [Renato Tavares](https://github.com/RenatoTavares)
 
-ru: [misterDOGG](https://github.com/misterDOGG)
+ru: [Ruslan](https://github.com/misterDOGG)
 
 
 #### Bugs

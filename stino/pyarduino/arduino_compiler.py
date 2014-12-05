@@ -417,8 +417,8 @@ def get_build_path():
     settings = base.settings.get_arduino_settings()
     build_path = settings.get('build_path', '')
     if not build_path:
-        doc_path = base.sys_path.get_document_path()
-        build_path = os.path.join(doc_path, 'Arduino_build')
+        tmp_path = base.sys_path.get_tmp_path()
+        build_path = os.path.join(tmp_path, 'Stino_build')
     if not os.path.isdir(build_path):
         os.makedirs(build_path)
     return build_path
@@ -501,6 +501,8 @@ def exec_cmd(working_dir, cmd):
 
 
 def formatCommand(cmd):
+    if '::' in cmd:
+        cmd = cmd.replace('::', ' ')
     cmd = cmd.replace('\\', '/')
     os_name = base.sys_info.get_os_name()
     python_version = base.sys_info.get_python_version()

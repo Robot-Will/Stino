@@ -1,13 +1,17 @@
 # Stino
 ### New Version (Dev Version)
 
-Stino is a [Sublime Text](http://www.sublimetext.com) plugin, which provides an [Arduino](http://arduino.cc)-like environement for editing, compiling and uploading sketches. The plugin was written by Robot Will in 2012-2014. If you have any ideas or suggestions, leave messages to me. Thanks.
+Stino is a [Sublime Text](http://www.sublimetext.com) plugin, which provides an [Arduino](http://arduino.cc)-like environement for editing, compiling and uploading sketches. The plugin was written by Robot Will in 2012-2014. If you have any idea or suggestion, leave messages to me. Thanks.
 
 
 ## Requirements
 #### 1. [Sublime Text](http://www.sublimetext.com)
 
 #### 2. [Arduino](http://arduino.cc/en/Main/Software)
+
+
+## Documents
+Currently there is no complete documents for this plugin, and I am working on this plugin and will wirte documents in the following days. But you can find some documets in [issues](https://github.com/Robot-Will/Stino/issues). I need your help to write documents.
 
 
 ## Installation
@@ -39,5 +43,5 @@ THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLI
 
 
 ## About The Author
-Dr. Robot Will is a chemist, not a programmer. He is in Shanghai, China, once a member of Xinchejian. He writes this plugin just for fun, meanwhile learning Python and Arduino. If you have any ideas or suggestions, please leave messages to him. He will appreciate your help.
+[Dr. Robot Will](http://resume.github.io/?Robot-Will) is a chemist, not a programmer. He is in Shanghai, China, once a member of Xinchejian. He writes this plugin just for fun, meanwhile learning Python and Arduino. If you have any ideas or suggestions, please leave messages to him. He will appreciate your help.
 

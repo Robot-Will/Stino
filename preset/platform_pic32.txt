@@ -1,0 +1,109 @@
+
+# Arduino AVR Core and platform.
+# ------------------------------
+
+# For more info:
+# https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5---3rd-party-Hardware-specification
+
+name=ChipKit PIC32 Boards
+version=1.5.8
+
+# AVR compile variables
+# ---------------------
+
+# Default "compiler.path" is correct, change only if you want to overidde the initial value
+compiler.path={runtime.ide.path}/hardware/pic32/compiler/pic32-tools/bin/
+compiler.c.cmd=pic32-gcc
+compiler.c.flags=-O2 -c -mno-smart-io -w -ffunction-sections -fdata-sections -g3 -mdebugger -Wcast-align -fno-short-double -fframe-base-loclist
+compiler.c.elf.flags=-Os -Wl,--gc-sections -mdebugger -mno-peripheral-libs -nostartfiles
+compiler.c.elf.cmd=pic32-g++
+compiler.S.flags=-O2 -g1 -c -Wa,--gdwarf-2
+compiler.cpp.cmd=pic32-g++
+compiler.cpp.flags=-O2 -c -mno-smart-io -w -fno-exceptions -ffunction-sections -fdata-sections -g3 -mdebugger -Wcast-align -fno-short-double -fframe-base-loclist
+compiler.ar.cmd=pic32-ar
+compiler.ar.flags=rcs
+compiler.objcopy.cmd=pic32-objcopy
+compiler.objcopy.eep.flags=-O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0
+compiler.elf2hex.flags=-a
+compiler.elf2hex.cmd=pic32-bin2hex
+compiler.ldflags=
+compiler.size.cmd=pic32-size
+
+# This can be overriden in boards.txt
+ldscript=chipKIT-BL-mega.ld
+ldcommon=chipKIT-application-COMMON.ld
+build.variant=Default_100
+board.define=
+compiler.define=-DMPIDEVER=16777997 -DMPIDE=23
+build.extra_flags={compiler.define} {board.define} "-I{runtime.ide.path}/hardware/pic32/compiler/pic32-tools/pic32mx/include"
+
+# These can be overridden in platform.local.txt
+compiler.c.extra_flags=
+compiler.c.elf.extra_flags=
+compiler.S.extra_flags=
+compiler.cpp.extra_flags=
+compiler.ar.extra_flags=
+compiler.objcopy.eep.extra_flags=
+compiler.elf2hex.extra_flags=
+
+# AVR compile patterns
+# --------------------
+
+## Compile c files
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -mprocessor={build.mcu} -DF_CPU={build.f_cpu} -Dsoftware={runtime.ide.version} -D{board} {compiler.c.extra_flags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+
+## Compile c++ files
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -mprocessor={build.mcu} -DF_CPU={build.f_cpu} -Dsoftware={runtime.ide.version} -D{board} {compiler.cpp.extra_flags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+
+## Compile S files
+recipe.S.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.S.flags} -mprocessor={build.mcu} -DF_CPU={build.f_cpu} -Dsoftware={runtime.ide.version} -D{board} {compiler.S.extra_flags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+
+## Create archives
+recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} {compiler.ar.extra_flags} "{build.path}/{archive_file}" "{object_file}"
+
+## Combine gc-sections, archives, and objects
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} -mprocessor={build.mcu} -o "{build.path}/{build.project_name}.elf" {object_files} "{build.path}/{archive_file}" "-L{build.path}" -lm -T {build.core.path}/{ldscript} -T{build.core.path}/{ldcommon}
+
+## Create eeprom
+recipe.objcopy.eep.pattern="{compiler.path}{compiler.objcopy.cmd}" {compiler.objcopy.eep.flags} {compiler.objcopy.eep.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.eep"
+
+## Create hex
+recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} {compiler.elf2hex.extra_flags} "{build.path}/{build.project_name}.elf"
+
+## Compute size
+recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build.project_name}.elf"
+recipe.size.regex=^(?:\.text|\.ARM.exidx|\.relocate)\s+([0-9]+).*
+recipe.size.regex.data=^(?:\.relocate|\.bss)\s+([0-9]+).*
+recipe.size.regex.eeprom=^(?:\.eeprom)\s+([0-9]+).*
+
+
+# AVR Uploader/Programmers tools
+# ------------------------------
+
+tools.avrdude.cmd.path={runtime.ide.path}/hardware/tools/avr/bin/avrdude
+tools.avrdude.config.path={runtime.ide.path}/hardware/tools/avr/etc/avrdude.conf
+tools.avrdude.cmd.path.linux={runtime.ide.path}/hardware/tools/avrdude
+tools.avrdude.config.path.linux={runtime.ide.path}/hardware/tools/avrdude.conf
+
+tools.avrdude.upload.params.verbose=-v
+tools.avrdude.upload.params.quiet=-q -q
+tools.avrdude.upload.pattern="{cmd.path}" "-C{config.path}" {upload.verbose} -p{build.mcu} -c{upload.protocol} -P{serial.port} -b{upload.speed} -D "-Uflash:w:{build.path}/{build.project_name}.hex:i"
+
+tools.avrdude.program.params.verbose=-v -v -v -v
+tools.avrdude.program.params.quiet=-q -q
+tools.avrdude.program.pattern="{cmd.path}" "-C{config.path}" {program.verbose} -p{build.mcu} -c{protocol} {program.extra_params} "-Uflash:w:{build.path}/{build.project_name}.hex:i"
+
+tools.avrdude.erase.params.verbose=-v -v -v -v
+tools.avrdude.erase.params.quiet=-q -q
+tools.avrdude.erase.pattern="{cmd.path}" "-C{config.path}" {erase.verbose} -p{build.mcu} -c{protocol} {program.extra_params} -e -Ulock:w:{bootloader.unlock_bits}:m -Uefuse:w:{bootloader.extended_fuses}:m -Uhfuse:w:{bootloader.high_fuses}:m -Ulfuse:w:{bootloader.low_fuses}:m
+
+tools.avrdude.bootloader.params.verbose=-v -v -v -v
+tools.avrdude.bootloader.params.quiet=-q -q
+tools.avrdude.bootloader.pattern="{cmd.path}" "-C{config.path}" {bootloader.verbose} -p{build.mcu} -c{protocol} {program.extra_params} "-Uflash:w:{runtime.platform.path}/bootloaders/{bootloader.file}:i" -Ulock:w:{bootloader.lock_bits}:m
+
+
+# USB Default Flags
+# Default blank usb manufacturer will be filled it at compile time
+# - from numeric vendor ID, set to Unknown otherwise
+build.usb_manufacturer=
+build.usb_flags=-DUSB_VID={build.vid} -DUSB_PID={build.pid} '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'

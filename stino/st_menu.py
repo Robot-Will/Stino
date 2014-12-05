@@ -289,7 +289,11 @@ def create_boards_menu(arduino_info):
                 boards = platform.get_boards()
                 for board in boards:
                     menu_dict = {}
-                    menu_dict['caption'] = board.get_caption()
+                    caption = board.get_caption()
+                    board_group = board.get_params().get('group', '')
+                    if board_group:
+                        caption = '[%s] %s' % (board_group, caption)
+                    menu_dict['caption'] = caption
                     menu_dict['command'] = 'select_board'
                     menu_dict['args'] = {'board_id': board.get_id()}
                     menu_dict['checkbox'] = True
