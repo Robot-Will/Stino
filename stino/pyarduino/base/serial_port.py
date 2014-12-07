@@ -122,12 +122,39 @@ def touch_port(serial_port, baudrate):
     ser.bytesize = pyserial.EIGHTBITS
     ser.stopbits = pyserial.STOPBITS_ONE
     ser.parity = pyserial.PARITY_NONE
-    ser.open()
-    ser.setDTR(True)
-    time.sleep(0.022)
-    ser.setDTR(False)
-    ser.close()
-    time.sleep(1)
+    try:
+        ser.open()
+    except pyserial.SerialException:
+        pass
+    else:
+        ser.setDTR(True)
+        time.sleep(0.022)
+        ser.setDTR(False)
+        ser.close()
+        time.sleep(1)
+
+
+def auto_reset(serial_port):
+    ser = pyserial.Serial()
+    ser.port = serial_port
+    try:
+        ser.open()
+    except pyserial.SerialException:
+        pass
+    else:
+        ser.setRTS(False)
+        ser.setDTR(False)
+        ser.setDTR(True)
+        time.sleep(0.05)
+        ser.setDTR(False)
+        ser.setRTS(True)
+        ser.setDTR(True)
+        time.sleep(0.05)
+        ser.setDTR(False)
+        time.sleep(0.05)
+        ser.write('1EAF')
+        time.sleep(0.05)
+        ser.close()
 
 
 def wait_for_port(upload_port, before_ports, message_queue):

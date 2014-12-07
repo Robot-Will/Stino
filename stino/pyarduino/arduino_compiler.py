@@ -148,6 +148,10 @@ class Compiler(object):
             ino_changed = check_ino_change(ino_files, combined_file)
             if self.is_new_build or ino_changed:
                 core_path = self.params.get('build.core.path', '')
+                main_cxx_path = os.path.join(core_path, 'main.cxx')
+                if os.path.isfile(main_cxx_path):
+                    main_cxx_file = base.abs_file.File(main_cxx_path)
+                    ino_files.append(main_cxx_file)
                 combined_src = arduino_src.combine_ino_files(
                     core_path, ino_files)
                 combined_file.write(combined_src)

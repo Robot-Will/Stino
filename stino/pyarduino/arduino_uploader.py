@@ -69,8 +69,7 @@ class Uploader(object):
             if serial_monitor:
                 serial_monitor.stop()
 
-        if not by_using_programmer(using_programmer,
-                                   self.params.get('upload.protocol')):
+        if not by_using_programmer(using_programmer, self.params):
             bootloader_file = self.params.get('bootloader.file', '')
             if 'caterina' in bootloader_file.lower():
                 self.do_touch = True
@@ -102,22 +101,26 @@ class Uploader(object):
                 else:
                     self.upload_port_file = self.upload_port
                 self.params['serial.port.file'] = self.upload_port_file
+
+            if self.params.get('upload.auto_reset', '') == 'true':
+                text = 'Resetting to bootloader via DTR pulse\\n'
+                self.message_queue.put(text)
+                base.serial_port.auto_reset(self.upload_port)
         self.params = arduino_target_params.replace_param_values(self.params)
 
     def prepare_cmds(self, using_programmer):
         self.cmds = []
-        if not by_using_programmer(using_programmer,
-                                   self.params.get('upload.protocol')):
+        if not by_using_programmer(using_programmer, self.params):
             if 'post_compile.pattern' in self.params:
-                self.cmds.append(self.params.get('post_compile.pattern'))
+                self.cmds.append(self.params.get('post_compile.pattern', ''))
             self.cmds.append(self.params.get('upload.pattern'))
         else:
-            self.cmds.append(self.params.get('program.pattern'))
+            self.cmds.append(self.params.get('program.pattern', ''))
 
         settings = base.settings.get_arduino_settings()
         verify_code = settings.get('verify_code', False)
         if verify_code:
-            self.cmd += ' -V'
+            self.cmds[-1] = self.cmds[-1] + ' -V'
 
     def exec_cmds(self):
         settings = base.settings.get_arduino_settings()
@@ -141,5 +144,11 @@ class Uploader(object):
                 base.serial_port.touch_port(self.upload_port, 9600)
 
 
-def by_using_programmer(using_programmer, upload_protocol):
-    return using_programmer or upload_protocol is None
+def by_using_programmer(using_programmer, params):
+    state = False
+    upload_protocol = params.get('upload.protocol', '')
+    upload_uploader = params.get('upload.uploader', '')
+    if (using_programmer or upload_protocol is None) and \
+            upload_uploader != 'dfu-util':
+        state = True
+    return state

@@ -324,7 +324,7 @@ def add_extra_params(arduino_info, params):
     params['software'] = 'ARDUINO'
     params['build.arch'] = target_arch.upper()
     params['runtime.ide.version'] = ide_version
-    params['runtime.sketchbook.version'] = sketchbook_path
+    params['runtime.sketchbook.path'] = sketchbook_path
     params['runtime.ide.path'] = ide_path
     params['runtime.platform.path'] = target_platform_path
     params['build.system.path'] = target_system_path
@@ -415,4 +415,7 @@ def add_extra_params(arduino_info, params):
     params['build.serial_number'] = build_serial_number
 
     if 'upload.maximum_ram_size' in params:
-        params['maximum_data_size'] = params['upload.maximum_ram_size']
+        params['upload.maximum_data_size'] = params['upload.maximum_ram_size']
+
+    if 'upload.ram.maximum_size'  in params:
+        params['upload.maximum_data_size'] = params['upload.ram.maximum_size']
