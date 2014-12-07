@@ -377,7 +377,13 @@ class Compiler(object):
 
         size_regex = self.params.get('recipe.size.regex')
         pattern = re.compile(size_regex, re.M)
-        size = sum(int(n) for n in pattern.findall(text))
+        result = pattern.findall(text)
+        if result:
+            try:
+                int(result[0])
+            except TypeError:
+                result = result[0][:2]
+        size = sum(int(n) for n in result)
         size_percent = size / size_total * 100
 
         size = regular_numner(size)
@@ -390,7 +396,13 @@ class Compiler(object):
         size_regex_data = self.params.get('recipe.size.regex.data', '')
         if size_regex_data and size_data_total:
             pattern = re.compile(size_regex_data, re.M)
-            size_data = sum(int(n) for n in pattern.findall(text))
+            result = pattern.findall(text)
+            if result:
+                try:
+                    int(result[0])
+                except TypeError:
+                    result = result[0][1:]
+            size_data = sum(int(n) for n in result)
             size_data_percent = size_data / size_data_total * 100
             size_data_remain = size_data_total - size_data
 

@@ -1,92 +1,90 @@
+# ZPU compile variables
+# ---------------------
 
-# Arduino SAM Core and platform.
-#
-# For more info:
-# https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5---3rd-party-Hardware-specification
-
-name=Arduino ARM (32-bits) Boards
-version=1.5.8
-
-# SAM3 compile variables
-# ----------------------
-
+name=ZPUino 1.0 (32-bits) Boards
 compiler.path={runtime.ide.path}/hardware/tools/zpu/bin/
 compiler.c.cmd=zpu-elf-gcc
-compiler.c.flags=-DZPU -Wall -O2 -fno-gcse -ffunction-sections -fdata-sections -nostartfiles -mmult -mdiv -mno-callpcrel -mno-pushspadd -mno-poppcrel
-compiler.c.elf.cmd=zpu-elf-gcc
+compiler.c.flags=-c -DZPU -DZPUINO_ACCEL -Wall -O2 -fno-reorder-blocks  -fno-reorder-blocks-and-partition -fno-prefetch-loop-arrays  -fno-gcse -ffunction-sections -fdata-sections -nostartfiles -mmult -mdiv -mno-callpcrel -mno-pushspadd -mno-poppcrel
+compiler.c.elf.cmd=zpu-elf-g++
 compiler.c.elf.flags=-O2 -nostartfiles -Wl,-T -Wl,{build.core.path}/zpuino.lds -Wl,--relax -Wl,--gc-sections
-compiler.S.flags={compiler.c.flags}
+compiler.S.flags=-c -g -assembler-with-cpp
 compiler.cpp.cmd=zpu-elf-g++
-compiler.cpp.flags={compiler.c.flags} -fno-exceptions -fno-rtti
+compiler.cpp.flags=-c -fno-exceptions -fno-rtti -DZPU -DZPUINO_ACCEL -Wall -O2 -fno-reorder-blocks  -fno-reorder-blocks-and-partition -fno-prefetch-loop-arrays  -fno-gcse -ffunction-sections -fdata-sections -nostartfiles -mmult -mdiv -mno-callpcrel -mno-pushspadd -mno-poppcrel
 compiler.ar.cmd=zpu-elf-ar
+compiler.as.cmd=zpu-elf-as
 compiler.ar.flags=rcs
 compiler.objcopy.cmd=zpu-elf-objcopy
-compiler.objcopy.eep.flags=-O ihex -j .eeprom --set-section-flags=.eeprom=alloc,load --no-change-warnings --change-section-lma .eeprom=0
+compiler.objcopy.eep.flags=
 compiler.elf2hex.flags=-O binary
 compiler.elf2hex.cmd=zpu-elf-objcopy
-compiler.ldflags=
+compiler.ldflags=-O2 -nostartfiles -Wl,-T -Wl,{build.core.path}zpuino.lds -Wl,--relax -Wl,--gc-sections
 compiler.size.cmd=zpu-elf-size
-compiler.define=-DARDUINO=
-
+compiler.smallfs.cmd=mksmallfs
+compiler.define=
 # this can be overriden in boards.txt
 build.extra_flags=
+build.extraCflags=
+build.extraCppflags=
+build.extraSflags=
 
-# These can be overridden in platform.local.txt
-compiler.c.extra_flags={build.extraCflags}
-compiler.c.elf.extra_flags=
-compiler.cpp.extra_flags=
-compiler.S.extra_flags={build.extraSflags}
-compiler.ar.extra_flags=
-compiler.elf2hex.extra_flags=
-
-
-compiler.libsam.c.flags="-I{build.system.path}/libsam" "-I{build.system.path}/CMSIS/CMSIS/Include/" "-I{build.system.path}/CMSIS/Device/ATMEL/"
-
-# USB Flags
-# ---------
-build.usb_flags=-DUSB_VID={build.vid} -DUSB_PID={build.pid} -DUSBCON '-DUSB_MANUFACTURER={build.usb_manufacturer}' '-DUSB_PRODUCT={build.usb_product}'
-
-# Default usb manufacturer will be replaced at compile time using
-# numeric vendor ID if available or by board's specific value.
-build.usb_manufacturer="Unknown"
-
-
-# SAM3 compile patterns
+# ZPU compile patterns
 # ---------------------
 
 ## Compile c files
-recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} {compiler.c.extra_flags} {build.extra_flags} {includes} -MT "{object_file}" -MD -MP -MF -c -o "{object_file}" "{source_file}"
+recipe.c.o.pattern="{compiler.path}{compiler.c.cmd}" {compiler.c.flags} -D{software}={runtime.ide.version} {build.extraCflags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
+
+## Compile S files
+recipe.S.o.pattern="{compiler.path}{compiler.c.cmd}" -DASSEMBLY {compiler.c.flags} -D{software}={runtime.ide.version} {build.extraCflags} {build.extraSflags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
 
 ## Compile c++ files
-## $(CXX) $(CXXFLAGS) $(CXXCOMPILE) -MT $@ -MD -MP -MF ./$(DEPDIR)/$*.Tpo -c -o $@ "$<"
-recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} {compiler.cpp.extra_flags} {build.extra_flags} {includes} -MT "{object_file}" -MD -MP -MF -c -o "{object_file}" "{source_file}"
+recipe.cpp.o.pattern="{compiler.path}{compiler.cpp.cmd}" {compiler.cpp.flags} -D{software}={runtime.ide.version} {build.extraCflags} {build.extra_flags} {includes} "{source_file}" -o "{object_file}"
 
 ## Create archives
-recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} {compiler.ar.extra_flags} "{build.path}/{archive_file}" "{object_file}"
+recipe.ar.pattern="{compiler.path}{compiler.ar.cmd}" {compiler.ar.flags} "{build.path}/{archive_file}" "{object_file}"
 
 ## Combine gc-sections, archives, and objects
-recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} {compiler.c.elf.extra_flags} -o "{build.path}/{build.project_name}.elf" "-L{build.path}" -Wl,--whole-archive {object_files} "{build.path}/{archive_file}" -Wl,--no-whole-archive
+recipe.c.combine.pattern="{compiler.path}{compiler.c.elf.cmd}" {compiler.c.elf.flags} "-Wl,-Map,{build.path}/{build.project_name}.map" -o "{build.path}/{build.project_name}.elf" "-L{build.path}" -lm -Wl,--warn-common -Wl,--warn-section-align {object_files} -Wl,--whole-archive "{build.path}/{archive_file}" -Wl,--no-whole-archive
 
 ## Create eeprom
 recipe.objcopy.eep.pattern=
 
 ## Create hex
-recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} {compiler.elf2hex.extra_flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
+recipe.objcopy.hex.pattern="{compiler.path}{compiler.elf2hex.cmd}" {compiler.elf2hex.flags} "{build.path}/{build.project_name}.elf" "{build.path}/{build.project_name}.bin"
 
 ## Compute size
-recipe.size.pattern="{compiler.path}{compiler.size.cmd}" -A "{build.path}/{build.project_name}.elf"
-recipe.size.regex=^(?:\.text|\.ARM.exidx|\.relocate)\s+([0-9]+).*
-recipe.size.regex.data=^(?:\.relocate|\.bss)\s+([0-9]+).*
+recipe.size.pattern="{compiler.path}{compiler.size.cmd}" "{build.path}/{build.project_name}.elf"
+recipe.size.regex=([0-9]+)\s+([0-9]+)\s+([0-9]+).*
 
+## Generate smallfs
+recipe.smallfs.pattern="{compiler.path}{compiler.smallfs.cmd}" "{build.path}/smallfs.dat" "{sketch.path}/smallfs"
 
-# SAM3 Uploader tools
+# ZPU Uploader tools
 # -------------------
 
-tools.bossac.cmd=bossac
-tools.bossac.cmd.windows=bossac.exe
-tools.bossac.path={runtime.ide.path}/hardware/tools
+tools.zpuinoprogrammer.cmd=zpuinoprogrammer
+tools.zpuinoprogrammer.cmd.windows=zpuinoprogrammer.exe
+tools.zpuinoprogrammer.path={runtime.ide.path}/hardware/tools/zpu/bin
 
-tools.bossac.upload.params.verbose=-i -d
-tools.bossac.upload.params.quiet=
-tools.bossac.upload.pattern="{path}/{cmd}" {upload.verbose} --port={serial.port.file} -U {upload.native_usb} -e -w -v -b "{build.path}/{build.project_name}.bin" -R
+tools.zpuinoprogrammer.upload.params.verbose=-v -v -v -v
+tools.zpuinoprogrammer.upload.params.quiet=
+tools.zpuinoprogrammer.upload.params.memory="-U"
+tools.zpuinoprogrammer.upload.pattern="{path}/{cmd}" -s {upload.speed} -R {upload.verbose} {upload.memory} -d {serial.port} -b "{build.path}/{build.project_name}.bin" {upload.smallfs}
 
+# ZPU smallfs
+# ------------------
+tools.zpuinoprogrammer.upload.params.smallfs=-e "{build.path}/smallfs.dat"
+
+# Papilio Programmer
+# ------------------
+tools.papilioprog.cmd=papilioprog
+tools.papilioprog.cmd.windows=Papilio_Programmer.bat
+tools.papilioprog.path={runtime.ide.path}/hardware/tools/papilio/papilio_loader
+
+tools.papilioprog.bootloader.params.verbose=-v
+tools.papilioprog.bootloader.params.quiet=
+tools.papilioprog.bootloader.pattern="{path}/{cmd}" "{runtime.ide.path}/hardware/zpuino/zpu/bootloaders/{bootloader.file}"
+
+# This is not necessary but not sure how to disable the erase.
+tools.papilioprog.erase.params.verbose=
+tools.papilioprog.erase.params.quiet=
+tools.papilioprog.erase.pattern="{path}/bin/papilio-prog.exe" -c
