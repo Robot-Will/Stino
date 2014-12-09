@@ -121,3 +121,144 @@ msgstr "Ejemplos"
 
 msgid "Sketchbook"
 msgstr "Sketchbook"
+
+msgid "Show Sketch Folder"
+msgstr "Mostrar carpeta Sketch"
+
+msgid "Board"
+msgstr "Tarjeta"
+
+msgid "Help"
+msgstr "Ayuda"
+
+msgid "Update Menu"
+msgstr "Actualizar Menú"
+
+msgid "Build Options"
+msgstr "Opciones de Compilación"
+
+msgid "Board Options"
+msgstr "Opciones de Tarjeta"
+
+msgid "None"
+msgstr "Ninguna"
+
+msgid "Documents"
+msgstr "Documentos"
+
+msgid "Processor"
+msgstr "Procesador"
+
+msgid "USB Type"
+msgstr "Tipo de USB"
+
+msgid "CPU Speed"
+msgstr "Velocidad de CPU"
+
+msgid "Keyboard Layout"
+msgstr "Distribución de teclado"
+
+msgid "Show Compilation Output"
+msgstr "Mostrar Resultados de compilación"
+
+msgid "Show Upload Output"
+msgstr "Mostrar Resultado de Carga"
+
+msgid "Verify Code after Upload"
+msgstr "Verificar código antes de cargarlo"
+
+msgid "Line Ending"
+msgstr "Final de Linea"
+
+msgid "New Line"
+msgstr "Nueva Linea"
+
+msgid "Carriage Return"
+msgstr "Retorno de Linea"
+
+msgid "Both NL & CR"
+msgstr "Ambos NL & RL(CR)"
+
+msgid "Text"
+msgstr "Texto"
+
+msgid "Hex"
+msgstr "Hexadecimal"
+
+msgid "Display Mode"
+msgstr "Modo Vista"
+
+msgid "Run"
+msgstr "Ejecutar"
+
+msgid "Bare GCC Build (No Arduino code-munging)"
+msgstr "Construir GCC Bare (No arduino código-munging)"
+
+msgid "Big Project"
+msgstr "Proyecto Grande"
+
+msgid "Serial port {0} already in use. Try quitting any programs that may be using it.\n"
+msgstr "El puerto serial {0} ya está en uso. Intenta cerrar cualquier programa que podría estar usándolo.\n"
+
+msgid "[SEND] {0}\n"
+msgstr "[ENVIAR] {0}\n"
+
+msgid "Ports {{0}}/{{1}} => {{2}}\n"
+msgstr "Puertos {{0}}/{{1}} => {{2}}\n"
+
+msgid "Found new upload port: {0}.\n"
+msgstr "Encontrado nuevo puerto de carga：{0}.\n"
+
+msgid "Uploading using selected port: {0}.\n"
+msgstr "Cargar usando el puerto seleccionado: {0}.\n"
+
+msgid "Couldn't find a Leonardo on the selected port. Check that you have the correct port selected. If it is correct, try pressing the board's reset button after initiating the upload.\n"
+msgstr "No se pudo encontrar una tarjeta Leonardo en el puerto seleccionado. Verifica que tengas seleccionado el puerto correcto. Si lo está, intenta presionando el botón de reinicio de la tarjeta antes de inciar la carga.\n"
+
+msgid "Open Sketch in New Window"
+msgstr "Abrir el Sketch en una Nueva Ventana"
+
+msgid "[Stino - Start burning bootloader...]\n"
+msgstr "[Stino - Comenzando a quemar el Bootloader...]\n"
+
+msgid "[Stino - Done burning bootloader.]\n"
+msgstr "[Stino - Bootloader quemado.]\n"
+
+msgid "No board exists. Please Select Arduino Application Folder or Change Arduino Sketchbook Folder in Arduino Menu -> Preferences.\n"
+msgstr "No existe la Tarjeta. Por favor seleccione la carpeta de Arduino o cambie la carpeta de Sketchbook en el Menú de Arduino -> Preferencias.\n"
+
+msgid "[Stino - Start building "{0}"...]\n"
+msgstr "[Stino - Comenzando a compilar"{0}"...]\n"
+
+msgid "[Stino - Done building "{0}" in {1}s.]\n"
+msgstr "[Stino - Compilación terminada "{0}" en {1}s.]\n"
+
+msgid "Creating {0}...\n"
+msgstr "Creando {0}...\n"
+
+msgid "Sketch uses {0} bytes ({1}%) of program storage space. Maximum is {2} bytes.\n"
+msgstr "El sketch usa {0} bytes ({1}%) del espacio de almacenamiento. El máximo es {2} bytes.\n"
+
+msgid "Global variables use {0} bytes ({1}%) of dynamic memory, leaving {2} bytes for local variables. Maximum is {3} bytes.\n"
+msgstr "Las variables globales usan {0} bytes ({1}%) de la memoria dinámica, dejando {2} bytes para variables locales. EL máximo es {3} bytes.\n"
+
+msgid "[Stino - Exit with error code {0}.]\n"
+msgstr "[Stino - Salida con error. Código {0}.]\n"
+
+msgid "[Stino - Start uploading...]\n"
+msgstr "[Stino - Iniciando la Carga...]\n"
+
+msgid "[Stino - Done uploading.]\n"
+msgstr "[Stino - Carga terminada.]\n"
+
+msgid "Forcing reset using 1200bps open/close on port {0}.\n"
+msgstr "Forzando reinicio usando 1200bps abre/cierra puerto {0}.\n"
+
+msgid "Archive Sketch {0}...\n"
+msgstr "Archivo Sketch {0}...\n"
+
+msgid "Error occured while writing {0}.\n"
+msgstr "Ocurrió un error mientras se escribía {0}.\n"
+
+msgid "Done writing {0}.\n"
+msgstr "Escritura terminada {0}.\n"
