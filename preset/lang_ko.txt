@@ -207,7 +207,7 @@ msgid "Arduino {0} is found at {1}.\n"
 msgstr "{1}에서 Arduino{0}을(를) 찾았습니다.\n"
 
 msgid "Build folder is changed to {0}.\n"
-msgstr "Build folder를 {0}로 변경하였습니다.\n"
+msgstr "Build 폴더를 {0}로 변경하였습니다.\n"
 
 msgid "Sketchbook is changed to {0}.\n"
 msgstr "스케치 폴더를 {0}로 변경하였습니다.\n"
