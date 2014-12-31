@@ -1,0 +1,213 @@
+# LANGUAGE: 한국어 (Korean)
+# Korean translations for Stino Plugin.
+# Copyright (C) 2012-2014 Robot-Will
+# This file is distributed under the same license as the Stino Plugin.
+# AUTHOR <gheong.ro@gmail.com>
+#
+
+msgid "Update Menu"
+msgstr "메뉴 업데이트"
+
+msgid "New Sketch"
+msgstr "새로운 스케치"
+
+msgid "Sketchbook"
+msgstr "스케치북"
+
+msgid "Examples"
+msgstr "예제"
+
+msgid "Import Library"
+msgstr "라이브러리 가져오기"
+
+msgid "Show Sketch Folder"
+msgstr "스케치 폴더 열기"
+
+msgid "Verify/Compile"
+msgstr "확인 / 컴파일"
+
+msgid "Stop"
+msgstr "정지"
+
+msgid "Compilation"
+msgstr "컴파일"
+
+msgid "Upload"
+msgstr "업로드"
+
+msgid "Upload by Using Programmer"
+msgstr "프로그래머를 이용해 업로드"
+
+msgid "Build Options"
+msgstr "컴파일 옵션"
+
+msgid "Extra Flags"
+msgstr "플래그 추가"
+
+msgid "Full Compilation"
+msgstr "전체 컴파일"
+
+msgid "Show Compilation Output"
+msgstr "컴파일 출력(메시지) 보이기"
+
+msgid "Show Upload Output"
+msgstr "업로드 출력(메시지) 보이기"
+
+msgid "Verify Code after Upload"
+msgstr "업로드 후 코드 확인"
+
+msgid "Bare GCC Build (No Arduino code-munging)"
+msgstr "GCC로 빌드하기 (Arduino 코드 개조 안함)"
+
+msgid "Select Build Folder"
+msgstr "빌드 폴더 선택"
+
+msgid "Platform File Settings - Default"
+msgstr "Platform File 설정 - 기본값"
+
+msgid "Platform File Settings - User"
+msgstr "Platform File 설정 - 유저"
+
+msgid "Ram Size Settings - Default"
+msgstr "Ram Size 설정 - 기본값"
+
+msgid "Ram Size Settings - User"
+msgstr "Ram Size 설정 - 유저"
+
+msgid "Board"
+msgstr "보드"
+
+msgid "Board Options"
+msgstr "보드 옵션"
+
+msgid "Programmer"
+msgstr "프로그래머"
+
+msgid "Burn Bootloader"
+msgstr "부트로더 굽기"
+
+msgid "Serial Port"
+msgstr "시리얼 포트"
+
+msgid "Serial Monitor"
+msgstr "시리얼 모니터"
+
+msgid "Run"
+msgstr "실행"
+
+msgid "Send"
+msgstr "전송"
+
+msgid "Baudrate"
+msgstr "통신 속도"
+
+msgid "Line Ending"
+msgstr "줄넘김"
+
+msgid "None"
+msgstr "None"
+
+msgid "New Line"
+msgstr "New Line"
+
+msgid "Carriage Return"
+msgstr "Carriage Return"
+
+msgid "Both NL & CR"
+msgstr "NL & CR 모두"
+
+msgid "Display Mode"
+msgstr "표시 형식"
+
+msgid "Text"
+msgstr "Text"
+
+msgid "Ascii"
+msgstr "Ascii"
+
+msgid "Hex"
+msgstr "Hex"
+
+msgid "Auto Format"
+msgstr "자동 포맷"
+
+msgid "Archive Sketch"
+msgstr "스케치 보관하기"
+
+msgid "stino_Preferences"
+msgstr "Stino 선택사항"
+
+msgid "Preferences"
+msgstr "환경설정"
+
+msgid "Select Arduino Application Folder"
+msgstr "Arduino 어플리케이션 폴더 선택"
+
+msgid "Change Sketchbook Folder"
+msgstr "스케치북 폴더 변경"
+
+msgid "Big Project"
+msgstr "Big Project"
+
+msgid "Open Sketch in New Window"
+msgstr "스케치 새 창에서 열기"
+
+msgid "Language"
+msgstr "언어"
+
+msgid "arduino_Reference"
+msgstr "Arduino_참조"
+
+msgid "References"
+msgstr "참조목록"
+
+msgid "Getting Started"
+msgstr "시작하기"
+
+msgid "Troubleshooting"
+msgstr "문제해결"
+
+msgid "Reference"
+msgstr "참조"
+
+msgid "Find in Reference"
+msgstr "참조에서 찾기"
+
+msgid "Frequently Asked Questions"
+msgstr "자주 묻는 질문"
+
+msgid "Visit Arduino Website"
+msgstr "Arduino 홈페이지"
+
+msgid "stino_Help"
+msgstr "Stino 도움말"
+
+msgid "Help"
+msgstr "도움말"
+
+msgid "Documents"
+msgstr "GitHub: Stino 페이지"
+
+msgid "About Stino"
+msgstr "Stino에 대하여"
+
+msgid "Show Arduino Menu"
+msgstr "Arduino 메뉴 보이기"
+
+msgid "Global Setting"
+msgstr "전역 설정"
+
+msgid "Extra compilation flags:"
+msgstr "컴파일 플래그 추가:"
+
+msgid "Show Verbose Output"
+msgstr "상세정보 출력"
+
+msgid "Arduino {0} is found at {1}.\n"
+msgstr "{1}에서 Arduino{0}을(를) 찾았습니다.\n"
+
+msgid "Build folder is changed to {0}.\n"
+msgstr "Build folder를 {0}로 변경하였습니다.\n"
+
+msgid "Sketchbook is changed to {0}.\n"
+msgstr "스케치 폴더를 {0}로 변경하였습니다.\n"
