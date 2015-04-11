@@ -281,7 +281,13 @@ class Keyword:
 
 def getRealArduinoPath(folder):
 	if constant.sys_platform == 'osx':
-		folder = os.path.join(folder, 'Contents/Resources/Java')
+		folder_test1 = os.path.join(folder, 'Contents/Resources/Java')
+		folder_test2 = os.path.join(folder, 'Contents/Java')
+
+		if os.path.exists(folder_test1):
+			folder = folder_test1
+		elif os.path.exists(folder_test2):
+			folder = folder_test2
 	return folder
 
 def isArduinoFolder(folder):
