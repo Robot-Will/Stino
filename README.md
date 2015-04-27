@@ -2,7 +2,7 @@
 
 ### New Version (Dev Version)
 
-Stino is a [Sublime Text](http://www.sublimetext.com) plugin, which provides an [Arduino](http://arduino.cc) environement for creating, editing, compiling and uploading sketches. The plugin was written by Robot Will in 2012-2014. If you have any ideas or suggestions, leave a message for me. Thanks.
+Stino is a [Sublime Text](http://www.sublimetext.com) plugin, which provides an [Arduino](http://arduino.cc) environment for creating, editing, compiling and uploading sketches. The plugin was written by Robot Will in 2012-2014. If you have any ideas or suggestions, leave a message for me. Thanks.
 
 
 ## Requirements
@@ -13,24 +13,24 @@ Stino is a [Sublime Text](http://www.sublimetext.com) plugin, which provides an 
 
 ## What it does
 
-The plugin adds an Arduino dropdown menu to Sublime text from which you can access the IDE features:
+The plugin adds an Arduino dropdown menu to Sublime text from which you can access Arduino IDE features. You can create and edit sketches, verify and upload code, everything you would expect from the standard Arduino IDE, but using the Sublime text editor.
 
 ### Manage Sketches
 
 * New Sketch - Create a new sketch in your sketchbook. This will create a sketch folder in your default Arduino sketchbook folder and initialise it with an .ino file.
-* Sketchbook - Open any project in your sketchbook folder and open the scetch directory in the Sublime sidebar.
+* Sketchbook - Open any project in your sketchbook folder and open the sketch directory in the Sublime sidebar.
 
 ### Verify / Compile / Upload
 
-Verify, compile or upload a sketch directly to your Arduino. You will need to have chosen a serial port to activate these features.
+Verify, compile or upload a sketch directly to your Arduino. You will need to have chosen a serial port to upload code to your Arduino.
 
 ### Serial port
 
-Choose the USB port that your Arduino is plugged into. You will not be able to upload code until you have done this. You can also open the serial monitor as a file.
+Choose the USB port that your Arduino is plugged into. You will not be able to upload code until you have done this. You can also open the serial monitor as a file to pull debugging information out of the Arduino.
 
 ### Preferences
 
-Change your sketchbook and build folders, and set various compilation options.
+Change your sketchbook and build folders and set various compilation options.
 
 
 ## Reporting issues
