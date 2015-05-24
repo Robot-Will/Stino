@@ -55,6 +55,7 @@
     "Arduino Duemilanove or Nano w/ ATmega328 @ 16 MHz": "platform_wiring.txt",
     "Arduino Mega 2560 @ 16 MHz": "platform_wiring.txt",
     "Arduino Mega (ATmega1280) @ 16 MHz": "platform_wiring.txt",
+    "Arduino Nano": "platform_wiring.txt",
     "LilyPad Arduino w/ ATmega328": "platform_wiring.txt",
     "LilyPad Arduino w/ ATmega168": "platform_wiring.txt",
     "ATmega168 @ 16 MHz (crystal)": "platform_wiring.txt",
