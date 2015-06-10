@@ -328,6 +328,7 @@ def add_extra_params(arduino_info, params):
     params['runtime.ide.path'] = ide_path
     params['runtime.platform.path'] = target_platform_path
     params['build.system.path'] = target_system_path
+    params['runtime.tools.avrdude.path']  = ide_path + '\\hardware\\tools\\avr'
 
     # For Arduino
     if not 'build.board' in params:
