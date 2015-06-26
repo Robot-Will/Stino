@@ -1,21 +1,45 @@
 # Stino
+
 ### New Version (Dev Version)
 
-Stino is a [Sublime Text](http://www.sublimetext.com) plugin, which provides an [Arduino](http://arduino.cc)-like environement for editing, compiling and uploading sketches. The plugin was written by Robot Will in 2012-2014. If you have any idea or suggestion, leave messages to me. Thanks.
+Stino is a [Sublime Text](http://www.sublimetext.com) plugin, which provides an [Arduino](http://arduino.cc) environment for creating, editing, compiling and uploading sketches. The plugin was written by Robot Will in 2012-2014. If you have any ideas or suggestions, leave a message for me. Thanks.
 
 
 ## Requirements
-#### 1. [Sublime Text](http://www.sublimetext.com)
 
-#### 2. [Arduino](http://arduino.cc/en/Main/Software)
+1. [Sublime Text](http://www.sublimetext.com)
+2. [Arduino](http://arduino.cc/en/Main/Software)
 
 
-## Documents
-Currently there is no complete documents for this plugin, and I am working on this plugin and will wirte documents in the following days. But you can find some documets in [issues](https://github.com/Robot-Will/Stino/issues). I need your help to write documents.
+## What it does
+
+The plugin adds an Arduino dropdown menu to Sublime text from which you can access Arduino IDE features. You can create and edit sketches, verify and upload code, everything you would expect from the standard Arduino IDE, but using the Sublime text editor.
+
+### Manage Sketches
+
+* New Sketch - Create a new sketch in your sketchbook. This will create a sketch folder in your default Arduino sketchbook folder and initialise it with an .ino file.
+* Sketchbook - Open any project in your sketchbook folder and open the sketch directory in the Sublime sidebar.
+
+### Verify / Compile / Upload
+
+Verify, compile or upload a sketch directly to your Arduino. You will need to have chosen a serial port to upload code to your Arduino.
+
+### Serial port
+
+Choose the USB port that your Arduino is plugged into. You will not be able to upload code until you have done this. You can also open the serial monitor as a file to pull debugging information out of the Arduino.
+
+### Preferences
+
+Change your sketchbook and build folders and set various compilation options.
+
+
+## Reporting issues
+
+Please report any issues here: [issues](https://github.com/Robot-Will/Stino/issues).
 
 
 ## Installation
-This version Stino can only be installed by manual installation. If you installed the previous version via Package Control, please remove or disable it firstly (see issue [#179](https://github.com/Robot-Will/Stino/issues/179)). Manual installation has only two steps:
+This version of Stino can only be installed by manual installation. If you installed the previous version via Package Control, please remove or disable it firstly (see issue [#179](https://github.com/Robot-Will/Stino/issues/179)). Manual installation has only two steps:
 
 1. Click menu `Preferences`->`Browse Packages...` to open the packages folder.
 
