@@ -217,7 +217,7 @@ class Compiler(object):
             common_core_path = os.path.join(cores_path, 'Common')
             varient_path = self.params.get('build.variant.path')
             build_hardware = self.params.get('build.hardware', '')
-            core_paths = [core_path, common_core_path, varient_path]
+            core_paths = [core_path, common_core_path, varient_path]    
             if build_hardware:
                 platform_path = self.params.get('runtime.platform.path', '')
                 hardware_path = os.path.join(platform_path, build_hardware)
@@ -263,15 +263,19 @@ class Compiler(object):
         self.params['includes'] = ' '.join(includes)
 
         ide_path = self.arduino_info.get_ide_dir().get_path()
+
         if not 'compiler.path' in self.params:
-            compiler_path = '{runtime.ide.path}/hardware/tools/avr/bin/'
+            compiler_path = '{runtime.ide.path}/hardware/tools/avr/bin/'           
             self.params['compiler.path'] = compiler_path
-        compiler_path = self.params.get('compiler.path')
+        compiler_path = self.params.get('compiler.path')        
         compiler_path = compiler_path.replace('{runtime.ide.path}', ide_path)
+        
         if not os.path.isdir(compiler_path):
             self.params['compiler.path'] = ''
 
         self.params = arduino_target_params.replace_param_values(self.params)
+        
+        
 
     def prepare_cmds(self):
         compile_c_cmd = self.params.get('recipe.c.o.pattern', '')
@@ -497,24 +501,27 @@ def exec_cmds(working_dir, cmds, message_queue, is_verbose=False):
             break
     return error_occured
 
-
 def exec_cmd(working_dir, cmd):
     os.environ['CYGWIN'] = 'nodosfilewarning'
     if cmd:
-        os.chdir(working_dir)
+        os.chdir("/")
         cmd = formatCommand(cmd)
+        if "avr-" in cmd:
+            avr = working_dir + '\\hardware\\tools\\avr\\'
+            cmd = avr + 'bin\\' + cmd
+            cmd = cmd.replace("{runtime.tools.avrdude.path}", avr)
+
         compile_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE, shell=True)
         result = compile_proc.communicate()
         return_code = compile_proc.returncode
         stdout = result[0].decode(base.sys_info.get_sys_encoding())
         stderr = result[1].decode(base.sys_info.get_sys_encoding())
-    else:
+    else:    
         return_code = 0
         stdout = ''
         stderr = ''
     return (return_code, stdout, stderr)
-
 
 def formatCommand(cmd):
     if '::' in cmd:
