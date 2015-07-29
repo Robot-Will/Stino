@@ -320,7 +320,7 @@ def add_extra_params(arduino_info, params):
     target_platform = get_target_platform(arduino_info)
     target_platform_path = target_platform.get_path()
     target_system_path = os.path.join(target_platform_path, 'system')
-    target_tools_avrdude_path = os.path.join(ide_path, 'hardware/tools/avr')
+    target_tools_avrdude_path = os.path.join(ide_path, 'hardware\\tools\\avr')
 
     params['software'] = 'ARDUINO'
     params['build.arch'] = target_arch.upper()
@@ -330,7 +330,6 @@ def add_extra_params(arduino_info, params):
     params['runtime.platform.path'] = target_platform_path
     params['build.system.path'] = target_system_path
     params['runtime.tools.avrdude.path'] = target_tools_avrdude_path
-    
 
     # For Arduino
     if not 'build.board' in params:
@@ -356,7 +355,7 @@ def add_extra_params(arduino_info, params):
     if 'bootloader.path' in params and 'bootloader.file' in params:
         bootloader_path = params['bootloader.path']
         bootloader_file = params['bootloader.file']
-        bootloader_file = bootloader_path + '/' + bootloader_file
+        bootloader_file = bootloader_path + '\\' + bootloader_file
         params['bootloader.file'] = bootloader_file
 
     if not 'program.extra_params' in params:
