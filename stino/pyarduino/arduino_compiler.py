@@ -352,7 +352,7 @@ class Compiler(object):
     def exec_build_cmds(self):
         show_compilation_output = self.settings.get('build_verbose', False)
 
-        self.working_dir = self.arduino_info.get_ide_dir().get_path()
+        self.working_dir = '"%s"' % self.arduino_info.get_ide_dir().get_path()
         error_occured = False
 
         total_file_number = len(self.build_files)
