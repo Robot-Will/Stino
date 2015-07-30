@@ -352,7 +352,7 @@ class Compiler(object):
     def exec_build_cmds(self):
         show_compilation_output = self.settings.get('build_verbose', False)
 
-        self.working_dir = '"%s"' % self.arduino_info.get_ide_dir().get_path()
+        self.working_dir = self.arduino_info.get_ide_dir().get_path()
         error_occured = False
 
         total_file_number = len(self.build_files)
@@ -507,10 +507,11 @@ def exec_cmd(working_dir, cmd):
         os.chdir("/")
         cmd = formatCommand(cmd)
         if "avr-" in cmd:
-            avr = working_dir + '\\hardware\\tools\\avr\\'
-            cmd = avr + 'bin\\' + cmd
+            cmd = cmd.replace('"','',1)
+            avr = '"%s\\hardware\\tools\\avr' % working_dir
+            cmd = avr + '\\bin\\' + cmd
             cmd = cmd.replace("{runtime.tools.avrdude.path}", avr)
-
+            print(cmd)
         compile_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE, shell=True)
         result = compile_proc.communicate()
@@ -549,7 +550,6 @@ def gen_core_objs(core_path, folder_prefix, build_path, is_new_build):
     core_dir = base.abs_file.Dir(core_path)
     core_cpp_files = core_dir.recursive_list_files(
         arduino_src.CPP_EXTS, ['libraries'])
-    # core_cpp_files = core_dir.list_files_of_extensions(arduino_src.CPP_EXTS)
     sub_dir_name = folder_prefix + core_dir.get_name()
     core_obj_paths = gen_obj_paths(core_path, build_path,
                                    sub_dir_name, core_cpp_files)
