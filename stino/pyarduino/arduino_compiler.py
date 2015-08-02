@@ -504,14 +504,14 @@ def exec_cmds(working_dir, cmds, message_queue, is_verbose=False):
 def exec_cmd(working_dir, cmd):
     os.environ['CYGWIN'] = 'nodosfilewarning'
     if cmd:
-        os.chdir("/")
-        cmd = formatCommand(cmd)
+        os.chdir("/")        
         if "avr-" in cmd:
             cmd = cmd.replace('"','',1)
             avr = '"%s\\hardware\\tools\\avr' % working_dir
-            cmd = avr + '\\bin\\' + cmd
+            cmd = avr + '\\bin\\' + cmd           
             cmd = cmd.replace("{runtime.tools.avrdude.path}", avr)
-            
+
+        cmd = formatCommand(cmd)
         compile_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE, shell=True)
         result = compile_proc.communicate()
@@ -527,9 +527,10 @@ def exec_cmd(working_dir, cmd):
 def formatCommand(cmd):
     if '::' in cmd:
         cmd = cmd.replace('::', ' ')
-    cmd = cmd.replace('\\', '/')
+    cmd = cmd.replace('\\', '/') 
     os_name = base.sys_info.get_os_name()
     python_version = base.sys_info.get_python_version()
+
     if python_version < 3 and os_name == 'windows':
         cmd = '"%s"' % cmd
     return cmd
