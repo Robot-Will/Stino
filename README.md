@@ -26,11 +26,6 @@ While the plugin is in beta, the installation process is:
 
 Thank you to **@jggdotcom** for the instructions.
 
-**IMPORTANT**
-
-If you are getting the error `avr-g++: command not found`, run this command in the console: `setx path "%path%;C:\arduino-1.6.4"` where `C:\arduino-1.6.4` is the path to your Arduino IDE installation. This should fix this error until someone finds a more permanent solution.
-
-
 ## Contributions
 
 Special thanks to all of [contributors](https://github.com/gepd/Stino/blob/new-stino/CONTRIBUTORS.md). Because the author is not a programmer and is not a native English speaker, any help to improve this plugin is appreciated. For example, you might consider:
