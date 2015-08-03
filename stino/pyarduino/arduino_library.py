@@ -52,8 +52,9 @@ class LibrarySet(base.abs_file.Dir):
 class Library(base.abs_file.Dir):
     def __init__(self, path):
         super(Library, self).__init__(path)
-        self.src_path = os.path.join(self.path, 'src')
-        if not os.path.isdir(self.src_path):
+        if os.path.isfile(os.path.join(self.path, 'library.properties')):
+            self.src_path = os.path.join(self.path, 'src')
+        else:
             self.src_path = self.path
         self.src_dir = base.abs_file.Dir(self.src_path)
 
