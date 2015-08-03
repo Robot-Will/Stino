@@ -22,7 +22,7 @@ While the plugin is in beta, the installation process is:
 1. You should first delete whatever version you currently have installed.
 2. Open the Command Palette and choose the `'Package Control: Add Repository'` command.
 3. Copy this repo link `https://github.com/gepd/Stino/tree/new-stino` and paste it into the prompt.
-4. Open the Command Palette again and run the `'Package Control: Install Package'` command and choose the package named `'Stino'`. Be sure you don't choose the package in the default repository called `'Arduino-Like IDE.'`
+4. Open the Command Palette again and run the `'Package Control: Install Package'` command and choose the package named `'Stino'`.
 
 Thank you to **@jggdotcom** for the instructions.
 
