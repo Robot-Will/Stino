@@ -463,6 +463,8 @@ def getFullArgs(cur_project, arduino_info):
 		args.update(board_args)
 
 		platform_file = getPlatformFile(arduino_info)
+		platform_path, foo = os.path.split(platform_file)
+		args['runtime.platform.path'] = platform_path
 		(platform_text_header, platform_text_body) = splitPlatformFile(platform_file)
 		args = getPlatformArgs(platform_text_header, args)
 
