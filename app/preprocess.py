@@ -62,8 +62,8 @@ def removeCertainTypeText(src_text, cur_type):
 
 def genFunctionList(src_text):
 	function_list = []
-	src_text = removeCertainTypeText(src_text, 'multi-comment')
 	src_text = removeCertainTypeText(src_text, 'single-comment')
+	src_text = removeCertainTypeText(src_text, 'multi-comment')
 	src_text = removeCertainTypeText(src_text, 'string')
 	org_func_list = getFunctionList(src_text)
 	for org_func in org_func_list:
@@ -92,8 +92,8 @@ def splitSrcText(src_text):
 	return (src_text_header, src_text_body)
 
 def genIncludeList(src_text):
-	src_text = removeCertainTypeText(src_text, 'multi-comment')
 	src_text = removeCertainTypeText(src_text, 'single-comment')
+	src_text = removeCertainTypeText(src_text, 'multi-comment')
 	include_list = getIncludeList(src_text)
 	return include_list
 
@@ -194,6 +194,7 @@ def genCppFileFromInoFileList(cpp_file, ino_src_file_list, arduino_version, prep
 			for src_file in ino_src_file_list[1:]:
 				src_text = fileutil.readFile(src_file)
 				cpp_text += src_text
+				cpp_text += '\n'
 
 	# Don't do any preprocessing at all
 	else:
