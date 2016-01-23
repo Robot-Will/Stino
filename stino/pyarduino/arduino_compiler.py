@@ -28,6 +28,7 @@ from . import arduino_src
 
 
 class Compiler(object):
+
     def __init__(self, path, console=None):
         self.need_to_build = True
         self.message_queue = base.message_queue.MessageQueue(console)
@@ -263,11 +264,13 @@ class Compiler(object):
         self.params['includes'] = ' '.join(includes)
 
         ide_path = self.arduino_info.get_ide_dir().get_path()
+
         if not 'compiler.path' in self.params:
             compiler_path = '{runtime.ide.path}/hardware/tools/avr/bin/'
             self.params['compiler.path'] = compiler_path
         compiler_path = self.params.get('compiler.path')
         compiler_path = compiler_path.replace('{runtime.ide.path}', ide_path)
+
         if not os.path.isdir(compiler_path):
             self.params['compiler.path'] = ''
 
@@ -308,11 +311,11 @@ class Compiler(object):
             core_changed = True
             cmds = []
             for obj_path in self.core_obj_paths:
-                cmd = ar_cmd.replace('{object_file}', obj_path)
+                cmd = ar_cmd.replace('{object_file}', obj_path) \
+                            .replace('{archive_file_path}', core_archive_path)
                 cmds.append(cmd)
             self.build_files.append(core_archive_path)
             self.file_cmds_dict[core_archive_path] = cmds
-
 
         project_file_base_path = os.path.join(self.build_path,
                                               self.project.get_name())
@@ -347,18 +350,18 @@ class Compiler(object):
 
     def exec_build_cmds(self):
         show_compilation_output = self.settings.get('build_verbose', False)
+        ide_version = self.params['runtime.ide.version']
 
         self.working_dir = self.arduino_info.get_ide_dir().get_path()
         error_occured = False
-
         total_file_number = len(self.build_files)
         for index, build_file in enumerate(self.build_files):
-            percent = str(int(100 * (index + 1) / total_file_number )).rjust(3)
+            percent = str(int(100 * (index + 1) / total_file_number)).rjust(3)
             self.message_queue.put('[{1}%] Creating {0}...\\n',
                                    build_file, percent)
             cmds = self.file_cmds_dict.get(build_file)
             error_occured = exec_cmds(self.working_dir, cmds,
-                                      self.message_queue,
+                                      self.message_queue, ide_version,
                                       show_compilation_output)
             if error_occured:
                 self.error_occured = True
@@ -366,7 +369,10 @@ class Compiler(object):
 
     def show_size_info(self):
         size_cmd = self.params.get('recipe.size.pattern', '')
-        return_code, stdout, stderr = exec_cmd(self.working_dir, size_cmd)
+        ide_version = self.params['runtime.ide.version']
+
+        return_code, stdout, stderr = exec_cmd(
+            self.working_dir, size_cmd, ide_version)
         if stderr:
             self.message_queue.put(stderr + '\n')
         self.print_size(stdout)
@@ -480,10 +486,11 @@ def gen_obj_paths(src_path, build_path, sub_dir, cpp_files):
     return obj_paths
 
 
-def exec_cmds(working_dir, cmds, message_queue, is_verbose=False):
+def exec_cmds(working_dir, cmds, message_queue, ide_version, is_verbose=False):
     error_occured = False
+
     for cmd in cmds:
-        return_code, stdout, stderr = exec_cmd(working_dir, cmd)
+        return_code, stdout, stderr = exec_cmd(working_dir, cmd, ide_version)
         if is_verbose:
             message_queue.put(cmd + '\n')
             if stdout:
@@ -498,11 +505,16 @@ def exec_cmds(working_dir, cmds, message_queue, is_verbose=False):
     return error_occured
 
 
-def exec_cmd(working_dir, cmd):
+def exec_cmd(working_dir, cmd, ide_version):
     os.environ['CYGWIN'] = 'nodosfilewarning'
     if cmd:
         os.chdir(working_dir)
         cmd = formatCommand(cmd)
+        if(int(ide_version) > 160):
+            if("avr-" in cmd):
+                avr = os.path.join(working_dir, 'hardware/tools/avr/bin/avr-')
+                cmd = cmd.replace('avr-', avr)
+
         compile_proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                                         stderr=subprocess.PIPE, shell=True)
         result = compile_proc.communicate()
@@ -522,6 +534,7 @@ def formatCommand(cmd):
     cmd = cmd.replace('\\', '/')
     os_name = base.sys_info.get_os_name()
     python_version = base.sys_info.get_python_version()
+
     if python_version < 3 and os_name == 'windows':
         cmd = '"%s"' % cmd
     return cmd
@@ -542,7 +555,6 @@ def gen_core_objs(core_path, folder_prefix, build_path, is_new_build):
     core_dir = base.abs_file.Dir(core_path)
     core_cpp_files = core_dir.recursive_list_files(
         arduino_src.CPP_EXTS, ['libraries'])
-    # core_cpp_files = core_dir.list_files_of_extensions(arduino_src.CPP_EXTS)
     sub_dir_name = folder_prefix + core_dir.get_name()
     core_obj_paths = gen_obj_paths(core_path, build_path,
                                    sub_dir_name, core_cpp_files)
