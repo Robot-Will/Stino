@@ -24,7 +24,7 @@ INO_EXTS = ['.ino', '.pde']
 whitespace = r'\s+'
 multi_line_comment = r'/\*[^*]*(?:\*(?!/)[^*]*)*\*/'
 single_line_comment = r'//.*?$'
-preprocessor_directive = r'^\s*#.*?$'
+preprocessor_directive = r'^\s*#.*?[^\\]$'
 include = r'^\s*#include\s*[<"](\S+)[">]'
 single_quoted_character = r"'.'"
 double_quoted_string = r'"(?:[^"\\]|\\.)*"'
@@ -81,7 +81,6 @@ def get_index_of_first_statement(src_text):
     Returns:
         index: The index of first statement.
     """
-    preprocessor_directive = r'\s*#.*?$'
     pattern_text = preprocessor_directive
     pattern_text += '|' + multi_line_comment
     pattern_text += '|' + single_line_comment
