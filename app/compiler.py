@@ -527,6 +527,10 @@ def getLibFolderListFromProject(cur_project, arduino_info):
 			lib_folder = selected_h_lib_dict[h]
 		elif h in general_h_lib_dict:
 			lib_folder = general_h_lib_dict[h]
+		
+		if not lib_folder:
+			lib_folder = cur_project.getFolder() + "/" + os.path.dirname(h)
+			
 		if lib_folder:
 			if not lib_folder in lib_folder_list:
 				lib_folder_list.append(lib_folder)
