@@ -5,7 +5,7 @@ do{
 } while (${2:test condition});
 
 ]]></content>
-    <tabTrigger>dowihle</tabTrigger>
+    <tabTrigger>dowhile</tabTrigger>
     <scope>source.arduino</scope>
     <description>Arduino do-while</description>
 </snippet>
