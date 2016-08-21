@@ -43,15 +43,12 @@ class SerialMonitor(object):
         if not self.is_alive:
             baudrate = self.arduino_settings.get('baudrate', 9600)
             self.serial.baudrate = baudrate
-            if is_serial_available(self.port):
+            if self.is_serial_available():
                 self.serial.open()
                 self.is_alive = True
                 monitor_thread = threading.Thread(target=self.receive)
                 monitor_thread.start()
             else:
-                msg = 'Serial port {0} already in use. '
-                msg += 'Try quitting any programs that may be using it.\\n'
-                self.queue.put(msg, self.port)
                 self.stop()
 
     def stop(self):
@@ -82,6 +79,22 @@ class SerialMonitor(object):
         self.serial.write(out_text)
 
 
+    def is_serial_available(self):
+        state = False
+        serial = pyserial.Serial()
+        serial.port = self.port
+        try:
+            serial.open()
+        except Exception as e:
+            self.queue.put(str(e), self.port)
+        else:
+            if serial.isOpen():
+                state = True
+                serial.close()
+        return state
+
+
+
 def convert_mode(in_text, str_len=0):
     arduino_settings = settings.get_arduino_settings()
     text = u''
@@ -107,20 +120,3 @@ def convert_to_ascii_mode():
 
 def convert_to_hex_mode():
     pass
-
-
-def is_serial_available(serial_port):
-    state = False
-    serial = pyserial.Serial()
-    serial.port = serial_port
-    try:
-        serial.open()
-    except pyserial.serialutil.SerialException:
-        pass
-    except UnicodeDecodeError:
-        pass
-    else:
-        if serial.isOpen():
-            state = True
-            serial.close()
-    return state
