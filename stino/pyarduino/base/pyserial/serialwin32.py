@@ -56,7 +56,7 @@ class Win32Serial(SerialBase):
                0)
         if self.hComPort == win32.INVALID_HANDLE_VALUE:
             self.hComPort = None    # 'cause __del__ is called anyway
-            raise SerialException("could not open port %s: %s" % (self.portstr, ctypes.WinError()))
+            raise SerialException("Could not open port %s: %s" % (self.portstr, ctypes.WinError()))
 
         # Setup a 4k buffer
         win32.SetupComm(self.hComPort, 4096, 4096)

@@ -275,7 +275,7 @@ class PosixSerial(SerialBase):
             self.fd = os.open(self.portstr, os.O_RDWR|os.O_NOCTTY|os.O_NONBLOCK)
         except Exception as msg:
             self.fd = None
-            raise SerialException("could not open port %s: %s" % (self._port, msg))
+            raise SerialException("Could not open port %s: %s" % (self._port, msg))
         #~ fcntl.fcntl(self.fd, FCNTL.F_SETFL, 0)  # set blocking
 
         try:
