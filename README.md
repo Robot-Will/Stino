@@ -24,6 +24,8 @@ While the plugin is in beta, the installation process is:
 3. Copy this repo link `https://github.com/gepd/Stino/tree/new-stino` and paste it into the prompt.
 4. Open the Command Palette again and run the `'Package Control: Install Package'` command and choose the package named `'Stino'`.
 
+*If you are new to sublime, this might help: https://packagecontrol.io/installation#st3
+
 Thank you to **@jggdotcom** for the instructions.
 
 ## Contributions
@@ -32,7 +34,7 @@ Special thanks to all of [contributors](https://github.com/gepd/Stino/blob/new-s
 
 1. Star this repository
 2. Write some documentation
-3. Provide some ranslations
+3. Provide some translations
 4. Submit PRs for bugs
 5. Add board support
 6. Donate money
