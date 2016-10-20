@@ -265,11 +265,20 @@ class Compiler(object):
 
         ide_path = self.arduino_info.get_ide_dir().get_path()
 
+        # TEENSY BUILD UPDATEBuild Time - 
+        self.params['extra.time.local'] = str(int(time.time()))
+        platform_path = self.params.get('runtime.platform.path', '')
+        hardware_path = os.path.dirname(platform_path)
+        self.params['runtime.hardware.path'] = hardware_path
+        # END TEENSY
         if not 'compiler.path' in self.params:
             compiler_path = '{runtime.ide.path}/hardware/tools/avr/bin/'
             self.params['compiler.path'] = compiler_path
         compiler_path = self.params.get('compiler.path')
         compiler_path = compiler_path.replace('{runtime.ide.path}', ide_path)
+        # TEENSY BUILD UPDATEBuild Time - 
+        compiler_path = compiler_path.replace('{runtime.hardware.path}', hardware_path)
+        # END TEENSY
 
         if not os.path.isdir(compiler_path):
             self.params['compiler.path'] = ''
