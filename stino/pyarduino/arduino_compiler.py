@@ -293,6 +293,9 @@ class Compiler(object):
         combine_cmd = self.params.get('recipe.c.combine.pattern', '')
         eep_cmd = self.params.get('recipe.objcopy.eep.pattern', '')
         hex_cmd = self.params.get('recipe.objcopy.hex.pattern', '')
+        # TEENSY BUILD TYQT
+        tyqt_cmd = self.params.get('recipe.objcopy.tyqt.pattern', '')
+        # END TEENSY
 
         self.build_files = []
         self.file_cmds_dict = {}
@@ -356,6 +359,16 @@ class Compiler(object):
                 hex_file_path = project_file_base_path + ext
                 self.build_files.append(hex_file_path)
                 self.file_cmds_dict[hex_file_path] = [hex_cmd]
+
+            # TEENSY BUILD TYQT
+            if tyqt_cmd:
+                ext = '.bin'
+                if '.hex' in tyqt_cmd:
+                    ext = '.hex'
+                tyqt_file_path = project_file_base_path + ext
+                self.build_files.append(tyqt_file_path)
+                self.file_cmds_dict[hex_file_path] = [tyqt_cmd]
+                # END TEENSY
 
     def exec_build_cmds(self):
         show_compilation_output = self.settings.get('build_verbose', False)
