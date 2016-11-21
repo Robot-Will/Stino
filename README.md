@@ -32,7 +32,7 @@ Special thanks to all of [contributors](https://github.com/gepd/Stino/blob/new-s
 
 1. Star this repository
 2. Write some documentation
-3. Provide some ranslations
+3. Provide some translations
 4. Submit PRs for bugs
 5. Add board support
 6. Donate money
