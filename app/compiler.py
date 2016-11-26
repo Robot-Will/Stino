@@ -135,7 +135,7 @@ class Compiler:
 		else:
 			self.no_error = False
 			self.is_finished = True
-			self.output_console.printText('Please choose the Ardunio Application Folder.')
+			self.output_console.printText('Please choose the Arduino Application Folder.')
 
 	def compile(self):
 		self.output_console.printText('Compiling %s...\n' % self.cur_project.getName())
