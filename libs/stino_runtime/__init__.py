@@ -13,10 +13,12 @@ import glob
 import sublime
 from base_utils import file
 from base_utils import index_file
+from base_utils import plain_params_file
 from base_utils import default_st_dirs
 from base_utils import default_arduino_dirs
 from . import const
 from . import st_menu
+from . import selected
 
 plugin_name = const.PLUGIN_NAME
 
@@ -162,13 +164,30 @@ def get_installed_packages_info(arduino_info):
     return installed_packages_info
 
 
-def check_selected(arduino_info):
+def get_boards_info(arduino_info):
+    """."""
+    platform_path = selected.get_sel_platform_path(arduino_info)
+    boards_file_path = os.path.join(platform_path, 'boards.txt')
+    boards_file = plain_params_file.BoardsFile(boards_file_path)
+    boards_info = boards_file.get_boards_info()
+    return boards_info
+
+
+def get_programmers_info(arduino_info):
+    """."""
+    platform_path = selected.get_sel_platform_path(arduino_info)
+    programmers_file_path = os.path.join(platform_path, 'programmers.txt')
+    programmers_file = plain_params_file.ProgrammersFile(programmers_file_path)
+    programmers_info = programmers_file.get_programmers_info()
+    return programmers_info
+
+
+def check_platform_selected(arduino_info):
     """."""
     sel_settings = arduino_info.get('selected', {})
     sel_package = sel_settings.get('package', '')
     sel_platform = sel_settings.get('platform', '')
     sel_version = sel_settings.get('version', '')
-    sel_board = sel_settings.get('board', '')
 
     package_infos = arduino_info.get('installed_packages', {})
     package_names = package_infos.get('names', [])
@@ -201,13 +220,12 @@ def check_selected(arduino_info):
         sel_version = None
         sel_settings.set('version', sel_version)
 
-    package_infos = arduino_info.get('packages', {})
-    package_info = package_infos.get(sel_package, {})
-    platform_infos = package_info.get('platforms', {})
-    platform_info = platform_infos.get(sel_platform, {})
-    version_info = platform_info.get(sel_version, {})
-    boards = version_info.get('boards', [])
-    board_names = [b.get('name', '') for b in boards]
+
+def check_board_selected(arduino_info):
+    """."""
+    sel_settings = arduino_info.get('selected', {})
+    sel_board = sel_settings.get('board', '')
+    board_names = arduino_info['boards'].get('names', [])
     if board_names:
         if sel_board not in board_names:
             sel_board = board_names[0]
@@ -217,12 +235,41 @@ def check_selected(arduino_info):
         sel_settings.set('board', sel_board)
 
 
+def check_board_options_selected(arduino_info):
+    """."""
+    sel_board = arduino_info['selected'].get('board')
+    board_info = arduino_info['boards'].get(sel_board, {})
+    options = board_info.get('options', [])
+    for option in options:
+        key = 'option_%s' % option
+        sel_value = arduino_info['selected'].get(key)
+        items_info = board_info.get(option, {})
+        value_names = items_info.get('names', [])
+        if sel_value not in value_names:
+            sel_value = value_names[0]
+            arduino_info['selected'].set(key, sel_value)
+
+
+def check_programmer_selected(arduino_info):
+    """."""
+    sel_settings = arduino_info.get('selected', {})
+    sel_programmer = sel_settings.get('programmer', '')
+    programmer_names = arduino_info['programmers'].get('names', [])
+    if programmer_names:
+        if sel_programmer not in programmer_names:
+            sel_programmer = programmer_names[0]
+            sel_settings.set('programmer', sel_programmer)
+    else:
+        sel_programmer = None
+        sel_settings.set('programmer', sel_programmer)
+
+
 def on_platform_select(package_name, platform_name):
     """."""
     global arduino_info
     arduino_info['selected'].set('package', package_name)
     arduino_info['selected'].set('platform', platform_name)
-    check_selected(arduino_info)
+    check_platform_selected(arduino_info)
     sel_version = arduino_info['selected'].get('version')
     on_version_select(sel_version)
     st_menu.update_version_menu(arduino_info)
@@ -232,22 +279,50 @@ def on_version_select(version):
     """."""
     global arduino_info
     arduino_info['selected'].set('version', version)
-    check_selected(arduino_info)
+    boards_info = get_boards_info(arduino_info)
+    arduino_info.update(boards_info)
+    check_board_selected(arduino_info)
+    programmers_info = get_programmers_info(arduino_info)
+    arduino_info.update(programmers_info)
+    check_programmer_selected(arduino_info)
     sel_board = arduino_info['selected'].get('board')
     on_board_select(sel_board)
     st_menu.update_platform_example_menu(arduino_info)
     st_menu.update_platform_library_menu(arduino_info)
     st_menu.update_board_menu(arduino_info)
+    st_menu.update_programmer_menu(arduino_info)
 
 
 def on_board_select(board_name):
     """."""
     global arduino_info
     arduino_info['selected'].set('board', board_name)
-    check_selected(arduino_info)
-    # sel_board = arduino_info['selected'].get('board')
-    # on_board_select(sel_board)
-    # st_menu.update_board_menu(arduino_info)
+    check_board_options_selected(arduino_info)
+    st_menu.update_board_options_menu(arduino_info)
+
+
+def on_board_option_select(option, value):
+    """."""
+    global arduino_info
+    arduino_info['selected'].set('option_%s' % option, value)
+
+
+def on_programmer_select(programmer_name):
+    """."""
+    global arduino_info
+    arduino_info['selected'].set('programmer', programmer_name)
+
+
+def on_serial_select(serial_port):
+    """."""
+    global arduino_info
+    arduino_info['selected'].set('serial_port', serial_port)
+
+
+def on_language_select(language_name):
+    """."""
+    global arduino_info
+    arduino_info['selected'].set('language', language)
 
 
 def open_project(project_path, win):
@@ -307,30 +382,48 @@ def init():
     """."""
     global arduino_info
 
+    # 0. init paths and settings
     app_dir_settings = get_app_dir_settings()
     arduino_dir_path = get_arduino_dir_path(app_dir_settings)
     arduino_info['arduino_app_path'] = arduino_dir_path
     sketchbook_path = get_sketchbook_path(app_dir_settings)
     arduino_info['sketchbook_path'] = sketchbook_path
 
+    config_file_path = os.path.join(arduino_dir_path, 'config.stino-settings')
+    config_settings = file.SettingsFile(config_file_path)
+    arduino_info['settings'] = config_settings
+
+    sel_file_path = os.path.join(arduino_dir_path, 'selected.stino-settings')
+    sel_settings = file.SettingsFile(sel_file_path)
+    arduino_info['selected'] = sel_settings
+
+    pkgs_file_path = os.path.join(arduino_dir_path, 'packages.stino-settings')
+    pkg_index_settings = file.SettingsFile(pkgs_file_path)
+    arduino_info['package_index'] = pkg_index_settings
+    if not arduino_info['package_index'].get('default'):
+        arduino_info['package_index'].set('default', const.PACKAGE_INDEX_URL)
+
+    # 1. init packages info
     index_files_info = get_index_files_info(arduino_dir_path)
     arduino_info.update(index_files_info)
 
     installed_packages_info = get_installed_packages_info(arduino_info)
     arduino_info.update(installed_packages_info)
+    check_platform_selected(arduino_info)
 
-    sel_file_path = os.path.join(arduino_dir_path, 'selected.stino-settings')
-    sel_settings = file.SettingsFile(sel_file_path)
-    arduino_info['selected'] = sel_settings
-    check_selected(arduino_info)
+    # 2. init board info
+    arduino_info['boards'] = {}
+    arduino_info['programmers'] = {}
+    boards_info = get_boards_info(arduino_info)
+    arduino_info.update(boards_info)
+    check_board_selected(arduino_info)
+    check_board_options_selected(arduino_info)
 
-    config_file_path = os.path.join(arduino_dir_path, 'config.stino-settings')
-    config_settings = file.SettingsFile(config_file_path)
-    arduino_info['settings'] = config_settings
+    programmers_info = get_programmers_info(arduino_info)
+    arduino_info.update(programmers_info)
+    check_programmer_selected(arduino_info)
 
-    # read boards.txt
-    # read programmers.txt
-
+    # 3. init menus
     st_menu.update_sketchbook_menu(arduino_info)
     st_menu.update_example_menu(arduino_info)
     st_menu.update_library_menu(arduino_info)
@@ -342,7 +435,10 @@ def init():
     st_menu.update_platform_library_menu(arduino_info)
 
     st_menu.update_board_menu(arduino_info)
-    # st_menu.update_board_options_menu(arduino_info)
+    st_menu.update_board_options_menu(arduino_info)
+    st_menu.update_programmer_menu(arduino_info)
+
+    st_menu.update_serial_menu(arduino_info)
 
 arduino_info = {}
 init()

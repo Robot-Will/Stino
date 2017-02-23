@@ -14,6 +14,7 @@ import codecs
 from base_utils import file
 from base_utils import default_st_dirs
 from . import const
+from . import selected
 
 plugin_name = const.PLUGIN_NAME
 
@@ -410,29 +411,12 @@ def update_version_menu(arduino_info):
 
 def update_platform_example_menu(arduino_info):
     """."""
-    arduino_path = arduino_info['arduino_app_path']
-    sel_package = arduino_info['selected'].get('package')
-    sel_platform = arduino_info['selected'].get('platform')
-    sel_version = arduino_info['selected'].get('version')
-
-    package_infos = arduino_info.get('packages', {})
-    package_info = package_infos.get(sel_package, {})
-    platform_infos = package_info.get('platforms', {})
-    platform_info = platform_infos.get(sel_platform, {})
-    version_info = platform_info.get(sel_version, [])
-    arch = version_info.get('architecture')
-
-    packages_path = os.path.join(arduino_path, 'packages')
-    package_path = os.path.join(packages_path, sel_package)
-    hardware_path = os.path.join(package_path, 'hardware')
-    platforms_path = os.path.join(hardware_path, arch)
-    version_path = os.path.join(platforms_path, sel_version)
-
-    examples_path = os.path.join(version_path, 'examples')
+    platform_path = selected.get_sel_platform_path(arduino_info)
+    examples_path = os.path.join(platform_path, 'examples')
     example_paths = glob.glob(examples_path + '/*')
     example_paths = [p for p in example_paths if os.path.isdir(p)]
 
-    libraries_path = os.path.join(version_path, 'libraries')
+    libraries_path = os.path.join(platform_path, 'libraries')
     library_paths = glob.glob(libraries_path + '/*')
     library_paths = [p for p in library_paths if os.path.isdir(p)]
 
@@ -468,25 +452,8 @@ def update_platform_example_menu(arduino_info):
 
 def update_platform_library_menu(arduino_info):
     """."""
-    arduino_path = arduino_info['arduino_app_path']
-    sel_package = arduino_info['selected'].get('package')
-    sel_platform = arduino_info['selected'].get('platform')
-    sel_version = arduino_info['selected'].get('version')
-
-    package_infos = arduino_info.get('packages', {})
-    package_info = package_infos.get(sel_package, {})
-    platform_infos = package_info.get('platforms', {})
-    platform_info = platform_infos.get(sel_platform, {})
-    version_info = platform_info.get(sel_version, [])
-    arch = version_info.get('architecture')
-
-    packages_path = os.path.join(arduino_path, 'packages')
-    package_path = os.path.join(packages_path, sel_package)
-    hardware_path = os.path.join(package_path, 'hardware')
-    platforms_path = os.path.join(hardware_path, arch)
-    version_path = os.path.join(platforms_path, sel_version)
-
-    libraries_path = os.path.join(version_path, 'libraries')
+    platform_path = selected.get_sel_platform_path(arduino_info)
+    libraries_path = os.path.join(platform_path, 'libraries')
     library_paths = glob.glob(libraries_path + '/*')
     library_paths = [p for p in library_paths if os.path.isdir(p)]
 
@@ -531,16 +498,7 @@ def update_platform_library_menu(arduino_info):
 
 def update_board_menu(arduino_info):
     """."""
-    sel_package = arduino_info['selected'].get('package')
-    sel_platform = arduino_info['selected'].get('platform')
-    sel_version = arduino_info['selected'].get('version')
-    package_infos = arduino_info.get('packages', {})
-    package_info = package_infos.get(sel_package, {})
-    platform_infos = package_info.get('platforms', {})
-    platform_info = platform_infos.get(sel_platform, {})
-    version_info = platform_info.get(sel_version, [])
-    boards = version_info.get('boards', [])
-    board_names = [b.get('name', '') for b in boards]
+    board_names = arduino_info['boards'].get('names', [])
 
     text = '\t' * 0 + '[\n'
     text += '\t' * 1 + '{\n'
@@ -578,3 +536,150 @@ def update_board_menu(arduino_info):
     text += '\t' * 0 + ']\n'
 
     write_menu('board', text)
+
+
+def update_board_options_menu(arduino_info):
+    """."""
+    sel_board = arduino_info['selected'].get('board')
+    board_info = arduino_info['boards'].get(sel_board, {})
+    options = board_info.get('options', [])
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Board Options",\n'
+    text += '\t' * 4 + '"id": "board_options",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_board_options",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_board_options"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for option in options:
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % option
+        text += '\t' * 6 + '"id": "stino_board_%s",\n' % option
+        text += '\t' * 6 + '"children":\n'
+        text += '\t' * 6 + '[\n'
+        text += '\t' * 7 + '{"caption": "-"}'
+
+        items_info = board_info.get(option, {})
+        names = items_info.get('names', [])
+        for name in names:
+            text += ',\n'
+            text += '\t' * 7 + '{\n'
+            text += '\t' * 8 + '"caption": "%s",\n' % name
+            text += '\t' * 8 + '"id": "stino_board_option_%s",\n' % name
+            text += '\t' * 8 + '"command": "stino_select_board_option",\n'
+
+            arg_text = '"args": {"option": "%s", ' % option
+            arg_text += '"value": "%s"},\n' % name
+            text += '\t' * 8 + arg_text
+            text += '\t' * 8 + '"checkbox": true\n'
+            text += '\t' * 7 + '}'
+
+        text += '\n' + '\t' * 6 + ']\n'
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('board_options', text)
+
+
+def update_programmer_menu(arduino_info):
+    """."""
+    programmer_names = arduino_info['programmers'].get('names', [])
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Programmer",\n'
+    text += '\t' * 4 + '"id": "stino_programmer",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_programmers",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_programmers"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for programmer_name in programmer_names:
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % programmer_name
+        text += '\t' * 6 + '"id": "stino_programmer_%s",\n' % programmer_name
+        text += '\t' * 6 + '"command": "stino_select_programmer",\n'
+        text += '\t' * 6
+        text += '"args": {"programmer_name": "%s"},\n' % programmer_name
+        text += '\t' * 6 + '"checkbox": true\n'
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('programmer', text)
+
+
+def update_serial_menu(arduino_info):
+    """."""
+    serial_ports = arduino_info.get('serial_ports', [])
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Serial Port",\n'
+    text += '\t' * 4 + '"id": "serial_port",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_serials",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_serials"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for serial_port in serial_ports:
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % serial_port
+        text += '\t' * 6 + '"id": "stino_serial_%s",\n' % serial_port
+        text += '\t' * 6 + '"command": "stino_select_serial",\n'
+        text += '\t' * 6
+        text += '"args": {"serial_port": "%s"},\n' % serial_port
+        text += '\t' * 6 + '"checkbox": true\n'
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('serial', text)

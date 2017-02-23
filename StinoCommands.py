@@ -202,7 +202,8 @@ class StinoSelectPlatformCommand(sublime_plugin.WindowCommand):
 
     def run(self, package_name, platform_name):
         """."""
-        stino.on_platform_select(package_name, platform_name)
+        if not self.is_checked(package_name, platform_name):
+            stino.on_platform_select(package_name, platform_name)
 
     def is_checked(self, package_name, platform_name):
         """."""
@@ -225,7 +226,8 @@ class StinoSelectVersionCommand(sublime_plugin.WindowCommand):
 
     def run(self, version):
         """."""
-        stino.on_version_select(version)
+        if not self.is_checked(version):
+            stino.on_version_select(version)
 
     def is_checked(self, version):
         """."""
@@ -286,7 +288,8 @@ class StinoSelectBoardCommand(sublime_plugin.WindowCommand):
 
     def run(self, board_name):
         """."""
-        stino.on_board_select(board_name)
+        if not self.is_checked(board_name):
+            stino.on_board_select(board_name)
 
     def is_checked(self, board_name):
         """."""
@@ -299,15 +302,22 @@ class StinoRefreshBoardOptionsCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('refresh Baord Options')
+        stino.st_menu.update_board_options_menu(stino.arduino_info)
 
 
 class StinoSelectBoardOptionCommand(sublime_plugin.WindowCommand):
     """."""
 
-    def run(self, option_name, value):
+    def run(self, option, value):
         """."""
-        print('select board option')
+        if not self.is_checked(option, value):
+            stino.on_board_option_select(option, value)
+
+    def is_checked(self, option, value):
+        """."""
+        key = 'option_%s' % option
+        state = stino.arduino_info['selected'].get(key) == value
+        return state
 
 
 class StinoSetExtraFlagCommand(sublime_plugin.WindowCommand):
@@ -382,7 +392,8 @@ class StinoSerialInfoCommand(sublime_plugin.WindowCommand):
 
     def description(self):
         """."""
-        caption = '--Serial--'
+        key = 'serial'
+        caption = '--%s--' % stino.arduino_info['selected'].get(key)
         return caption
 
 
@@ -399,7 +410,7 @@ class StinoRefreshSerialsCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('refresh Serials')
+        stino.st_menu.update_serial_menu(stino.arduino_info)
 
 
 class StinoSelectSerialCommand(sublime_plugin.WindowCommand):
@@ -407,7 +418,14 @@ class StinoSelectSerialCommand(sublime_plugin.WindowCommand):
 
     def run(self, serial_port):
         """."""
-        print('select Serial')
+        if not self.is_checked(serial_port):
+            stino.on_serial_select(serial_port)
+
+    def is_checked(self, serial_port):
+        """."""
+        key = 'serial_port'
+        state = stino.arduino_info['selected'].get(key) == serial_port
+        return state
 
 
 #############################################
@@ -422,7 +440,8 @@ class StinoProgrammerInfoCommand(sublime_plugin.WindowCommand):
 
     def description(self):
         """."""
-        caption = '--Programmer--'
+        key = 'programmer'
+        caption = '--%s--' % stino.arduino_info['selected'].get(key)
         return caption
 
 
@@ -439,7 +458,7 @@ class StinoRefreshProgrammersCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('refresh Programmers')
+        stino.st_menu.update_programmer_menu(stino.arduino_info)
 
 
 class StinoSelectProgrammerCommand(sublime_plugin.WindowCommand):
@@ -447,7 +466,14 @@ class StinoSelectProgrammerCommand(sublime_plugin.WindowCommand):
 
     def run(self, programmer_name):
         """."""
-        print('select Programmer')
+        if not self.is_checked(programmer_name):
+            stino.on_programmer_select(programmer_name)
+
+    def is_checked(self, programmer_name):
+        """."""
+        key = 'programmer'
+        state = stino.arduino_info['selected'].get(key) == programmer_name
+        return state
 
 
 #############################################
@@ -494,15 +520,22 @@ class StinoRefreshLangsCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('refresh Langs')
+        print('language')
 
 
 class StinoSelectLangCommand(sublime_plugin.WindowCommand):
     """."""
 
-    def run(self, lang_name):
+    def run(self, language):
         """."""
-        print('select Lang')
+        if self.is_checked(language):
+            stino.on_language_select(language)
+
+    def is_checked(self, language):
+        """."""
+        key = 'language'
+        state = stino.arduino_info['selected'].get(key) == language
+        return state
 
 
 class StinoFindInRefCommand(sublime_plugin.WindowCommand):
