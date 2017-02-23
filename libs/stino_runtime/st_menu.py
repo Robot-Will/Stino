@@ -1,0 +1,580 @@
+#!/usr/bin/env python
+# -*- coding: utf-8 -*-
+
+"""Package Docs."""
+
+from __future__ import absolute_import
+from __future__ import print_function
+from __future__ import division
+from __future__ import unicode_literals
+
+import os
+import glob
+import codecs
+from base_utils import file
+from base_utils import default_st_dirs
+from . import const
+
+plugin_name = const.PLUGIN_NAME
+
+
+def write_menu(menu_type, menu_text):
+    """."""
+    file_name = 'Main.sublime-menu'
+    menu_path = default_st_dirs.get_plugin_menu_path(plugin_name)
+    dir_path = os.path.join(menu_path, menu_type)
+    file.check_dir(dir_path)
+    file_path = os.path.join(dir_path, file_name)
+    with codecs.open(file_path, 'w', 'utf-8') as f:
+        f.write(menu_text)
+
+
+def update_sketchbook_menu(arduino_info):
+    """."""
+    none_sketches = ['libraries', 'examples']
+    sketchbook_path = arduino_info.get('sketchbook_path')
+    sketch_paths = glob.glob(sketchbook_path + '/*')
+    sketch_paths = [p for p in sketch_paths if os.path.isdir(p)]
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Open Sketch",\n'
+    text += '\t' * 4 + '"id": "stino_sketchbook",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_sketchbook",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_sketchbook"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Change Location...",\n'
+    text += '\t' * 6 + '"id": "stino_change_sketchbook_location",\n'
+    text += '\t' * 6 + '"command": "stino_change_sketchbook_location"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "In New Window",\n'
+    text += '\t' * 6 + '"id": "stino_open_in_new_win",\n'
+    text += '\t' * 6 + '"command": "stino_open_in_new_win",\n'
+    text += '\t' * 6 + '"checkbox": true\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"},'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "New Sketch...",\n'
+    text += '\t' * 6 + '"id": "stino_new_sketch",\n'
+    text += '\t' * 6 + '"command": "stino_new_sketch"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for sketch_path in sketch_paths:
+        sketch_path = sketch_path.replace('\\', '/')
+        sketch_name = os.path.basename(sketch_path)
+        if sketch_name in none_sketches:
+            continue
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % sketch_name
+        text += '\t' * 6 + '"id": "stino_sketch_%s",\n' % sketch_name
+        text += '\t' * 6 + '"command": "stino_open_sketch",\n'
+        text += '\t' * 6 + '"args": {"sketch_path": "%s"}\n' % sketch_path
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('sketchbook', text)
+
+
+def get_example_menu_text(level, paths):
+    """."""
+    text = ''
+    for path in paths:
+        path = path.replace('\\', '/')
+        name = os.path.basename(path)
+        file_path = os.path.join(path, name + '.ino')
+
+        text += ',\n'
+        text += '\t' * level + '{\n'
+        text += '\t' * (level + 1)
+        text += '"caption": "%s",\n' % name
+        text += '\t' * (level + 1)
+        text += '"id": "stino_example_%s",\n' % name
+        text += '\t' * (level + 1)
+
+        if os.path.isfile(file_path):
+            text += '"command": "stino_open_example",\n'
+            text += '\t' * (level + 1)
+            text += '"args": {"example_path": "%s"}\n' % path
+
+        else:
+            next_paths = glob.glob(path + '/*')
+            next_paths = [p for p in next_paths if os.path.isdir(p)]
+            text += '"children":\n'
+            text += '\t' * (level + 1)
+            text += '[\n'
+            text += '\t' * (level + 2)
+            text += '{"caption": "-"}'
+            text += get_example_menu_text(level + 2, next_paths)
+            text += '\t' * (level + 1)
+            text += ']\n'
+
+        text += '\t' * level
+        text += '}'
+    return text
+
+
+def update_example_menu(arduino_info):
+    """."""
+    sketchbook_path = arduino_info.get('sketchbook_path')
+    examples_path = os.path.join(sketchbook_path, 'examples')
+    example_paths = glob.glob(examples_path + '/*')
+    example_paths = [p for p in example_paths if os.path.isdir(p)]
+
+    libraries_path = os.path.join(sketchbook_path, 'libraries')
+    library_paths = glob.glob(libraries_path + '/*')
+    library_paths = [p for p in library_paths if os.path.isdir(p)]
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Open Example",\n'
+    text += '\t' * 4 + '"id": "stino_examples",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_examples",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_examples"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+    text += get_example_menu_text(5, example_paths)
+    text += ',' + '\t' * 5 + '{"caption": "-"}'
+    text += get_example_menu_text(5, library_paths)
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('examples', text)
+
+
+def update_library_menu(arduino_info):
+    """."""
+    sketchbook_path = arduino_info.get('sketchbook_path')
+    libraries_path = os.path.join(sketchbook_path, 'libraries')
+    library_paths = glob.glob(libraries_path + '/*')
+    library_paths = [p for p in library_paths if os.path.isdir(p)]
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Import Library",\n'
+    text += '\t' * 4 + '"id": "stino_import_library",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_libraries",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_libraries"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for library_path in library_paths:
+        library_path = library_path.replace('\\', '/')
+        library_name = os.path.basename(library_path)
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % library_name
+        text += '\t' * 6 + '"id": "stino_library_%s",\n' % library_name
+        text += '\t' * 6 + '"command": "stino_import_library",\n'
+        text += '\t' * 6 + '"args": {"library_path": "%s"}\n' % library_path
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('libraries', text)
+
+
+def update_install_platform_menu(arduino_info):
+    """."""
+    package_infos = arduino_info.get('packages', {})
+    package_names = package_infos.get('names', [])
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Install Platform",\n'
+    text += '\t' * 4 + '"id": "stino_install_platform",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_install_platform",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_install_platform"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Add Package",\n'
+    text += '\t' * 6 + '"id": "stino_add_package",\n'
+    text += '\t' * 6 + '"command": "stino_add_package"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for package_name in package_names:
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % package_name
+        text += '\t' * 6 + '"id": "stino_package_%s",\n' % package_name
+        text += '\t' * 6 + '"children":\n'
+        text += '\t' * 6 + '[\n'
+        text += '\t' * 7 + '{"caption": "-"}'
+
+        package_info = package_infos.get(package_name, {})
+        platform_infos = package_info.get('platforms', {})
+        platform_names = platform_infos.get('names', [])
+        for platform_name in platform_names:
+            text += ',\n'
+            text += '\t' * 7 + '{\n'
+            text += '\t' * 8 + '"caption": "%s",\n' % platform_name
+            text += '\t' * 8 + '"id": "stino_platform_%s",\n' % platform_name
+            text += '\t' * 8 + '"children":\n'
+            text += '\t' * 8 + '['
+            text += '\t' * 9 + '{"caption": "-"}'
+
+            platform_info = platform_infos.get(platform_name, {})
+            versions = platform_info.get('versions', [])
+            for version in versions:
+                text += ',\n'
+                text += '\t' * 9 + '{'
+                text += '\t' * 10 + '"caption": "%s",\n' % version
+                text += '\t' * 10 + '"id": "stino_platform_%s",\n' % version
+                text += '\t' * 10 + '"command": "stino_install_platform",\n'
+
+                arg_text = '"args": {"package_name": "%s", ' % package_name
+                arg_text += '"platform_name": "%s", ' % platform_name
+                arg_text += '"version": "%s"}\n' % version
+                text += '\t' * 10 + arg_text
+                text += '\t' * 9 + '}'
+
+            text += '\n' + '\t' * 8 + ']'
+            text += '\t' * 7 + '}'
+
+        text += '\n' + '\t' * 6 + ']\n'
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('install_platform', text)
+
+
+def update_platform_menu(arduino_info):
+    """."""
+    package_infos = arduino_info.get('installed_packages', {})
+    package_names = package_infos.get('names', [])
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Platform",\n'
+    text += '\t' * 4 + '"id": "stino_platform",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_platforms",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_platforms"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for package_name in package_names:
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % package_name
+        text += '\t' * 6 + '"id": "stino_package_%s",\n' % package_name
+        text += '\t' * 6 + '"children":\n'
+        text += '\t' * 6 + '[\n'
+        text += '\t' * 7 + '{"caption": "-"}'
+
+        package_info = package_infos.get(package_name, {})
+        platform_infos = package_info.get('platforms', {})
+        platform_names = platform_infos.get('names', [])
+        for platform_name in platform_names:
+            text += ',\n'
+            text += '\t' * 7 + '{\n'
+            text += '\t' * 8 + '"caption": "%s",\n' % platform_name
+            text += '\t' * 8 + '"id": "stino_platform_%s",\n' % platform_name
+            text += '\t' * 8 + '"command": "stino_select_platform",\n'
+
+            arg_text = '"args": {"package_name": "%s", ' % package_name
+            arg_text += '"platform_name": "%s"},\n' % platform_name
+            text += '\t' * 8 + arg_text
+            text += '\t' * 8 + '"checkbox": true\n'
+            text += '\t' * 7 + '}'
+
+        text += '\n' + '\t' * 6 + ']\n'
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('platform', text)
+
+
+def update_version_menu(arduino_info):
+    """."""
+    sel_package = arduino_info['selected'].get('package')
+    sel_platform = arduino_info['selected'].get('platform')
+    package_infos = arduino_info.get('installed_packages', {})
+    package_info = package_infos.get(sel_package, {})
+    platform_infos = package_info.get('platforms', {})
+    platform_info = platform_infos.get(sel_platform, {})
+    versions = platform_info.get('versions', [])
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Version",\n'
+    text += '\t' * 4 + '"id": "stino_platform_version",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_platform_versions",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_platform_versions"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for version in versions:
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % version
+        text += '\t' * 6 + '"id": "stino_version_%s",\n' % version
+        text += '\t' * 6 + '"command": "stino_select_version",\n'
+        text += '\t' * 6 + '"args": {"version": "%s"},\n' % version
+        text += '\t' * 6 + '"checkbox": true\n'
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('version', text)
+
+
+def update_platform_example_menu(arduino_info):
+    """."""
+    arduino_path = arduino_info['arduino_app_path']
+    sel_package = arduino_info['selected'].get('package')
+    sel_platform = arduino_info['selected'].get('platform')
+    sel_version = arduino_info['selected'].get('version')
+
+    package_infos = arduino_info.get('packages', {})
+    package_info = package_infos.get(sel_package, {})
+    platform_infos = package_info.get('platforms', {})
+    platform_info = platform_infos.get(sel_platform, {})
+    version_info = platform_info.get(sel_version, [])
+    arch = version_info.get('architecture')
+
+    packages_path = os.path.join(arduino_path, 'packages')
+    package_path = os.path.join(packages_path, sel_package)
+    hardware_path = os.path.join(package_path, 'hardware')
+    platforms_path = os.path.join(hardware_path, arch)
+    version_path = os.path.join(platforms_path, sel_version)
+
+    examples_path = os.path.join(version_path, 'examples')
+    example_paths = glob.glob(examples_path + '/*')
+    example_paths = [p for p in example_paths if os.path.isdir(p)]
+
+    libraries_path = os.path.join(version_path, 'libraries')
+    library_paths = glob.glob(libraries_path + '/*')
+    library_paths = [p for p in library_paths if os.path.isdir(p)]
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Open Platform Example",\n'
+    text += '\t' * 4 + '"id": "stino_platform_examples",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_platform_examples",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_platform_examples"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+    text += get_example_menu_text(5, example_paths)
+    text += ',' + '\t' * 5 + '{"caption": "-"}'
+    text += get_example_menu_text(5, library_paths)
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('platform_examples', text)
+
+
+def update_platform_library_menu(arduino_info):
+    """."""
+    arduino_path = arduino_info['arduino_app_path']
+    sel_package = arduino_info['selected'].get('package')
+    sel_platform = arduino_info['selected'].get('platform')
+    sel_version = arduino_info['selected'].get('version')
+
+    package_infos = arduino_info.get('packages', {})
+    package_info = package_infos.get(sel_package, {})
+    platform_infos = package_info.get('platforms', {})
+    platform_info = platform_infos.get(sel_platform, {})
+    version_info = platform_info.get(sel_version, [])
+    arch = version_info.get('architecture')
+
+    packages_path = os.path.join(arduino_path, 'packages')
+    package_path = os.path.join(packages_path, sel_package)
+    hardware_path = os.path.join(package_path, 'hardware')
+    platforms_path = os.path.join(hardware_path, arch)
+    version_path = os.path.join(platforms_path, sel_version)
+
+    libraries_path = os.path.join(version_path, 'libraries')
+    library_paths = glob.glob(libraries_path + '/*')
+    library_paths = [p for p in library_paths if os.path.isdir(p)]
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Import Platform Library",\n'
+    text += '\t' * 4 + '"id": "stino_import_platform_library",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_platform_libraries",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_platform_libraries"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for library_path in library_paths:
+        library_path = library_path.replace('\\', '/')
+        library_name = os.path.basename(library_path)
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % library_name
+        text += '\t' * 6 + '"id": "stino_library_%s",\n' % library_name
+        text += '\t' * 6 + '"command": "stino_import_library",\n'
+        text += '\t' * 6 + '"args": {"library_path": "%s"}\n' % library_path
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('platform_libraries', text)
+
+
+def update_board_menu(arduino_info):
+    """."""
+    sel_package = arduino_info['selected'].get('package')
+    sel_platform = arduino_info['selected'].get('platform')
+    sel_version = arduino_info['selected'].get('version')
+    package_infos = arduino_info.get('packages', {})
+    package_info = package_infos.get(sel_package, {})
+    platform_infos = package_info.get('platforms', {})
+    platform_info = platform_infos.get(sel_platform, {})
+    version_info = platform_info.get(sel_version, [])
+    boards = version_info.get('boards', [])
+    board_names = [b.get('name', '') for b in boards]
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Board",\n'
+    text += '\t' * 4 + '"id": "stino_board",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_boards",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_boards"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for board_name in board_names:
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % board_name
+        text += '\t' * 6 + '"id": "stino_board_%s",\n' % board_name
+        text += '\t' * 6 + '"command": "stino_select_board",\n'
+        text += '\t' * 6 + '"args": {"board_name": "%s"},\n' % board_name
+        text += '\t' * 6 + '"checkbox": true\n'
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('board', text)

@@ -129,14 +129,14 @@
                 "command": "stino_platform_info"
             },
             {
-                "caption": "Package",
-                "id": "stino_package",
+                "caption": "Install Platform",
+                "id": "stino_install_platform",
                 "children":
                 [
                     {
                         "caption": "Refresh",
-                        "id": "stino_refresh_packages",
-                        "command": "stino_refresh_packages"
+                        "id": "stino_refresh_install_platform",
+                        "command": "stino_refresh_install_platform"
                     },
                     {
                         "caption": "Add Package",
