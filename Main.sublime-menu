@@ -347,15 +347,15 @@
                 "children":
                 [
                     {
-                        "caption": "Documents",
+                        "caption": "Arduino Documents",
                         "id": "stino_documents",
                         "command": "open_url",
                         "args": {"url": "https://www.arduino.cc/en/Reference/HomePage"}
                     },
                     {
-                        "caption": "Find in Reference",
-                        "id": "stino_find_in_reference",
-                        "command": "stino_find_in_ref"
+                        "caption": "Platform Documents",
+                        "id": "stino_platform_documents",
+                        "command": "stino_open_platform_documents"
                     },
                     {
                         "caption": "About Stino",

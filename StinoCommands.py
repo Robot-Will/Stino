@@ -144,8 +144,12 @@ class StinoImportLibraryCommand(sublime_plugin.TextCommand):
 
     def is_enabled(self):
         """Import Library."""
+        state = False
         file_path = self.view.file_name()
-        return stino.c_file.is_cpp_file(file_path)
+        if file_path:
+            if stino.c_file.is_cpp_file(file_path):
+                state = True
+        return state
 
 
 #############################################
@@ -282,8 +286,12 @@ class StinoBuildCommand(sublime_plugin.TextCommand):
 
     def is_enabled(self):
         """."""
+        state = False
         file_path = self.view.file_name()
-        return stino.c_file.is_cpp_file(file_path)
+        if file_path:
+            if stino.c_file.is_cpp_file(file_path):
+                state = True
+        return state
 
 
 class StinoRefreshBoardsCommand(sublime_plugin.WindowCommand):
@@ -427,7 +435,7 @@ class StinoUploadCommand(sublime_plugin.TextCommand):
         state = False
         file_path = self.view.file_name()
         sel_serial = stino.arduino_info['selected'].get('serial_port')
-        if sel_serial and stino.c_file.is_cpp_file(file_path):
+        if sel_serial and file_path and stino.c_file.is_cpp_file(file_path):
             state = True
         return state
 
@@ -484,8 +492,8 @@ class StinoUploadUsingProgrammerCommand(sublime_plugin.TextCommand):
         """."""
         state = False
         file_path = self.view.file_name()
-        sel_programmer = stino.arduino_info['selected'].get('programmer')
-        if sel_programmer and stino.c_file.is_cpp_file(file_path):
+        sel_prog = stino.arduino_info['selected'].get('programmer')
+        if sel_prog and file_path and stino.c_file.is_cpp_file(file_path):
             state = True
         return state
 
@@ -542,8 +550,12 @@ class StinoAutoFormatCommand(sublime_plugin.TextCommand):
 
     def is_enabled(self):
         """Auto Format Src."""
+        state = False
         file_path = self.view.file_name()
-        return stino.c_file.is_cpp_file(file_path)
+        if file_path:
+            if stino.c_file.is_cpp_file(file_path):
+                state = True
+        return state
 
 
 #############################################
@@ -572,17 +584,12 @@ class StinoSelectLanguageCommand(sublime_plugin.WindowCommand):
         return state
 
 
-class StinoFindInRefCommand(sublime_plugin.TextCommand):
+class StinoOpenPlatformDocumentsCommand(sublime_plugin.WindowCommand):
     """."""
 
-    def run(self, edit):
+    def run(self):
         """."""
-        stino.find_in_ref(self.view)
-
-    def is_enabled(self):
-        """."""
-        file_path = self.view.file_name()
-        return stino.c_file.is_cpp_file(file_path)
+        stino.open_platform_documents()
 
 
 class StinoAboutCommand(sublime_plugin.WindowCommand):

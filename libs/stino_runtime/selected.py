@@ -11,9 +11,8 @@ from __future__ import unicode_literals
 import os
 
 
-def get_sel_platform_path(arduino_info):
+def get_sel_platform_info(arduino_info):
     """."""
-    arduino_path = arduino_info['arduino_app_path']
     sel_package = arduino_info['selected'].get('package')
     sel_platform = arduino_info['selected'].get('platform')
     sel_version = arduino_info['selected'].get('version')
@@ -23,8 +22,17 @@ def get_sel_platform_path(arduino_info):
     platform_infos = package_info.get('platforms', {})
     platform_info = platform_infos.get(sel_platform, {})
     version_info = platform_info.get(sel_version, [])
-    arch = version_info.get('architecture')
+    return version_info
 
+
+def get_sel_platform_path(arduino_info):
+    """."""
+    sel_package = arduino_info['selected'].get('package')
+    sel_version = arduino_info['selected'].get('version')
+    platform_info = get_sel_platform_info(arduino_info)
+    arch = platform_info.get('architecture')
+
+    arduino_path = arduino_info['arduino_app_path']
     packages_path = os.path.join(arduino_path, 'packages')
     package_path = os.path.join(packages_path, sel_package)
     hardware_path = os.path.join(package_path, 'hardware')

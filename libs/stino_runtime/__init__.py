@@ -315,6 +315,7 @@ def on_board_select(board_name):
     arduino_info['selected'].set('board', board_name)
     check_board_options_selected(arduino_info)
     st_menu.update_board_options_menu(arduino_info)
+    check_tools_deps(arduino_info)
 
 
 def on_board_option_select(option, value):
@@ -339,6 +340,31 @@ def on_language_select(language_name):
     """."""
     global arduino_info
     arduino_info['selected'].set('language', language)
+
+
+def check_tools_deps(arduino_info):
+    """."""
+    arduino_app_path = arduino_info['arduino_app_path']
+    packages_path = os.path.join(arduino_app_path, 'packages')
+
+    platform_info = selected.get_sel_platform_info(arduino_info)
+    tools_deps = platform_info.get('toolsDependencies', [])
+    for tool_info in tools_deps:
+        has_tool = False
+        package = tool_info.get('packager', '')
+        name = tool_info.get('name', '')
+        version = tool_info.get('version', '')
+
+        package_path = os.path.join(packages_path, package)
+        if package and os.path.isdir(package_path):
+            tools_path = os.path.join(package_path, 'tools')
+            tool_path = os.path.join(tools_path, name)
+            if name and os.path.isdir(tool_path):
+                version_path = os.path.join(tool_path, version)
+                if version and version_path:
+                    has_tool = True
+        if not has_tool:
+            print('Must download %s %s %s' % (package, name, version))
 
 
 def open_project(project_path, win):
@@ -462,6 +488,15 @@ def get_selected_text_from_view(view):
 def translate(text):
     """."""
     return text
+
+
+def open_platform_documents():
+    """."""
+    platform_info = selected.get_sel_platform_info(arduino_info)
+    help_info = platform_info.get('help', {})
+    url = help_info.get('online', '')
+    if url.startswith('http'):
+        sublime.run_command('open_url', {'url': url})
 
 
 def print_packages_info(arduino_info):
