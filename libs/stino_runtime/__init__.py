@@ -11,11 +11,14 @@ from __future__ import unicode_literals
 import os
 import glob
 import sublime
+
 from base_utils import file
+from base_utils import c_file
 from base_utils import index_file
 from base_utils import plain_params_file
 from base_utils import default_st_dirs
 from base_utils import default_arduino_dirs
+from base_utils import serial_port
 from . import const
 from . import st_menu
 from . import selected
@@ -98,29 +101,6 @@ def get_index_files_info(arduino_dir_path):
     return info
 
 
-def print_packages_info(arduino_info):
-    """."""
-    pkgs_info = arduino_info.get('packages', {})
-    pkg_names = pkgs_info.get('names')
-    for pkg_name in pkg_names:
-        print(pkg_name)
-        pkg_info = pkgs_info[pkg_name]
-
-        platforms_info = pkg_info.get('platforms', {})
-        platform_names = platforms_info.get('names')
-        for platform_name in platform_names:
-            platform_info = platforms_info[platform_name]
-            versions = platform_info.get('versions')
-            print(platform_name, versions)
-
-        tools_info = pkg_info.get('tools', {})
-        tool_names = tools_info.get('names')
-        for tool_name in tool_names:
-            tool_info = tools_info[tool_name]
-            versions = tool_info.get('versions')
-            print(tool_name, versions)
-
-
 def get_platform_name(arduino_info, pkg_name, plt_arch):
     """."""
     plt_name = ''
@@ -180,6 +160,14 @@ def get_programmers_info(arduino_info):
     programmers_file = plain_params_file.ProgrammersFile(programmers_file_path)
     programmers_info = programmers_file.get_programmers_info()
     return programmers_info
+
+
+def update_serial_info(serial_ports):
+    """."""
+    global arduino_info
+    arduino_info['serial_ports'] = serial_ports
+    st_menu.update_serial_menu(arduino_info)
+    check_serial_selected(arduino_info)
 
 
 def check_platform_selected(arduino_info):
@@ -262,6 +250,34 @@ def check_programmer_selected(arduino_info):
     else:
         sel_programmer = None
         sel_settings.set('programmer', sel_programmer)
+
+
+def check_serial_selected(arduino_info):
+    """."""
+    sel_settings = arduino_info.get('selected', {})
+    sel_serial = sel_settings.get('serial_port', '')
+    serial_ports = arduino_info.get('serial_ports', [])
+    if serial_ports:
+        if serial_port not in serial_ports:
+            sel_serial = serial_ports[0]
+            sel_settings.set('serial_port', sel_serial)
+    else:
+        sel_serial = None
+        sel_settings.set('serial_port', sel_serial)
+
+
+def check_language_selected(arduino_info):
+    """."""
+    sel_settings = arduino_info.get('selected', {})
+    sel_language = sel_settings.get('language', '')
+    language_names = arduino_info['languages'].get('names', [])
+    if language_names:
+        if sel_language not in language_names:
+            sel_language = language_names[0]
+            sel_settings.set('language', sel_language)
+    else:
+        sel_language = None
+        sel_settings.set('language', sel_language)
 
 
 def on_platform_select(package_name, platform_name):
@@ -378,6 +394,116 @@ def new_sketch(sketch_name, win):
         sublime.error_message(msg)
 
 
+def import_lib(view, edit, lib_path):
+    """."""
+    src_path = os.path.join(lib_path, 'src')
+    if not os.path.isdir(src_path):
+        src_path = lib_path
+
+    incs = []
+    for ext in c_file.H_EXTS:
+        paths = glob.glob(src_path + '/*' + ext)
+        incs += ['#incldue <%s>' % os.path.basename(p) for p in paths]
+    text = '\n'.join(incs) + '\n\n'
+    view.insert(edit, 0, text)
+
+
+def install_platform(package, platform, version):
+    """."""
+    print(package, platform, version)
+
+
+def build_sketch(file_path):
+    """."""
+    print(file_path)
+
+
+def upload_sketch(file_path):
+    """."""
+    print(file_path)
+
+
+def upload_by_programmer(file_path):
+    """."""
+    print(file_path)
+
+
+def beautify_src(view, edit, file_path):
+    """."""
+    cur_file = c_file.CFile(file_path)
+    if cur_file.is_cpp_file():
+        beautiful_text = cur_file.get_beautified_text()
+        region = sublime.Region(0, view.size())
+        view.replace(edit, region, beautiful_text)
+
+
+def find_in_ref(view):
+    """."""
+    ref_list = []
+    selected_text = get_selected_text_from_view(view)
+    print(selected_text)
+    for ref in ref_list:
+        pass
+    url = 'http://arduino.cc/en/Reference/'
+    sublime.run_command('open_url', {'url': url})
+
+
+def get_selected_text_from_view(view):
+    """."""
+    selected_text = ''
+    region_list = view.sel()
+    for region in region_list:
+        selected_region = view.word(region)
+        selected_text += view.substr(selected_region)
+        selected_text += '\n'
+    return selected_text
+
+
+def translate(text):
+    """."""
+    return text
+
+
+def print_packages_info(arduino_info):
+    """."""
+    pkgs_info = arduino_info.get('packages', {})
+    pkg_names = pkgs_info.get('names')
+    for pkg_name in pkg_names:
+        print(pkg_name)
+        pkg_info = pkgs_info[pkg_name]
+
+        platforms_info = pkg_info.get('platforms', {})
+        platform_names = platforms_info.get('names')
+        for platform_name in platform_names:
+            platform_info = platforms_info[platform_name]
+            versions = platform_info.get('versions')
+            print(platform_name, versions)
+
+        tools_info = pkg_info.get('tools', {})
+        tool_names = tools_info.get('names')
+        for tool_name in tool_names:
+            tool_info = tools_info[tool_name]
+            versions = tool_info.get('versions')
+            print(tool_name, versions)
+
+
+def print_boards_info(arduino_info):
+    """."""
+    boards_info = arduino_info.get('boards', {})
+    board_names = boards_info.get('names')
+    for board_name in board_names:
+        print(board_name)
+        board_info = boards_info[board_name]
+        # generic_info = board_info.get('generic', {})
+        option_names = board_info.get('options', [])
+        for option_name in option_names:
+            option_info = board_info[option_name]
+            value_names = option_info.get('names', [])
+            print(option_name, value_names)
+            # for value_name in value_names:
+            #     value_info = option_info.get(value_name, {})
+
+
 def init():
     """."""
     global arduino_info
@@ -391,6 +517,8 @@ def init():
 
     config_file_path = os.path.join(arduino_dir_path, 'config.stino-settings')
     config_settings = file.SettingsFile(config_file_path)
+    if config_settings.get('extra_build_flag') is None:
+        config_settings.set('extra_build_flag', '')
     arduino_info['settings'] = config_settings
 
     sel_file_path = os.path.join(arduino_dir_path, 'selected.stino-settings')
@@ -423,7 +551,11 @@ def init():
     arduino_info.update(programmers_info)
     check_programmer_selected(arduino_info)
 
-    # 3. init menus
+    # 3. init serial
+    serial_listener = serial_port.SerialListener(update_serial_info)
+    serial_listener.start()
+
+    # 4. init menus
     st_menu.update_sketchbook_menu(arduino_info)
     st_menu.update_example_menu(arduino_info)
     st_menu.update_library_menu(arduino_info)
@@ -438,7 +570,7 @@ def init():
     st_menu.update_board_options_menu(arduino_info)
     st_menu.update_programmer_menu(arduino_info)
 
-    st_menu.update_serial_menu(arduino_info)
+    st_menu.update_language_menu(arduino_info)
 
 arduino_info = {}
 init()

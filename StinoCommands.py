@@ -55,7 +55,7 @@ class StinoNewSketchCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """New Sketch."""
-        caption = 'Sketch Name:'
+        caption = stino.translate('Sketch Name:')
         self.window.show_input_panel(caption, '', self.on_done, None, None)
 
     def on_done(self, sketch_name):
@@ -140,7 +140,12 @@ class StinoImportLibraryCommand(sublime_plugin.TextCommand):
 
     def run(self, edit, library_path):
         """Import Library."""
-        print(library_path)
+        stino.import_lib(self.view, edit, library_path)
+
+    def is_enabled(self):
+        """Import Library."""
+        file_path = self.view.file_name()
+        return stino.c_file.is_cpp_file(file_path)
 
 
 #############################################
@@ -186,7 +191,7 @@ class StinoInstallPlatformCommand(sublime_plugin.WindowCommand):
 
     def run(self, package_name, platform_name, version):
         """."""
-        print(package_name, platform_name, version)
+        stino.install_platform(package_name, platform_name, version)
 
 
 class StinoRefreshPlatformsCommand(sublime_plugin.WindowCommand):
@@ -267,12 +272,18 @@ class StinoBoardInfoCommand(sublime_plugin.WindowCommand):
         return caption
 
 
-class StinoBuildCommand(sublime_plugin.WindowCommand):
+class StinoBuildCommand(sublime_plugin.TextCommand):
     """."""
 
-    def run(self):
+    def run(self, edit):
         """."""
-        print('Build')
+        file_path = self.view.file_name()
+        stino.build_sketch(file_path)
+
+    def is_enabled(self):
+        """."""
+        file_path = self.view.file_name()
+        return stino.c_file.is_cpp_file(file_path)
 
 
 class StinoRefreshBoardsCommand(sublime_plugin.WindowCommand):
@@ -325,7 +336,9 @@ class StinoSetExtraFlagCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('Set Extra Flag')
+        arduino_app_path = stino.arduino_info.get('arduino_app_path')
+        file_path = os.path.join(arduino_app_path, 'config.stino-settings')
+        self.window.open_file(file_path)
 
 
 class StinoToggleFullBuildCommand(sublime_plugin.WindowCommand):
@@ -333,11 +346,12 @@ class StinoToggleFullBuildCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('Full Build')
+        state = bool(stino.arduino_info['settings'].get('full_build'))
+        stino.arduino_info['settings'].set('full_build', not state)
 
     def is_checked(self):
         """."""
-        state = True
+        state = bool(stino.arduino_info['settings'].get('full_build'))
         return state
 
 
@@ -346,11 +360,12 @@ class StinoShowBuildOutputCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('show build output')
+        state = bool(stino.arduino_info['settings'].get('verbose_build'))
+        stino.arduino_info['settings'].set('verbose_build', not state)
 
     def is_checked(self):
         """."""
-        state = True
+        state = bool(stino.arduino_info['settings'].get('verbose_build'))
         return state
 
 
@@ -359,11 +374,12 @@ class StinoShowUploadOutputCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('show Upload output')
+        state = bool(stino.arduino_info['settings'].get('verbose_upload'))
+        stino.arduino_info['settings'].set('verbose_upload', not state)
 
     def is_checked(self):
         """."""
-        state = True
+        state = bool(stino.arduino_info['settings'].get('verbose_upload'))
         return state
 
 
@@ -372,11 +388,12 @@ class StinoVerifyCodeCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('Verify Code')
+        state = bool(stino.arduino_info['settings'].get('verify_code'))
+        stino.arduino_info['settings'].set('verify_code', not state)
 
     def is_checked(self):
         """."""
-        state = True
+        state = bool(stino.arduino_info['settings'].get('verify_code'))
         return state
 
 
@@ -392,17 +409,27 @@ class StinoSerialInfoCommand(sublime_plugin.WindowCommand):
 
     def description(self):
         """."""
-        key = 'serial'
+        key = 'serial_port'
         caption = '--%s--' % stino.arduino_info['selected'].get(key)
         return caption
 
 
-class StinoUploadCommand(sublime_plugin.WindowCommand):
+class StinoUploadCommand(sublime_plugin.TextCommand):
     """."""
 
-    def run(self):
+    def run(self, edit):
         """."""
-        print('Upload')
+        file_path = self.view.file_name()
+        stino.upload_sketch(file_path)
+
+    def is_enabled(self):
+        """."""
+        state = False
+        file_path = self.view.file_name()
+        sel_serial = stino.arduino_info['selected'].get('serial_port')
+        if sel_serial and stino.c_file.is_cpp_file(file_path):
+            state = True
+        return state
 
 
 class StinoRefreshSerialsCommand(sublime_plugin.WindowCommand):
@@ -445,12 +472,22 @@ class StinoProgrammerInfoCommand(sublime_plugin.WindowCommand):
         return caption
 
 
-class StinoUploadUsingProgrammerCommand(sublime_plugin.WindowCommand):
+class StinoUploadUsingProgrammerCommand(sublime_plugin.TextCommand):
     """Upload Using Programmer."""
 
-    def run(self):
+    def run(self, edit):
         """Upload Using Programmer."""
-        pass
+        file_path = self.view.file_name()
+        stino.upload_by_programmer(file_path)
+
+    def is_enabled(self):
+        """."""
+        state = False
+        file_path = self.view.file_name()
+        sel_programmer = stino.arduino_info['selected'].get('programmer')
+        if sel_programmer and stino.c_file.is_cpp_file(file_path):
+            state = True
+        return state
 
 
 class StinoRefreshProgrammersCommand(sublime_plugin.WindowCommand):
@@ -484,7 +521,15 @@ class StinoBurnBootloaderCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('Burn Bootloader')
+        stino.burn_bootloader()
+
+    def is_enabled(self):
+        """."""
+        state = False
+        sel_serial = stino.arduino_info['selected'].get('serial_port')
+        if sel_serial:
+            state = True
+        return state
 
 
 class StinoAutoFormatCommand(sublime_plugin.TextCommand):
@@ -492,24 +537,13 @@ class StinoAutoFormatCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         """Auto Format Src."""
-        from base_utils import c_file
         file_path = self.view.file_name()
-        cur_file = c_file.CFile(file_path)
-        if cur_file.is_cpp_src():
-            beautiful_text = cur_file.get_beautified_text()
-            region = sublime.Region(0, self.view.size())
-            self.view.replace(edit, region, beautiful_text)
+        stino.beautify_src(self.view, edit, file_path)
 
     def is_enabled(self):
         """Auto Format Src."""
-        state = False
         file_path = self.view.file_name()
-        if file_path:
-            ext = os.path.splitext(file_path)[1]
-            if ext in ('.c', '.cxx', '.cpp', '.h',
-                       '.hh', '.hpp', '.ino', '.dpe'):
-                state = True
-        return state
+        return stino.c_file.is_cpp_file(file_path)
 
 
 #############################################
@@ -520,10 +554,10 @@ class StinoRefreshLangsCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('language')
+        stino.st_menu.update_language_menu(stino.arduino_info)
 
 
-class StinoSelectLangCommand(sublime_plugin.WindowCommand):
+class StinoSelectLanguageCommand(sublime_plugin.WindowCommand):
     """."""
 
     def run(self, language):
@@ -538,12 +572,17 @@ class StinoSelectLangCommand(sublime_plugin.WindowCommand):
         return state
 
 
-class StinoFindInRefCommand(sublime_plugin.WindowCommand):
+class StinoFindInRefCommand(sublime_plugin.TextCommand):
     """."""
 
-    def run(self):
+    def run(self, edit):
         """."""
-        print('Find in Ref')
+        stino.find_in_ref(self.view)
+
+    def is_enabled(self):
+        """."""
+        file_path = self.view.file_name()
+        return stino.c_file.is_cpp_file(file_path)
 
 
 class StinoAboutCommand(sublime_plugin.WindowCommand):

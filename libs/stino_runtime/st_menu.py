@@ -683,3 +683,47 @@ def update_serial_menu(arduino_info):
     text += '\t' * 0 + ']\n'
 
     write_menu('serial', text)
+
+
+def update_language_menu(arduino_info):
+    """."""
+    languages_info = arduino_info.get('languages', {})
+    languages = languages_info.get('names', [])
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Language",\n'
+    text += '\t' * 4 + '"id": "stino_language",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_languages",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_languages"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for language in languages:
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % language
+        text += '\t' * 6 + '"id": "stino_language_%s",\n' % language
+        text += '\t' * 6 + '"command": "stino_select_language",\n'
+        text += '\t' * 6
+        text += '"args": {"language": "%s"},\n' % language
+        text += '\t' * 6 + '"checkbox": true\n'
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('language', text)

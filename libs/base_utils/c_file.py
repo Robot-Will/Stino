@@ -8,15 +8,28 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 
+import os
 from . import file
 
 MAX_LINE_LENGTH = 80
 
-CPP_EXTS = ['.ino', '.pde', '.c', '.cpp', '.cxx', '.h', '.hh', '.hpp']
+INO_EXTS = ['.ino', '.pde']
+H_EXTS = ['.h', '.hh', '.hpp']
+SRC_EXTS = ['.c', '.cpp', '.cxx']
+CPP_EXTS = INO_EXTS + SRC_EXTS + H_EXTS
 chars = '_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 num_chars = '0123456789.'
 var_chars = chars + num_chars
 none_operator_chars = var_chars
+
+
+def is_cpp_file(file_name):
+    """."""
+    state = False
+    ext = os.path.splitext(file_name)[1]
+    if ext in CPP_EXTS:
+        state = True
+    return state
 
 
 def strip_back_slash(lines):
@@ -894,7 +907,7 @@ class CFile(file.File):
         """Doc."""
         return self.get_mtime() != self._last_mtime
 
-    def is_cpp_src(self):
+    def is_cpp_file(self):
         """Doc."""
         return self.get_ext() in CPP_EXTS
 
@@ -907,7 +920,7 @@ class CFile(file.File):
 
     def _check_modified(self):
         """Doc."""
-        if self.is_cpp_src() and self._is_modified():
+        if self.is_cpp_file() and self._is_modified():
             self._update()
 
     def get_lines(self):

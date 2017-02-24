@@ -330,13 +330,13 @@
             {"caption": "-"},
             {
                 "caption": "Language",
-                "id": "stino_lang",
+                "id": "stino_language",
                 "children":
                 [
                     {
                         "caption": "Refresh",
-                        "id": "stino_refresh_langs",
-                        "command": "stino_refresh_langs"
+                        "id": "stino_refresh_languages",
+                        "command": "stino_refresh_languages"
                     },
                     {"caption": "-"}
                 ]

@@ -93,21 +93,16 @@ def get_blocks_by_heads(lines, heads):
             yield block
 
 
-def remove_block_id(block, text=None):
+def remove_block_head(block, head):
     """."""
     new_block = []
-    if text:
-        text += '.'
-        new_block = [l.replace(text, '') for l in block]
-    else:
-        for line in block:
-            if '.' in line:
-                index = line.index('.')
-                line = line[index + 1:]
-            elif '=' in line:
-                index = line.index('=')
-                line = line[index:]
-            new_block.append(line)
+    for line in block:
+        if line.startswith(head):
+            index = len(head)
+            line = line[index:]
+            if line.startswith('.'):
+                line = line[1:]
+        new_block.append(line)
     return new_block
 
 
@@ -138,7 +133,8 @@ def get_option_block_info(block):
     heads = get_heads(block)
     item_blocks = get_blocks_by_heads(block, heads)
     for item_block in item_blocks:
-        item_block = remove_block_id(item_block)
+        head = get_heads(item_block)[0]
+        item_block = remove_block_head(item_block, head)
         item_info = {}
         item_name = ''
         for line in item_block:
@@ -172,9 +168,10 @@ def get_menu_blocks_info(block, menu_info):
     for menu_name in menu_names:
         head = menu_info['sub_menus'].get(menu_name)
         option_block = get_lines_with_head(block, head)
+
         if option_block:
             blocks_info['options'].append(menu_name)
-            option_block = remove_block_id(option_block, head)
+            option_block = remove_block_head(option_block, head)
             block_info = get_option_block_info(option_block)
             blocks_info[menu_name] = block_info
     return blocks_info
@@ -233,7 +230,8 @@ class BoardsFile(PlainParamsFile):
         for name in self._names:
             boards_info['boards'][name] = {}
             block = get_lines_with_name(self._lines, name)
-            block = remove_block_id(block)
+            head = get_heads(block)[0]
+            block = remove_block_head(block, head)
             generic_info = get_generic_info(block)
             menu_blocks_info = get_menu_blocks_info(block, sub_menu_info)
             boards_info['boards'][name]['generic'] = generic_info
@@ -255,7 +253,8 @@ class ProgrammersFile(PlainParamsFile):
 
         for name in self._names:
             block = get_lines_with_name(self._lines, name)
-            block = remove_block_id(block)
+            head = get_heads(block)[0]
+            block = remove_block_head(block, head)
             generic_info = get_generic_info(block)
             programmers_info['programmers'][name] = generic_info
         return programmers_info
