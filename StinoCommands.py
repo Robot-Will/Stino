@@ -190,12 +190,41 @@ class StinoAddPackageCommand(sublime_plugin.WindowCommand):
         self.window.open_file(file_path)
 
 
+class StinoImportAvrPlatformCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        caption = stino.translate('Arduino IDE Path:')
+        self.window.show_input_panel(caption, '', self.on_done, None, None)
+
+    def on_done(self, ide_path):
+        """New Sketch."""
+        stino.ide_importer.put(ide_path)
+
+
 class StinoInstallPlatformCommand(sublime_plugin.WindowCommand):
     """."""
 
     def run(self, package_name, platform_name, version):
         """."""
         stino.install_platform(package_name, platform_name, version)
+
+    def is_enabled(self, package_name, platform_name, version):
+        """."""
+        state = True
+        inst_pkgs_info = stino.arduino_info['installed_packages']
+        pkg_names = inst_pkgs_info.get('names', [])
+        if package_name in pkg_names:
+            pkg_info = inst_pkgs_info.get(package_name)
+            platforms_info = pkg_info.get('platforms', [])
+            platform_names = platforms_info.get('names', [])
+            if platform_name in platform_names:
+                platform_info = platforms_info.get(platform_name)
+                versions = platform_info.get('versions', [])
+                if version in versions:
+                    state = False
+        return state
 
 
 class StinoRefreshPlatformsCommand(sublime_plugin.WindowCommand):
@@ -228,6 +257,16 @@ class StinoRefreshPlatformVersionsCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         stino.st_menu.update_version_menu(stino.arduino_info)
+
+
+class StinoCheckToolsCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        platform_info = \
+            stino.selected.get_sel_platform_info(stino.arduino_info)
+        stino.check_tools_deps(platform_info)
 
 
 class StinoSelectVersionCommand(sublime_plugin.WindowCommand):
@@ -282,7 +321,7 @@ class StinoBuildCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         """."""
         file_path = self.view.file_name()
-        stino.build_sketch(file_path)
+        stino.sketch_builder.put(file_path)
 
     def is_enabled(self):
         """."""
@@ -597,4 +636,13 @@ class StinoAboutCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        print('Stino 2017')
+        stino.message_queue.put('Stino 2017\n')
+
+
+class StinoPanelWriteCommand(sublime_plugin.TextCommand):
+    """."""
+
+    def run(self, edit, text):
+        """."""
+        point = self.view.size()
+        self.view.insert(edit, point, text)

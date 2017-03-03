@@ -7,3 +7,4 @@ LIBRARY_INDEX_URL = \
     'http://downloads.arduino.cc/libraries/library_index.json'
 LIBRARY_INDEX_URL_GZ = \
     'http://downloads.arduino.cc/libraries/library_index.json.gz'
+REMOTE_CHECK_PERIOD = 1800

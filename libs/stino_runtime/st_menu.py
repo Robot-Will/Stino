@@ -247,6 +247,11 @@ def update_install_platform_menu(arduino_info):
     text += '\t' * 6 + '"id": "stino_add_package",\n'
     text += '\t' * 6 + '"command": "stino_add_package"\n'
     text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Import from IDE",\n'
+    text += '\t' * 6 + '"id": "stino_import_avr_platform",\n'
+    text += '\t' * 6 + '"command": "stino_import_avr_platform"\n'
+    text += '\t' * 5 + '},\n'
     text += '\t' * 5 + '{"caption": "-"}'
 
     for package_name in package_names:
@@ -387,6 +392,11 @@ def update_version_menu(arduino_info):
     text += '\t' * 6 + '"caption": "Refresh",\n'
     text += '\t' * 6 + '"id": "stino_refresh_platform_versions",\n'
     text += '\t' * 6 + '"command": "stino_refresh_platform_versions"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Check Toolchain",\n'
+    text += '\t' * 6 + '"id": "stino_check_tools",\n'
+    text += '\t' * 6 + '"command": "stino_check_tools"\n'
     text += '\t' * 5 + '},\n'
     text += '\t' * 5 + '{"caption": "-"}'
 

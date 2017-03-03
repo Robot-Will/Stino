@@ -143,6 +143,11 @@
                         "id": "stino_add_package",
                         "command": "stino_add_package"
                     },
+                    {
+                        "caption": "Import from IDE",
+                        "id": "stino_import_avr_platform",
+                        "command": "stino_import_avr_platform"
+                    },
                     {"caption": "-"}
                 ]
             },
@@ -168,6 +173,11 @@
                         "caption": "Refresh",
                         "id": "stino_refresh_platform_versions",
                         "command": "stino_refresh_platform_versions"
+                    },
+                    {
+                        "caption": "Check Toolchain",
+                        "id": "stino_check_tools",
+                        "command": "stino_check_tools"
                     },
                     {"caption": "-"}
                 ]

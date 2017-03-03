@@ -10,6 +10,10 @@ from __future__ import unicode_literals
 
 import os
 import glob
+import zipfile
+import tarfile
+import platform
+import shutil
 import sublime
 
 from base_utils import file
@@ -19,9 +23,14 @@ from base_utils import plain_params_file
 from base_utils import default_st_dirs
 from base_utils import default_arduino_dirs
 from base_utils import serial_port
+from base_utils import task_queue
+from base_utils import task_listener
+from base_utils import downloader
+from base_utils import sys_info
 from . import const
 from . import st_menu
 from . import selected
+from . import st_panel
 
 plugin_name = const.PLUGIN_NAME
 
@@ -315,7 +324,8 @@ def on_board_select(board_name):
     arduino_info['selected'].set('board', board_name)
     check_board_options_selected(arduino_info)
     st_menu.update_board_options_menu(arduino_info)
-    check_tools_deps(arduino_info)
+    platform_info = selected.get_sel_platform_info(arduino_info)
+    check_tools_deps(platform_info)
 
 
 def on_board_option_select(option, value):
@@ -342,12 +352,87 @@ def on_language_select(language_name):
     arduino_info['selected'].set('language', language)
 
 
-def check_tools_deps(arduino_info):
+def download_platform_tool(down_info):
+    """."""
+    global arduino_info
+    down_type = down_info.get('type', '')
+    url = down_info.get('url', '')
+    package = down_info.get('package', '')
+    name = down_info.get('name', '')
+    version = down_info.get('version', '')
+
+    if down_type and url and package and name and version:
+        arduino_app_path = arduino_info['arduino_app_path']
+        packages_path = os.path.join(arduino_app_path, 'packages')
+        staging_path = os.path.join(arduino_app_path, 'staging')
+        down_path = os.path.join(staging_path, 'packages')
+
+        package_path = os.path.join(packages_path, package)
+        if down_type == 'platform':
+            sub_path = os.path.join(package_path, 'hardware')
+            packages_info = arduino_info.get('packages', {})
+            package_info = packages_info.get(package, {})
+            platforms_info = package_info.get('platforms', {})
+            platform_info = platforms_info.get(name, {})
+            version_info = platform_info.get(version, {})
+            name = version_info.get('architecture', name)
+        elif down_type == 'tool':
+            sub_path = os.path.join(package_path, 'tools')
+        name_path = os.path.join(sub_path, name)
+        version_path = os.path.join(name_path, version)
+
+        if not os.path.isdir(version_path):
+            msg = '[%s] Waiting for downloading...\n' % url
+            message_queue.put(msg)
+            is_done = downloader.download(url, down_path, message_queue.put)
+
+            if is_done:
+                msg = '[%s] %s %s: ' % (package, name, version)
+                msg += 'Installation started.\n'
+                message_queue.put(msg)
+                if not os.path.isdir(name_path):
+                    os.makedirs(name_path)
+
+                zip_name = os.path.basename(url)
+                zip_path = os.path.join(down_path, zip_name)
+                if zip_name.endswith('.zip'):
+                    with zipfile.ZipFile(zip_path, 'r') as f:
+                        names = f.namelist()
+                        try:
+                            f.extractall(name_path)
+                        except (IOError, FileNotFoundError) as e:
+                            message_queue.put('%s\n' % e)
+                elif zip_name.endswith('.gz') or zip_name.endswith('.bz2'):
+                    with tarfile.open(zip_path, 'r') as f:
+                        names = f.getnames()
+                        try:
+                            f.extractall(name_path)
+                        except (IOError, FileNotFoundError) as e:
+                            message_queue.put('%s\n' % e)
+
+                if names:
+                    dir_name = names[0]
+                    new_path = os.path.join(name_path, dir_name)
+                    os.rename(new_path, version_path)
+
+                msg = '[%s] %s %s: ' % (package, name, version)
+                msg += 'Installation completed.\n'
+                message_queue.put(msg)
+
+                if down_type == 'platform':
+                    installed_packages_info = \
+                        get_installed_packages_info(arduino_info)
+                    arduino_info.update(installed_packages_info)
+                    st_menu.update_platform_menu(arduino_info)
+                    st_menu.update_version_menu(arduino_info)
+                    check_tools_deps(version_info)
+
+
+def check_tools_deps(platform_info):
     """."""
     arduino_app_path = arduino_info['arduino_app_path']
     packages_path = os.path.join(arduino_app_path, 'packages')
 
-    platform_info = selected.get_sel_platform_info(arduino_info)
     tools_deps = platform_info.get('toolsDependencies', [])
     for tool_info in tools_deps:
         has_tool = False
@@ -364,7 +449,51 @@ def check_tools_deps(arduino_info):
                 if version and version_path:
                     has_tool = True
         if not has_tool:
-            print('Must download %s %s %s' % (package, name, version))
+            packages_info = arduino_info.get('packages', {})
+            package_info = packages_info.get(package, {})
+            tools_info = package_info.get('tools', {})
+            tool_info = tools_info.get(name, {})
+            version_info = tool_info.get(version, {})
+            systems_info = version_info.get('systems', [])
+            for system_info in systems_info:
+                host = system_info.get('host', '')
+                url = system_info.get('url', '')
+                if '-' in host:
+                    host_infos = host.split('-')
+                    if len(host_infos) > 1:
+                        arch = host_infos[0]
+                        os_name = host_infos[1]
+
+                        go_down = False
+                        if sys_info.get_os_name() == 'windows':
+                            if os_name == 'mingw32':
+                                go_down = True
+                                break
+                        elif sys_info.get_os_name() == 'osx':
+                            if os_name == 'apple':
+                                go_down = True
+                                break
+                        elif sys_info.get_os_name() == 'linux':
+                            if os_name == 'linux':
+                                machine = platform.machine()
+                                if machine == 'i686' and arch == 'i686':
+                                    go_down = True
+                                    break
+                                elif machine == 'x86_64' and arch == 'x86_64':
+                                    go_down = True
+                                    break
+                                elif arch == 'arm':
+                                    go_down = True
+                                    break
+
+            if go_down:
+                down_info = {}
+                down_info['type'] = 'tool'
+                down_info['package'] = package
+                down_info['name'] = name
+                down_info['version'] = version
+                down_info['url'] = url
+                platform_tool_downloader.put(down_info)
 
 
 def open_project(project_path, win):
@@ -436,7 +565,108 @@ def import_lib(view, edit, lib_path):
 
 def install_platform(package, platform, version):
     """."""
-    print(package, platform, version)
+    msg = 'Download [%s] %s %s?' % (package, platform, version)
+    result = sublime.yes_no_cancel_dialog(msg)
+    if result == sublime.DIALOG_YES:
+        packages_info = arduino_info.get('packages', {})
+        package_info = packages_info.get(package, {})
+        platforms_info = package_info.get('platforms', {})
+        platform_info = platforms_info.get(platform, {})
+        version_info = platform_info.get(version)
+        url = version_info.get('url', '')
+
+        down_info = {}
+        down_info['type'] = 'platform'
+        down_info['package'] = package
+        down_info['name'] = platform
+        down_info['version'] = version
+        down_info['url'] = url
+        platform_tool_downloader.put(down_info)
+
+
+def import_avr_platform(ide_path):
+    """."""
+    is_ide = False
+    if os.path.isdir(ide_path):
+        arduino_app_path = arduino_info['arduino_app_path']
+        sketchbook_path = arduino_info['sketchbook_path']
+
+        sketch_examples_path = os.path.join(sketchbook_path, 'examples')
+        sketch_libraries_path = os.path.join(sketchbook_path, 'libraries')
+
+        examples_path = os.path.join(ide_path, 'examples')
+        if os.path.isdir(examples_path):
+            paths = glob.glob(examples_path + '/*')
+            paths = [p for p in paths if os.path.isdir(p)]
+            for path in paths:
+                name = os.path.basename(path)
+                target_path = os.path.join(sketch_examples_path, name)
+                if not os.path.exists(target_path):
+                    shutil.copytree(path, target_path)
+
+        libraries_path = os.path.join(ide_path, 'libraries')
+        if os.path.isdir(libraries_path):
+            paths = glob.glob(libraries_path + '/*')
+            paths = [p for p in paths if os.path.isdir(p)]
+            for path in paths:
+                name = os.path.basename(path)
+                target_path = os.path.join(sketch_libraries_path, name)
+                if not os.path.exists(target_path):
+                    shutil.copytree(path, target_path)
+
+        hardware_path = os.path.join(ide_path, 'hardware')
+        index_file_path = os.path.join(hardware_path,
+                                       'package_index_bundled.json')
+        if os.path.isfile(index_file_path):
+            index_files = index_file.IndexFiles([index_file_path])
+            info = index_files.get_info()
+            packages_info = info.get('packages', {})
+            package_names = packages_info.get('names', [])
+            if package_names:
+                package_name = package_names[0]
+                package_info = packages_info.get(package_name, {})
+                platforms_info = package_info.get('platforms', {})
+                platform_names = platforms_info.get('names', [])
+                if platform_names:
+                    platform_name = platform_names[0]
+                    platform_arch = platforms_info.get('arches')[0]
+                    platform_info = platforms_info.get(platform_name, {})
+                    versions = platform_info.get('versions', [])
+                    if versions:
+                        version = versions[0]
+                        version_info = platform_info.get(version, {})
+
+                        package_path = os.path.join(hardware_path,
+                                                    package_name)
+                        platform_path = os.path.join(package_path,
+                                                     platform_arch)
+
+                        if os.path.isdir(platform_path):
+                            is_ide = True
+
+                            target_path = os.path.join(arduino_app_path,
+                                                       'packages')
+                            target_path = os.path.join(target_path,
+                                                       package_name)
+                            target_path = os.path.join(target_path,
+                                                       'hardware')
+                            target_path = os.path.join(target_path,
+                                                       platform_arch)
+                            target_path = os.path.join(target_path,
+                                                       version)
+                            if not os.path.isdir(target_path):
+                                shutil.copytree(platform_path, target_path)
+                                msg = 'Importing Arduino IDE finished.\n'
+                            else:
+                                msg = '[%s] %s %s ' % (package_name,
+                                                       platform_name,
+                                                       version)
+                                msg += 'exists.\n'
+                            message_queue.put(msg)
+                            check_tools_deps(version_info)
+    if not is_ide:
+        msg = '[Error] %s is not Arduino IDE.\n'
+        message_queue.put(msg)
 
 
 def build_sketch(file_path):
@@ -461,28 +691,6 @@ def beautify_src(view, edit, file_path):
         beautiful_text = cur_file.get_beautified_text()
         region = sublime.Region(0, view.size())
         view.replace(edit, region, beautiful_text)
-
-
-def find_in_ref(view):
-    """."""
-    ref_list = []
-    selected_text = get_selected_text_from_view(view)
-    print(selected_text)
-    for ref in ref_list:
-        pass
-    url = 'http://arduino.cc/en/Reference/'
-    sublime.run_command('open_url', {'url': url})
-
-
-def get_selected_text_from_view(view):
-    """."""
-    selected_text = ''
-    region_list = view.sel()
-    for region in region_list:
-        selected_region = view.word(region)
-        selected_text += view.substr(selected_region)
-        selected_text += '\n'
-    return selected_text
 
 
 def translate(text):
@@ -539,6 +747,29 @@ def print_boards_info(arduino_info):
             #     value_info = option_info.get(value_name, {})
 
 
+def check_pkgs():
+    """."""
+    global arduino_info
+    is_changed = False
+    arduino_dir_path = arduino_info['arduino_app_path']
+    for key in arduino_info['package_index'].get_keys():
+        url = arduino_info['package_index'].get(key)
+        remote_etag = downloader.get_remote_etag(url)
+        if remote_etag:
+            local_etag = arduino_info['etags'].get(key)
+            if remote_etag != local_etag:
+                is_done = downloader.download(url, arduino_dir_path,
+                                              message_queue.put,
+                                              mode='replace')
+                if is_done:
+                    arduino_info['etags'].set(key, remote_etag)
+                    is_changed = True
+    if is_changed:
+        index_files_info = get_index_files_info(arduino_dir_path)
+        arduino_info.update(index_files_info)
+        st_menu.update_install_platform_menu(arduino_info)
+
+
 def init():
     """."""
     global arduino_info
@@ -561,10 +792,13 @@ def init():
     arduino_info['selected'] = sel_settings
 
     pkgs_file_path = os.path.join(arduino_dir_path, 'packages.stino-settings')
+    etags_file_path = os.path.join(arduino_dir_path, 'etags.stino-settings')
     pkg_index_settings = file.SettingsFile(pkgs_file_path)
+    etag_settings = file.SettingsFile(etags_file_path)
     arduino_info['package_index'] = pkg_index_settings
-    if not arduino_info['package_index'].get('default'):
-        arduino_info['package_index'].set('default', const.PACKAGE_INDEX_URL)
+    arduino_info['etags'] = etag_settings
+    if not arduino_info['package_index'].get('arduino'):
+        arduino_info['package_index'].set('arduino', const.PACKAGE_INDEX_URL)
 
     # 1. init packages info
     index_files_info = get_index_files_info(arduino_dir_path)
@@ -607,5 +841,17 @@ def init():
 
     st_menu.update_language_menu(arduino_info)
 
+
+message_queue = task_queue.TaskQueue(st_panel.StPanel().write)
+message_queue.put('Thanks for supporting Stino!\n')
+
 arduino_info = {}
 init()
+
+pkgs_checker = task_listener.TaskListener(task=check_pkgs,
+                                          delay=const.REMOTE_CHECK_PERIOD)
+pkgs_checker.start()
+
+platform_tool_downloader = downloader.DownloadQueue(download_platform_tool)
+ide_importer = task_queue.TaskQueue(import_avr_platform)
+sketch_builder = task_queue.TaskQueue(build_sketch)

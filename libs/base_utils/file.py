@@ -144,9 +144,10 @@ class File(AbstractFile):
         mode = 'w'
         if append:
             mode = 'a'
+
+        if not os.path.isdir(self._dir):
+            os.makedirs(self._dir)
         try:
-            if not os.path.isdir(self._dir):
-                os.makedirs(self._dir)
             with codecs.open(self._path, mode, self._encoding) as f:
                 f.write(text)
         except (IOError, UnicodeError):
@@ -202,6 +203,10 @@ class SettingsFile(JSONFile):
         """Method Docs."""
         self._data[key] = value
         self.save()
+
+    def get_keys(self):
+        """."""
+        return self._data.keys()
 
 
 class Dir(AbstractFile):
