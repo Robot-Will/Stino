@@ -9,7 +9,6 @@ from __future__ import unicode_literals
 
 import os
 import sys
-import glob
 
 import sublime
 import sublime_plugin
@@ -19,24 +18,22 @@ def add_relative_dir_to_sys_path(relative_dir):
     """."""
     cur_path = os.path.dirname(os.path.realpath(__file__))
     dir_path = os.path.normpath(os.path.join(cur_path, relative_dir))
-
-    zip_pattern = os.path.join(dir_path, '*.zip')
-    zip_files = glob.glob(zip_pattern)
-
-    paths = [dir_path] + zip_files
-    for path in paths:
-        if path not in sys.path:
-            sys.path.append(dir_path)
+    sys.path.append(dir_path)
 
 
 stino = None
 add_relative_dir_to_sys_path('libs')
+st_version = 2 if sys.version_info < (3,) else 3
 
 
 def plugin_loaded():
     """."""
     global stino
     import stino_runtime as stino
+
+
+if st_version == 2:
+    plugin_loaded()
 
 
 #############################################
@@ -213,17 +210,11 @@ class StinoInstallPlatformCommand(sublime_plugin.WindowCommand):
     def is_enabled(self, package_name, platform_name, version):
         """."""
         state = True
-        inst_pkgs_info = stino.arduino_info['installed_packages']
-        pkg_names = inst_pkgs_info.get('names', [])
-        if package_name in pkg_names:
-            pkg_info = inst_pkgs_info.get(package_name)
-            platforms_info = pkg_info.get('platforms', [])
-            platform_names = platforms_info.get('names', [])
-            if platform_name in platform_names:
-                platform_info = platforms_info.get(platform_name)
-                versions = platform_info.get('versions', [])
-                if version in versions:
-                    state = False
+        pkgs_info = stino.arduino_info['installed_packages']
+        vers = stino.selected.get_platform_versions(pkgs_info, package_name,
+                                                    platform_name)
+        if version in vers:
+            state = False
         return state
 
 
@@ -321,7 +312,8 @@ class StinoBuildCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         """."""
         file_path = self.view.file_name()
-        stino.sketch_builder.put(file_path)
+        dir_path = os.path.dirname(file_path)
+        stino.sketch_builder.put(dir_path)
 
     def is_enabled(self):
         """."""
@@ -591,9 +583,8 @@ class StinoAutoFormatCommand(sublime_plugin.TextCommand):
         """Auto Format Src."""
         state = False
         file_path = self.view.file_name()
-        if file_path:
-            if stino.c_file.is_cpp_file(file_path):
-                state = True
+        if file_path and stino.c_file.is_cpp_file(file_path):
+            state = True
         return state
 
 
@@ -636,7 +627,7 @@ class StinoAboutCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        stino.message_queue.put('Stino 2017\n')
+        stino.message_queue.put('Stino 2017')
 
 
 class StinoPanelWriteCommand(sublime_plugin.TextCommand):
@@ -646,3 +637,4 @@ class StinoPanelWriteCommand(sublime_plugin.TextCommand):
         """."""
         point = self.view.size()
         self.view.insert(edit, point, text)
+        self.view.show(point)

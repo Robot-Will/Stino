@@ -15,7 +15,8 @@ MAX_LINE_LENGTH = 80
 
 INO_EXTS = ['.ino', '.pde']
 H_EXTS = ['.h', '.hh', '.hpp']
-SRC_EXTS = ['.c', '.cpp', '.cxx']
+SRC_EXTS = ['.cpp', '.c', '.cc', '.cxx']
+INOC_EXTS = INO_EXTS + SRC_EXTS
 CPP_EXTS = INO_EXTS + SRC_EXTS + H_EXTS
 chars = '_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 num_chars = '0123456789.'
@@ -890,6 +891,26 @@ def beautify_lines(lines):
     lines = break_lines(lines)
     lines = indent_lines(lines)
     return lines
+
+
+def is_main_ino_file(file_path):
+    """."""
+    state = False
+    f = CFile(file_path)
+    funcs = f.list_function_definitions()
+    if 'void setup()' in funcs and 'void loop()' in funcs:
+        state = True
+    return state
+
+
+def is_main_cpp_file(file_path):
+    """."""
+    state = False
+    f = CFile(file_path)
+    funcs = f.list_function_definitions()
+    if 'void main()' in funcs or 'int main()' in funcs:
+        state = True
+    return state
 
 
 class CFile(file.File):

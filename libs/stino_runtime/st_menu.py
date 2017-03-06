@@ -222,8 +222,8 @@ def update_library_menu(arduino_info):
 
 def update_install_platform_menu(arduino_info):
     """."""
-    package_infos = arduino_info.get('packages', {})
-    package_names = package_infos.get('names', [])
+    packages_info = arduino_info.get('packages', {})
+    package_names = packages_info.get('names', [])
 
     text = '\t' * 0 + '[\n'
     text += '\t' * 1 + '{\n'
@@ -263,9 +263,9 @@ def update_install_platform_menu(arduino_info):
         text += '\t' * 6 + '[\n'
         text += '\t' * 7 + '{"caption": "-"}'
 
-        package_info = package_infos.get(package_name, {})
-        platform_infos = package_info.get('platforms', {})
-        platform_names = platform_infos.get('names', [])
+        package_info = packages_info.get(package_name, {})
+        platforms_info = package_info.get('platforms', {})
+        platform_names = platforms_info.get('names', [])
         for platform_name in platform_names:
             text += ',\n'
             text += '\t' * 7 + '{\n'
@@ -275,7 +275,7 @@ def update_install_platform_menu(arduino_info):
             text += '\t' * 8 + '['
             text += '\t' * 9 + '{"caption": "-"}'
 
-            platform_info = platform_infos.get(platform_name, {})
+            platform_info = platforms_info.get(platform_name, {})
             versions = platform_info.get('versions', [])
             for version in versions:
                 text += ',\n'
@@ -307,8 +307,8 @@ def update_install_platform_menu(arduino_info):
 
 def update_platform_menu(arduino_info):
     """."""
-    package_infos = arduino_info.get('installed_packages', {})
-    package_names = package_infos.get('names', [])
+    packages_info = arduino_info.get('installed_packages', {})
+    package_names = packages_info.get('names', [])
 
     text = '\t' * 0 + '[\n'
     text += '\t' * 1 + '{\n'
@@ -338,9 +338,9 @@ def update_platform_menu(arduino_info):
         text += '\t' * 6 + '[\n'
         text += '\t' * 7 + '{"caption": "-"}'
 
-        package_info = package_infos.get(package_name, {})
-        platform_infos = package_info.get('platforms', {})
-        platform_names = platform_infos.get('names', [])
+        package_info = packages_info.get(package_name, {})
+        platforms_info = package_info.get('platforms', {})
+        platform_names = platforms_info.get('names', [])
         for platform_name in platform_names:
             text += ',\n'
             text += '\t' * 7 + '{\n'
@@ -368,13 +368,11 @@ def update_platform_menu(arduino_info):
 
 def update_version_menu(arduino_info):
     """."""
+    package_infos = arduino_info.get('installed_packages', {})
     sel_package = arduino_info['selected'].get('package')
     sel_platform = arduino_info['selected'].get('platform')
-    package_infos = arduino_info.get('installed_packages', {})
-    package_info = package_infos.get(sel_package, {})
-    platform_infos = package_info.get('platforms', {})
-    platform_info = platform_infos.get(sel_platform, {})
-    versions = platform_info.get('versions', [])
+    versions = selected.get_platform_versions(package_infos, sel_package,
+                                              sel_platform)
 
     text = '\t' * 0 + '[\n'
     text += '\t' * 1 + '{\n'
@@ -421,14 +419,17 @@ def update_version_menu(arduino_info):
 
 def update_platform_example_menu(arduino_info):
     """."""
+    example_paths = []
+    library_paths = []
     platform_path = selected.get_sel_platform_path(arduino_info)
-    examples_path = os.path.join(platform_path, 'examples')
-    example_paths = glob.glob(examples_path + '/*')
-    example_paths = [p for p in example_paths if os.path.isdir(p)]
+    if platform_path:
+        examples_path = os.path.join(platform_path, 'examples')
+        example_paths = glob.glob(examples_path + '/*')
+        example_paths = [p for p in example_paths if os.path.isdir(p)]
 
-    libraries_path = os.path.join(platform_path, 'libraries')
-    library_paths = glob.glob(libraries_path + '/*')
-    library_paths = [p for p in library_paths if os.path.isdir(p)]
+        libraries_path = os.path.join(platform_path, 'libraries')
+        library_paths = glob.glob(libraries_path + '/*')
+        library_paths = [p for p in library_paths if os.path.isdir(p)]
 
     text = '\t' * 0 + '[\n'
     text += '\t' * 1 + '{\n'
@@ -462,10 +463,12 @@ def update_platform_example_menu(arduino_info):
 
 def update_platform_library_menu(arduino_info):
     """."""
+    library_paths = []
     platform_path = selected.get_sel_platform_path(arduino_info)
-    libraries_path = os.path.join(platform_path, 'libraries')
-    library_paths = glob.glob(libraries_path + '/*')
-    library_paths = [p for p in library_paths if os.path.isdir(p)]
+    if platform_path:
+        libraries_path = os.path.join(platform_path, 'libraries')
+        library_paths = glob.glob(libraries_path + '/*')
+        library_paths = [p for p in library_paths if os.path.isdir(p)]
 
     text = '\t' * 0 + '[\n'
     text += '\t' * 1 + '{\n'
@@ -654,7 +657,8 @@ def update_programmer_menu(arduino_info):
 
 def update_serial_menu(arduino_info):
     """."""
-    serial_ports = arduino_info.get('serial_ports', [])
+    serial_ports_info = arduino_info.get('serial_ports', {})
+    serial_ports = serial_ports_info.get('names', [])
 
     text = '\t' * 0 + '[\n'
     text += '\t' * 1 + '{\n'

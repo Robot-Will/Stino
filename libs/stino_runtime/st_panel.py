@@ -36,6 +36,8 @@ class StPanel:
 
     def write(self, text):
         """."""
+        if not text.endswith('\n'):
+            text += '\n'
         view = self._window.active_view()
         self._panel.set_read_only(False)
         self._panel.run_command('stino_panel_write', {'text': text})

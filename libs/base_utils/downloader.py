@@ -97,6 +97,8 @@ def download(url, target_dir,
                 block = b''
                 retry_counter = 0
 
+                if not os.path.isdir(target_dir):
+                    os.makedirs(target_dir)
                 f = open(tmp_file_path, 'ab')
                 while True:
                     try:

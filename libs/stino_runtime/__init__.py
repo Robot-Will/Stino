@@ -18,6 +18,7 @@ import sublime
 
 from base_utils import file
 from base_utils import c_file
+from base_utils import c_project
 from base_utils import index_file
 from base_utils import plain_params_file
 from base_utils import default_st_dirs
@@ -69,6 +70,7 @@ def get_arduino_dir_path(app_dir_settings):
         app_dir_path = '{$default}'
         app_dir_settings.set('app_dir_path', app_dir_path)
         dir_path = default_arduino_dirs.arduino_app_path()
+    file.check_dir(dir_path)
     return dir_path
 
 
@@ -99,6 +101,7 @@ def get_sketchbook_path(app_dir_settings):
         sketchbook_path = '{$default}'
         app_dir_settings.set('sketchbook_path', sketchbook_path)
         dir_path = default_arduino_dirs.arduino_sketchbook_path()
+    file.check_dir(dir_path)
     return dir_path
 
 
@@ -108,20 +111,6 @@ def get_index_files_info(arduino_dir_path):
     index_files = index_file.IndexFiles(file_paths)
     info = index_files.get_info()
     return info
-
-
-def get_platform_name(arduino_info, pkg_name, plt_arch):
-    """."""
-    plt_name = ''
-    pkgs_info = arduino_info.get('packages', {})
-    pkg_info = pkgs_info.get(pkg_name, {})
-    plts_info = pkg_info.get('platforms', {})
-    plt_names = plts_info.get('names', [])
-    plt_arches = plts_info.get('arches', [])
-    if plt_arch in plt_arches:
-        index = plt_arches.index(plt_arch)
-        plt_name = plt_names[index]
-    return plt_name
 
 
 def get_installed_packages_info(arduino_info):
@@ -141,42 +130,48 @@ def get_installed_packages_info(arduino_info):
 
         pkg_info['platforms']['names'] = []
         for platform_path in platform_paths:
-            plt_arch = os.path.basename(platform_path)
-            plt_name = get_platform_name(arduino_info, pkg_name, plt_arch)
-            pkg_info['platforms']['names'].append(plt_name)
+            ptfm_arch = os.path.basename(platform_path)
+            ptfm_name = selected.get_platform_name_by_arch(arduino_info,
+                                                           pkg_name,
+                                                           ptfm_arch)
+            pkg_info['platforms']['names'].append(ptfm_name)
 
             version_paths = glob.glob(platform_path + '/*')
             versions = [os.path.basename(p) for p in version_paths]
-            plt_info = {'versions': versions}
-            pkg_info['platforms'][plt_name] = plt_info
+            ptfm_info = {'versions': versions}
+            pkg_info['platforms'][ptfm_name] = ptfm_info
         installed_packages_info['installed_packages'][pkg_name] = pkg_info
     return installed_packages_info
 
 
 def get_boards_info(arduino_info):
     """."""
+    boards_info = {'boards': {}}
     platform_path = selected.get_sel_platform_path(arduino_info)
-    boards_file_path = os.path.join(platform_path, 'boards.txt')
-    boards_file = plain_params_file.BoardsFile(boards_file_path)
-    boards_info = boards_file.get_boards_info()
+    if platform_path:
+        boards_file_path = os.path.join(platform_path, 'boards.txt')
+        boards_file = plain_params_file.BoardsFile(boards_file_path)
+        boards_info = boards_file.get_boards_info()
     return boards_info
 
 
 def get_programmers_info(arduino_info):
     """."""
+    programmers_info = {'programmers': {}}
     platform_path = selected.get_sel_platform_path(arduino_info)
-    programmers_file_path = os.path.join(platform_path, 'programmers.txt')
-    programmers_file = plain_params_file.ProgrammersFile(programmers_file_path)
-    programmers_info = programmers_file.get_programmers_info()
+    if platform_path:
+        progs_file_path = os.path.join(platform_path, 'programmers.txt')
+        progs_file = plain_params_file.ProgrammersFile(progs_file_path)
+        programmers_info = progs_file.get_programmers_info()
     return programmers_info
 
 
 def update_serial_info(serial_ports):
     """."""
     global arduino_info
-    arduino_info['serial_ports'] = serial_ports
+    arduino_info['serial_ports'] = {'names': serial_ports}
     st_menu.update_serial_menu(arduino_info)
-    check_serial_selected(arduino_info)
+    check_selected(arduino_info, 'serial_port')
 
 
 def check_platform_selected(arduino_info):
@@ -186,8 +181,8 @@ def check_platform_selected(arduino_info):
     sel_platform = sel_settings.get('platform', '')
     sel_version = sel_settings.get('version', '')
 
-    package_infos = arduino_info.get('installed_packages', {})
-    package_names = package_infos.get('names', [])
+    packages_info = arduino_info.get('installed_packages', {})
+    package_names = packages_info.get('names', [])
     if package_names:
         if sel_package not in package_names:
             sel_package = package_names[0]
@@ -196,9 +191,9 @@ def check_platform_selected(arduino_info):
         sel_package = None
         sel_settings.set('package', sel_package)
 
-    package_info = package_infos.get(sel_package, {})
-    platform_infos = package_info.get('platforms', {})
-    platform_names = platform_infos.get('names', [])
+    package_info = packages_info.get(sel_package, {})
+    platforms_info = package_info.get('platforms', {})
+    platform_names = platforms_info.get('names', [])
     if platform_names:
         if sel_platform not in platform_names:
             sel_platform = platform_names[0]
@@ -207,8 +202,8 @@ def check_platform_selected(arduino_info):
         sel_platform = None
         sel_settings.set('platform', sel_platform)
 
-    platform_info = platform_infos.get(sel_platform, {})
-    versions = platform_info.get('versions', [])
+    platform_vers_info = platforms_info.get(sel_platform, {})
+    versions = platform_vers_info.get('versions', [])
     if versions:
         if sel_version not in versions:
             sel_version = versions[-1]
@@ -218,18 +213,19 @@ def check_platform_selected(arduino_info):
         sel_settings.set('version', sel_version)
 
 
-def check_board_selected(arduino_info):
+def check_selected(arduino_info, item_type):
     """."""
     sel_settings = arduino_info.get('selected', {})
-    sel_board = sel_settings.get('board', '')
-    board_names = arduino_info['boards'].get('names', [])
-    if board_names:
-        if sel_board not in board_names:
-            sel_board = board_names[0]
-            sel_settings.set('board', sel_board)
+    sel_item = sel_settings.get(item_type, '')
+    sel_item_info = arduino_info.get('%ss' % item_type, {})
+    names = sel_item_info.get('names', [])
+    if names:
+        if sel_item not in names:
+            sel_item = names[0]
+            sel_settings.set(item_type, sel_item)
     else:
-        sel_board = None
-        sel_settings.set('board', sel_board)
+        sel_item = None
+        sel_settings.set(item_type, sel_item)
 
 
 def check_board_options_selected(arduino_info):
@@ -239,54 +235,12 @@ def check_board_options_selected(arduino_info):
     options = board_info.get('options', [])
     for option in options:
         key = 'option_%s' % option
-        sel_value = arduino_info['selected'].get(key)
-        items_info = board_info.get(option, {})
-        value_names = items_info.get('names', [])
-        if sel_value not in value_names:
-            sel_value = value_names[0]
-            arduino_info['selected'].set(key, sel_value)
-
-
-def check_programmer_selected(arduino_info):
-    """."""
-    sel_settings = arduino_info.get('selected', {})
-    sel_programmer = sel_settings.get('programmer', '')
-    programmer_names = arduino_info['programmers'].get('names', [])
-    if programmer_names:
-        if sel_programmer not in programmer_names:
-            sel_programmer = programmer_names[0]
-            sel_settings.set('programmer', sel_programmer)
-    else:
-        sel_programmer = None
-        sel_settings.set('programmer', sel_programmer)
-
-
-def check_serial_selected(arduino_info):
-    """."""
-    sel_settings = arduino_info.get('selected', {})
-    sel_serial = sel_settings.get('serial_port', '')
-    serial_ports = arduino_info.get('serial_ports', [])
-    if serial_ports:
-        if serial_port not in serial_ports:
-            sel_serial = serial_ports[0]
-            sel_settings.set('serial_port', sel_serial)
-    else:
-        sel_serial = None
-        sel_settings.set('serial_port', sel_serial)
-
-
-def check_language_selected(arduino_info):
-    """."""
-    sel_settings = arduino_info.get('selected', {})
-    sel_language = sel_settings.get('language', '')
-    language_names = arduino_info['languages'].get('names', [])
-    if language_names:
-        if sel_language not in language_names:
-            sel_language = language_names[0]
-            sel_settings.set('language', sel_language)
-    else:
-        sel_language = None
-        sel_settings.set('language', sel_language)
+        sel_value_name = arduino_info['selected'].get(key)
+        values_info = board_info.get(option, {})
+        value_names = values_info.get('names', [])
+        if sel_value_name not in value_names:
+            sel_value_name = value_names[0]
+            arduino_info['selected'].set(key, sel_value_name)
 
 
 def on_platform_select(package_name, platform_name):
@@ -306,10 +260,10 @@ def on_version_select(version):
     arduino_info['selected'].set('version', version)
     boards_info = get_boards_info(arduino_info)
     arduino_info.update(boards_info)
-    check_board_selected(arduino_info)
+    check_selected(arduino_info, 'board')
     programmers_info = get_programmers_info(arduino_info)
     arduino_info.update(programmers_info)
-    check_programmer_selected(arduino_info)
+    check_selected(arduino_info, 'programmer')
     sel_board = arduino_info['selected'].get('board')
     on_board_select(sel_board)
     st_menu.update_platform_example_menu(arduino_info)
@@ -382,13 +336,13 @@ def download_platform_tool(down_info):
         version_path = os.path.join(name_path, version)
 
         if not os.path.isdir(version_path):
-            msg = '[%s] Waiting for downloading...\n' % url
+            msg = '[%s] Waiting for download...' % url
             message_queue.put(msg)
             is_done = downloader.download(url, down_path, message_queue.put)
 
             if is_done:
                 msg = '[%s] %s %s: ' % (package, name, version)
-                msg += 'Installation started.\n'
+                msg += 'Installation started.'
                 message_queue.put(msg)
                 if not os.path.isdir(name_path):
                     os.makedirs(name_path)
@@ -401,14 +355,14 @@ def download_platform_tool(down_info):
                         try:
                             f.extractall(name_path)
                         except (IOError, FileNotFoundError) as e:
-                            message_queue.put('%s\n' % e)
+                            message_queue.put('%s' % e)
                 elif zip_name.endswith('.gz') or zip_name.endswith('.bz2'):
                     with tarfile.open(zip_path, 'r') as f:
                         names = f.getnames()
                         try:
                             f.extractall(name_path)
                         except (IOError, FileNotFoundError) as e:
-                            message_queue.put('%s\n' % e)
+                            message_queue.put('%s' % e)
 
                 if names:
                     dir_name = names[0]
@@ -416,7 +370,7 @@ def download_platform_tool(down_info):
                     os.rename(new_path, version_path)
 
                 msg = '[%s] %s %s: ' % (package, name, version)
-                msg += 'Installation completed.\n'
+                msg += 'Installation completed.'
                 message_queue.put(msg)
 
                 if down_type == 'platform':
@@ -430,6 +384,8 @@ def download_platform_tool(down_info):
 
 def check_tools_deps(platform_info):
     """."""
+    is_ready = True
+
     arduino_app_path = arduino_info['arduino_app_path']
     packages_path = os.path.join(arduino_app_path, 'packages')
 
@@ -449,6 +405,7 @@ def check_tools_deps(platform_info):
                 if version and version_path:
                     has_tool = True
         if not has_tool:
+            is_ready = False
             packages_info = arduino_info.get('packages', {})
             package_info = packages_info.get(package, {})
             tools_info = package_info.get('tools', {})
@@ -494,6 +451,7 @@ def check_tools_deps(platform_info):
                 down_info['version'] = version
                 down_info['url'] = url
                 platform_tool_downloader.put(down_info)
+    return is_ready
 
 
 def open_project(project_path, win):
@@ -586,6 +544,7 @@ def install_platform(package, platform, version):
 
 def import_avr_platform(ide_path):
     """."""
+    global arduino_info
     is_ide = False
     if os.path.isdir(ide_path):
         arduino_app_path = arduino_info['arduino_app_path']
@@ -656,22 +615,43 @@ def import_avr_platform(ide_path):
                                                        version)
                             if not os.path.isdir(target_path):
                                 shutil.copytree(platform_path, target_path)
-                                msg = 'Importing Arduino IDE finished.\n'
+                                msg = 'Importing Arduino IDE finished.'
+                                installed_packages_info = \
+                                    get_installed_packages_info(arduino_info)
+                                arduino_info.update(installed_packages_info)
+                                st_menu.update_platform_menu(arduino_info)
+                                st_menu.update_version_menu(arduino_info)
+
                             else:
                                 msg = '[%s] %s %s ' % (package_name,
                                                        platform_name,
                                                        version)
-                                msg += 'exists.\n'
+                                msg += 'exists.'
                             message_queue.put(msg)
                             check_tools_deps(version_info)
     if not is_ide:
-        msg = '[Error] %s is not Arduino IDE.\n'
+        msg = '[Error] %s is not Arduino IDE.' % ide_path
         message_queue.put(msg)
 
 
-def build_sketch(file_path):
+def build_sketch(project_path):
     """."""
-    print(file_path)
+    # 1. Check Toolchain
+    msg = 'Start building %s...' % project_path
+    message_queue.put(msg)
+    msg = '[Step 1] Check Toolchain.'
+    message_queue.put(msg)
+    platform_info = selected.get_sel_platform_info(arduino_info)
+    is_ready = check_tools_deps(platform_info)
+    if is_ready:
+        msg = '[Step 2] Find main source file.'
+        message_queue.put(msg)
+        arduino_app_path = arduino_info['arduino_app_path']
+        build_dir_path = os.path.join(arduino_app_path, 'build')
+
+        prj = c_project.CProject(project_path)
+        main_file_path = prj.get_main_file(build_dir_path)
+        print(main_file_path)
 
 
 def upload_sketch(file_path):
@@ -813,12 +793,12 @@ def init():
     arduino_info['programmers'] = {}
     boards_info = get_boards_info(arduino_info)
     arduino_info.update(boards_info)
-    check_board_selected(arduino_info)
+    check_selected(arduino_info, 'board')
     check_board_options_selected(arduino_info)
 
     programmers_info = get_programmers_info(arduino_info)
     arduino_info.update(programmers_info)
-    check_programmer_selected(arduino_info)
+    check_selected(arduino_info, 'programmer')
 
     # 3. init serial
     serial_listener = serial_port.SerialListener(update_serial_info)
@@ -843,7 +823,7 @@ def init():
 
 
 message_queue = task_queue.TaskQueue(st_panel.StPanel().write)
-message_queue.put('Thanks for supporting Stino!\n')
+message_queue.put('Thanks for supporting Stino!')
 
 arduino_info = {}
 init()

@@ -237,13 +237,13 @@ class Dir(AbstractFile):
     def list_dirs(self, pattern='*'):
         """Method Docs."""
         all_files = self.list_all(pattern)
-        dirs = [Dir(f.path) for f in all_files if f.is_dir()]
+        dirs = [Dir(f._path) for f in all_files if f.is_dir()]
         return dirs
 
     def list_files(self, pattern='*'):
         """Method Docs."""
         all_files = self.list_all(pattern)
-        files = [File(f.path) for f in all_files if f.is_file()]
+        files = [File(f._path) for f in all_files if f.is_file()]
         return files
 
     def list_files_of_extension(self, ext=''):
