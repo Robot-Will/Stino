@@ -386,26 +386,20 @@ def check_tools_deps(platform_info):
     """."""
     is_ready = True
 
-    arduino_app_path = arduino_info['arduino_app_path']
-    packages_path = os.path.join(arduino_app_path, 'packages')
-
-    tools_deps = platform_info.get('toolsDependencies', [])
-    for tool_info in tools_deps:
+    tools_info = selected.get_sel_tools_info(arduino_info, platform_info)
+    tool_names = tools_info.get('names', [])
+    for name in tool_names:
         has_tool = False
-        package = tool_info.get('packager', '')
-        name = tool_info.get('name', '')
-        version = tool_info.get('version', '')
+        tool_info = tools_info.get(name, {})
+        if tool_info.get('path', ''):
+            has_tool = True
 
-        package_path = os.path.join(packages_path, package)
-        if package and os.path.isdir(package_path):
-            tools_path = os.path.join(package_path, 'tools')
-            tool_path = os.path.join(tools_path, name)
-            if name and os.path.isdir(tool_path):
-                version_path = os.path.join(tool_path, version)
-                if version and version_path:
-                    has_tool = True
         if not has_tool:
             is_ready = False
+
+            package = tool_info.get('packager', '')
+            version = tool_info.get('version', '')
+
             packages_info = arduino_info.get('packages', {})
             package_info = packages_info.get(package, {})
             tools_info = package_info.get('tools', {})
@@ -637,13 +631,15 @@ def import_avr_platform(ide_path):
 def build_sketch(project_path):
     """."""
     # 1. Check Toolchain
-    msg = 'Start building %s...' % project_path
+    msg = '[Build] %s...' % project_path
     message_queue.put(msg)
     msg = '[Step 1] Check Toolchain.'
     message_queue.put(msg)
     platform_info = selected.get_sel_platform_info(arduino_info)
     is_ready = check_tools_deps(platform_info)
     if is_ready:
+        msg = '[Step 1] Done.'
+        message_queue.put(msg)
         msg = '[Step 2] Find main source file.'
         message_queue.put(msg)
         arduino_app_path = arduino_info['arduino_app_path']
@@ -651,7 +647,20 @@ def build_sketch(project_path):
 
         prj = c_project.CProject(project_path)
         main_file_path = prj.get_main_file(build_dir_path)
-        print(main_file_path)
+        message_queue.put(main_file_path)
+        if main_file_path:
+            msg = '[Step 2] Done.'
+            message_queue.put(msg)
+            msg = '[Step 3] List all cpp files.'
+            message_queue.put(msg)
+            msg = '[Step 4] List Commands.'
+
+            message_queue.put(msg)
+            cmds_info = selected.get_commands_info(arduino_info, prj)
+            print(cmds_info)
+
+            msg = '[Step 5] Run Commands.'
+            message_queue.put(msg)
 
 
 def upload_sketch(file_path):

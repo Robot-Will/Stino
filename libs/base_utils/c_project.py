@@ -86,6 +86,10 @@ class CProject(object):
         if not self._is_arduino_project:
             self._is_cpp_project = self.check_if_c_project()
 
+    def get_name(self):
+        """."""
+        return self._name
+
     def check_if_arduino_project(self):
         """."""
         has_main_file = False
