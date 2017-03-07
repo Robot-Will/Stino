@@ -9,12 +9,14 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
+import re
 import glob
 import zipfile
 import tarfile
 import platform
 import shutil
 import sublime
+import subprocess
 
 from base_utils import file
 from base_utils import c_file
@@ -681,7 +683,7 @@ def get_h_path_info(project):
     return h_path_info
 
 
-def get_dep_cpps(path, h_path_info, used_headers):
+def get_dep_h_cpps(path, h_path_info, used_headers):
     """."""
     cpp_paths = []
     dep_dirs = []
@@ -723,7 +725,7 @@ def get_dep_cpps(path, h_path_info, used_headers):
             if has_cpp:
                 src_paths.append(cpp_path)
                 if cpp_path not in cpp_paths:
-                    cpp_paths.append(cpp_path)
+                    cpp_paths.append(cpp_path.replace('\\', '/'))
 
             for src_path in src_paths:
                 sub_cpp_paths, sub_dep_dirs, used_headers = \
@@ -737,9 +739,319 @@ def get_dep_cpps(path, h_path_info, used_headers):
     return cpp_paths, dep_dirs, used_headers
 
 
-def build_sketch(project_path):
+def get_dep_cpps(dir_paths, h_path_info, used_cpps, used_headers, used_dirs):
+    """."""
+    for dir_path in dir_paths:
+        if dir_path not in used_dirs:
+            used_dirs.append(dir_path)
+            h_paths = c_project.list_files_of_extensions(dir_path,
+                                                         c_file.H_EXTS)
+            cpp_paths = c_project.list_files_of_extensions(dir_path,
+                                                           c_file.CC_EXTS)
+            unused_src_paths = []
+            for h_path in h_paths:
+                header = os.path.basename(h_path)
+                if header not in used_headers:
+                    used_headers.append(header)
+                    unused_src_paths.append(h_path)
+            for cpp_path in cpp_paths:
+                if cpp_path not in used_cpps:
+                    used_cpps.append(cpp_path)
+                    unused_src_paths.append(cpp_path)
+
+            sub_dir_paths = []
+            for src_path in unused_src_paths:
+                f = c_file.CFile(src_path)
+                headers = f.list_inclde_headers()
+                for header in headers:
+                    if header in h_path_info:
+                        dir_path = h_path_info.get(header)
+                        if dir_path not in sub_dir_paths:
+                            if dir_path not in used_dirs:
+                                sub_dir_paths.append(dir_path)
+
+            used_cpps, used_headers, used_dirs = \
+                get_dep_cpps(sub_dir_paths, h_path_info, used_cpps,
+                             used_headers, used_dirs)
+    return used_cpps, used_headers, used_dirs
+
+
+def is_modified(file_path, info):
+    """."""
+    state = False
+    mtime = os.path.getmtime(file_path)
+    last_mtime = info.get(file_path)
+    if mtime and mtime != last_mtime:
+        state = True
+    return state
+
+
+def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
+    """."""
+    is_full_build = bool(arduino_info['settings'].get('full_build'))
+    last_build_path = os.path.join(prj_build_path,
+                                   'last_build.stino-settings')
+    last_build_info = file.SettingsFile(last_build_path)
+    prj_name = os.path.basename(prj_build_path)
+    core_a_path = os.path.join(prj_build_path, 'core.a')
+
+    last_package = last_build_info.get('package', '')
+    last_platform = last_build_info.get('platform', '')
+    last_version = last_build_info.get('version', '')
+    last_board = last_build_info.get('board', '')
+
+    arduino_sel = arduino_info['selected']
+    sel_package = arduino_sel.get('package', '')
+    sel_platform = arduino_sel.get('platform', '')
+    sel_version = arduino_sel.get('version', '')
+    sel_board = arduino_sel.get('board', '')
+    sel_board_options = selected.get_sel_board_options(arduino_info)
+
+    if not is_full_build:
+        if sel_package and sel_package != last_package:
+            is_full_build = True
+        else:
+            if sel_platform and sel_platform != last_platform:
+                is_full_build = True
+            else:
+                if sel_version and sel_version != last_version:
+                    is_full_build = True
+                else:
+                    if sel_board and sel_board != last_board:
+                        is_full_build = True
+                    else:
+                        for option in sel_board_options:
+                            key = 'option_%s' % option
+                            sel_option = arduino_sel.get(key, '')
+                            last_option = last_build_info.get(key, '')
+                            if sel_option and sel_option != last_option:
+                                is_full_build = True
+
+    obj_paths = []
+    src_paths = all_src_paths[::-1]
+    for src_path in src_paths:
+        src_name = os.path.basename(src_path)
+        obj_name = src_name + '.o'
+        obj_path = os.path.join(prj_build_path, obj_name)
+        obj_path = obj_path.replace('\\', '/')
+        obj_paths.append(obj_path)
+
+    build_src_paths = []
+    build_obj_paths = []
+    libs_changed = False
+    need_gen_bins = False
+
+    if is_full_build:
+        build_src_paths = src_paths
+        build_obj_paths = obj_paths
+        libs_changed = True
+        need_gen_bins = True
+    else:
+        need_compile = False
+        if is_modified(src_paths[0], last_build_info):
+            need_compile = True
+        elif not os.path.isfile(obj_paths[0]):
+            need_compile = True
+
+        if need_compile:
+            build_src_paths.append(src_paths[0])
+            build_obj_paths.append(obj_paths[0])
+            need_gen_bins = True
+
+        for src_path, obj_path in zip(src_paths[1:], obj_paths[1:]):
+            need_compile = False
+            if is_modified(src_path, last_build_info):
+                need_compile = True
+            elif not os.path.isfile(obj_path):
+                need_compile = True
+            if need_compile:
+                libs_changed = True
+                build_src_paths.append(src_path)
+                build_obj_paths.append(obj_path)
+
+    if libs_changed:
+        need_gen_bins = True
+        if os.path.isfile(core_a_path):
+            os.remove(core_a_path)
+
+    cmds = []
+    for src_path, obj_path in zip(build_src_paths, build_obj_paths):
+        src_ext = os.path.splitext(src_path)[-1]
+        if src_ext in c_file.CPP_EXTS or src_ext in c_file.INO_EXTS:
+            cmd = cmds_info.get('recipe.cpp.o.pattern', '')
+        elif src_ext in c_file.C_EXTS:
+            cmd = cmds_info.get('recipe.c.o.pattern', '')
+        elif src_ext in c_file.S_EXTS:
+            cmd = cmds_info.get('recipe.S.o.pattern', '')
+        else:
+            cmd = ''
+        cmd = cmd.replace('{source_file}', src_path)
+        cmd = cmd.replace('{object_file}', obj_path)
+        cmds.append(cmd)
+
+    if not os.path.isfile(core_a_path):
+        cmd_pattern = cmds_info.get('recipe.ar.pattern', '')
+        for obj_path in obj_paths[1:]:
+            cmd = cmd_pattern.replace('{object_file}', obj_path)
+            cmds.append(cmd)
+
+    out_file_name = cmds_info.get('recipe.output.save_file', '')
+    if out_file_name:
+        bin_ext = out_file_name[-4:]
+    else:
+        bin_ext = '.bin'
+
+    elf_file_name = prj_name + '.elf'
+    bin_file_name = prj_name + bin_ext
+    elf_file_path = os.path.join(prj_build_path, elf_file_name)
+    bin_file_path = os.path.join(prj_build_path, bin_file_name)
+
+    if not (os.path.isfile(elf_file_path) and os.path.isfile(bin_file_path)):
+        need_gen_bins = True
+
+    if need_gen_bins:
+        cmd_pattern = cmds_info.get('recipe.c.combine.pattern', '')
+        cmd = cmd_pattern.replace('{object_files}', '"%s"' % obj_paths[0])
+        cmds.append(cmd)
+        cmds.append(cmds_info.get('recipe.objcopy.eep.pattern', ''))
+        cmds.append(cmds_info.get('recipe.objcopy.hex.pattern', ''))
+        cmds.append(cmds_info.get('recipe.objcopy.bin.pattern', ''))
+
+    last_build_info.set('package', sel_package)
+    last_build_info.set('platform', sel_platform)
+    last_build_info.set('version', sel_version)
+    last_build_info.set('board', sel_board)
+    for option in sel_board_options:
+        key = 'option_%s' % option
+        sel_option = arduino_sel.get(key, '')
+        last_build_info.set(key, sel_option)
+    for src_path in src_paths:
+        mtime = os.path.getmtime(src_path)
+        last_build_info.set(src_path, mtime)
+    return cmds
+
+
+def run_command(cmd):
+    """."""
+    is_ok = True
+    if cmd:
+        proc = subprocess.Popen(cmd,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                shell=True)
+        result = proc.communicate()
+        return_code = proc.returncode
+        stdout = result[0].decode(sys_info.get_sys_encoding())
+        stderr = result[1].decode(sys_info.get_sys_encoding())
+
+        verbose_build = bool(arduino_info['settings'].get('verbose_build'))
+        if verbose_build:
+            message_queue.put(cmd)
+            if stdout:
+                message_queue.put(stdout.replace('\r', ''))
+        if stderr:
+            message_queue.put(stderr.replace('\r', ''))
+        if return_code != 0:
+            is_ok = False
+    return is_ok
+
+
+def regular_numner(num):
+    """."""
+    txt = str(num)
+    regular_num = ''
+    for index, char in enumerate(txt[::-1]):
+        regular_num += char
+        if (index + 1) % 3 == 0 and index + 1 != len(txt):
+            regular_num += ','
+    regular_num = regular_num[::-1]
+    return regular_num
+
+
+def run_size_command(cmd, regex_info):
+    """."""
+    if cmd:
+        proc = subprocess.Popen(cmd,
+                                stdout=subprocess.PIPE,
+                                stderr=subprocess.PIPE,
+                                shell=True)
+        result = proc.communicate()
+        stdout = result[0].decode(sys_info.get_sys_encoding())
+        if stdout:
+            board_info = selected.get_sel_board_info(arduino_info)
+            size_total = int(board_info.get('upload.maximum_size', '253952'))
+            size_data_total = int(board_info.get('upload.maximum_data_size',
+                                                 '10000'))
+
+            size_regex = regex_info.get('recipe.size.regex', '')
+            if size_regex:
+                pattern = re.compile(size_regex, re.M)
+                result = pattern.findall(stdout)
+                if result:
+                    try:
+                        int(result[0])
+                    except TypeError:
+                        result = result[0][:2]
+                    size = sum(int(n) for n in result)
+                    size_percent = size / size_total * 100
+
+                    size = regular_numner(size)
+                    size_total = regular_numner(size_total)
+                    size_percent = '%.1f' % size_percent
+                    text = 'Sketch uses '
+                    text += '%s bytes (%s%%) ' % (size, size_percent)
+                    text += 'of program storage space. '
+                    text += 'Maximum is %s bytes.' % size_total
+                    message_queue.put(text)
+
+            data_regex = regex_info.get('recipe.size.regex.data', '')
+            if data_regex:
+                pattern = re.compile(data_regex, re.M)
+                result = pattern.findall(stdout)
+                if result:
+                    try:
+                        int(result[0])
+                    except TypeError:
+                        result = result[0][1:]
+                size_data = sum(int(n) for n in result)
+                size_data_percent = size_data / size_data_total * 100
+                size_data_remain = size_data_total - size_data
+
+                size_data = regular_numner(size_data)
+                size_data_remain = regular_numner(size_data_remain)
+                size_data_total = regular_numner(size_data_total)
+                size_data_percent = '%.1f' % size_data_percent
+                text = 'Global variables use '
+                text += '%s bytes (%s%%) ' % (size_data, size_data_percent)
+                text += 'of dynamic memory, leaving '
+                text += '%s bytes for local variables. ' % size_data_remain
+                text += 'Maximum is %s bytes.' % size_data_total
+                message_queue.put(text)
+
+            eeprom_regex = regex_info.get('recipe.size.regex.eeprom', '')
+            if eeprom_regex:
+                pattern = re.compile(eeprom_regex, re.M)
+                result = pattern.findall(stdout)
+                if result:
+                    message_queue.put(result)
+
+
+def run_commands(cmds):
+    """."""
+    is_ok = True
+    for cmd in cmds:
+        is_ok = run_command(cmd)
+        if not is_ok:
+            break
+    return is_ok
+
+
+def build_sketch(build_info):
     """."""
     # 1. Check Toolchain
+    project_path = build_info.get('path')
+    upload_mode = build_info.get('upload_mode', '')
+
     msg = '[Build] %s...' % project_path
     message_queue.put(msg)
     msg = '[Step 1] Check Toolchain.'
@@ -747,79 +1059,60 @@ def build_sketch(project_path):
     platform_info = selected.get_sel_platform_info(arduino_info)
     is_ready = check_tools_deps(platform_info)
     if is_ready:
-        msg = '[Step 1] Done.'
-        message_queue.put(msg)
-        msg = '[Step 2] Find main source file.'
+        msg = '[Step 2] Find all source files.'
         message_queue.put(msg)
         arduino_app_path = arduino_info['arduino_app_path']
         build_dir_path = os.path.join(arduino_app_path, 'build')
 
         prj = c_project.CProject(project_path, build_dir_path)
-        prj_build_path = os.path.join(build_dir_path, prj.get_name())
-        main_file_path = prj.get_main_file()
-        message_queue.put(main_file_path)
-        if main_file_path:
-            msg = '[Step 2] Done.'
-            message_queue.put(msg)
-            msg = '[Step 3] List all cpp files.'
-            message_queue.put(msg)
+        prj_build_path = prj.get_build_path()
+        prj_src_dir_paths = [prj.get_path()]
+        if prj.is_arduino_project():
+            prj.gen_arduino_tmp_file()
+            prj_src_dir_paths.append(prj.get_build_path())
 
-            h_path_info = get_h_path_info(prj)
-            dep_cpps, dep_dirs, used_headers = \
-                get_dep_cpps(main_file_path, h_path_info, [])
-            arduino_info['include_paths'] = dep_dirs
+        all_src_paths = []
+        include_dirs = []
+        used_headers = []
+        h_path_info = get_h_path_info(prj)
+        all_src_paths, used_headers, dep_dirs = \
+            get_dep_cpps(prj_src_dir_paths, h_path_info, all_src_paths,
+                         used_headers, include_dirs)
+        all_src_paths = [p.replace('\\', '/') for p in all_src_paths]
+        include_dirs = [p.replace('\\', '/') for p in include_dirs]
+        arduino_info['include_paths'] = include_dirs
 
-            msg = '[Step 4] List Commands.'
-            message_queue.put(msg)
-            cmds_info = selected.get_commands_info(arduino_info, prj)
+        cmds_info = selected.get_commands_info(arduino_info, prj)
+        cmds = get_build_cmds(cmds_info, prj_build_path, all_src_paths)
 
-            obj_paths = []
-            src_paths = [main_file_path] + dep_cpps[::-1]
-            for src_path in src_paths:
-                src_name = os.path.basename(src_path)
-                obj_name = src_name + '.o'
-                obj_path = os.path.join(prj_build_path, obj_name)
-                obj_path = obj_path.replace('\\', '/')
-                obj_paths.append(obj_path)
+        msg = '[Step 3] Start building.'
+        message_queue.put(msg)
+        is_ok = run_commands(cmds)
+        if is_ok:
+            arduino_info['settings'].set('full_build', False)
+            size_cmd = cmds_info.get('recipe.size.pattern', '')
 
-            cmds = []
-            for src_path, obj_path in zip(src_paths, obj_paths):
-                src_ext = os.path.splitext(src_path)[-1]
-                if src_ext in c_file.CPP_EXTS or src_ext in c_file.INO_EXTS:
-                    cmd = cmds_info.get('recipe.cpp.o.pattern', '')
-                elif src_ext in c_file.C_EXTS:
-                    cmd = cmds_info.get('recipe.c.o.pattern', '')
-                elif src_ext in c_file.S_EXTS:
-                    cmd = cmds_info.get('recipe.S.o.pattern', '')
-                else:
-                    cmd = ''
-                cmd = cmd.replace('{source_file}', src_path)
-                cmd = cmd.replace('{object_file}', obj_path)
-                cmds.append(cmd)
-
-            cmd_pattern = cmds_info.get('recipe.ar.pattern', '')
-            for obj_path in obj_paths[1:]:
-                cmd = cmd_pattern.replace('{object_file}', obj_path)
-                cmds.append(cmd)
-
-            cmd_pattern = cmds_info.get('recipe.c.combine.pattern', '')
-            cmd = cmd_pattern.replace('{object_files}', '"%s"' % obj_paths[0])
-            cmds.append(cmd)
-            cmds.append(cmds_info.get('recipe.objcopy.eep.pattern', ''))
-            cmds.append(cmds_info.get('recipe.objcopy.hex.pattern', ''))
-            cmds.append(cmds_info.get('recipe.size.pattern', ''))
-
-            for cmd in cmds:
-                message_queue.put(' ')
-                message_queue.put(cmd)
-
-            msg = '[Step 5] Run Commands.'
-            message_queue.put(msg)
+            regex_info = {}
+            regex_keys = ['recipe.size.regex']
+            regex_keys.append('recipe.size.regex.data')
+            regex_keys.append('recipe.size.regex.eeprom')
+            for key in regex_keys:
+                regex = cmds_info.get(key, '')
+                if regex:
+                    regex_info[key] = regex
+            run_size_command(size_cmd, regex_info)
+            if upload_mode == 'upload':
+                upload_cmd = cmds_info.get('upload.pattern', '')
+                sketch_uploader.put(upload_cmd)
+            elif upload_mode == 'programmer':
+                pass
 
 
-def upload_sketch(file_path):
+def upload_sketch(upload_cmd):
     """."""
-    print(file_path)
+    message_queue.put(upload_cmd)
+    if upload_cmd:
+        run_command(upload_cmd)
 
 
 def upload_by_programmer(file_path):
@@ -998,3 +1291,4 @@ pkgs_checker.start()
 platform_tool_downloader = downloader.DownloadQueue(download_platform_tool)
 ide_importer = task_queue.TaskQueue(import_avr_platform)
 sketch_builder = task_queue.TaskQueue(build_sketch)
+sketch_uploader = task_queue.TaskQueue(upload_sketch)

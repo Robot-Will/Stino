@@ -280,6 +280,11 @@
                     }
                 ]
             },
+            {
+                "caption": "Show Build Folder",
+                "id": "stino_show_build_dir",
+                "command": "stino_show_build_dir"
+            },
             {"caption": "-"},
             {
                 "id": "stino_serial_info",

@@ -114,6 +114,14 @@ def get_sel_board_info(arduino_info):
     return sel_board_info
 
 
+def get_sel_board_options(arduino_info):
+    """."""
+    sel_board = arduino_info['selected'].get('board')
+    board_info = arduino_info['boards'].get(sel_board, {})
+    options = board_info.get('options', [])
+    return options
+
+
 def get_sel_programmer_info(arduino_info):
     """."""
     sel_programmer = arduino_info['selected'].get('programmer')

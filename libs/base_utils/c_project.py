@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 import os
 import glob
 import codecs
+from . import file
 from . import c_file
 
 
@@ -63,46 +64,65 @@ def get_file_info_of_extensions(dir_path, exts, mode='recursion', excludes=[]):
     return info
 
 
-def combine_ino_files(ino_file_paths, build_path):
+def combine_ino_files(ino_file_paths, target_file_path):
     """."""
-    main_file_path = ino_file_paths[0]
-    main_file_name = os.path.basename(main_file_path)
-    target_file_name = main_file_name + '.cpp'
-    target_file_path = os.path.join(build_path, target_file_name)
+    need_combine = False
 
-    func_prototypes = []
-    for ino_file_path in ino_file_paths:
-        ino_file = c_file.CFile(ino_file_path)
-        prototypes = ino_file.get_undeclar_func_defs()
-        for prototype in prototypes:
-            if prototype not in func_prototypes:
-                func_prototypes.append(prototype)
+    build_path = os.path.dirname(target_file_path)
+    last_inos_path = os.path.join(build_path,
+                                  'last_inos.stino-settings')
+    last_inos_info = file.SettingsFile(last_inos_path)
+    f_paths = [p.replace('\\', '/') for p in ino_file_paths]
 
-    with codecs.open(main_file_path, 'r', 'utf-8') as source_f:
-        src_text = source_f.read()
-        index = c_file.get_index_of_first_statement(src_text)
-        header_text = src_text[:index]
-        footer_text = src_text[index:]
+    if f_paths:
+        if not os.path.isfile(target_file_path):
+            need_combine = True
+        else:
+            for ino_file_path in f_paths:
+                mtime = os.path.getmtime(ino_file_path)
+                last_mtime = last_inos_info.get(ino_file_path)
+                if mtime and mtime != last_mtime:
+                    last_inos_info.set(ino_file_path, mtime)
+                    need_combine = True
 
-    with codecs.open(target_file_path, 'w', 'utf-8') as target_f:
-        cur_path = main_file_path.replace('\\', '/')
-        footer_start_line = len(header_text.split('\n')) + 1
-        text = '#line 1 "%s"\n' % cur_path
-        text += header_text
-        text += '\n#include <Arduino.h>\n'
-        if func_prototypes:
-            text += ';\n'.join(func_prototypes)
-            text += ';\n\n'
-        text += '#line %d "%s"\n' % (footer_start_line, cur_path)
-        text += footer_text
-        target_f.write(text)
+        if need_combine:
+            func_prototypes = []
+            for ino_file_path in f_paths:
+                ino_file = c_file.CFile(ino_file_path)
+                prototypes = ino_file.get_undeclar_func_defs()
+                for prototype in prototypes:
+                    if prototype not in func_prototypes:
+                        func_prototypes.append(prototype)
 
-        for ino_file_path in ino_file_paths[1:]:
-            first_line = '#line 1 "%s"\n' % ino_file_path.replace('\\', '/')
-            target_f.write(first_line)
-            with codecs.open(target_file_path, 'r', 'utf-8') as source_f:
-                target_f.write(source_f.read())
-    return target_file_path
+            with codecs.open(f_paths[0], 'r', 'utf-8') as source_f:
+                src_text = source_f.read()
+                index = c_file.get_index_of_first_statement(src_text)
+                header_text = src_text[:index]
+                footer_text = src_text[index:]
+
+            with codecs.open(target_file_path, 'w', 'utf-8') as target_f:
+                cur_path = f_paths[0]
+                footer_start_line = len(header_text.split('\n')) + 1
+                text = '#line 1 "%s"\n' % cur_path
+                text += header_text
+                text += '\n#include <Arduino.h>\n'
+                if func_prototypes:
+                    text += ';\n'.join(func_prototypes)
+                    text += ';\n\n'
+                text += '#line %d "%s"\n' % (footer_start_line, cur_path)
+                text += footer_text
+                target_f.write(text)
+
+                for ino_file_path in f_paths[1:]:
+                    first_line = '#line 1 "%s"\n' % ino_file_path
+                    target_f.write(first_line)
+                    with codecs.open(target_file_path,
+                                     'r', 'utf-8') as source_f:
+                        target_f.write(source_f.read())
+    else:
+        with codecs.open(target_file_path, 'w', 'utf-8') as target_f:
+            text = '#include <Arduino.h>\n'
+            target_f.write(text)
 
 
 def check_main_file(file_paths, prj_type='arduino'):
@@ -117,12 +137,8 @@ def check_main_file(file_paths, prj_type='arduino'):
     for file_path in file_paths:
         if is_main_file(file_path):
             has_main_file = True
-            main_file_path = file_path
-            file_paths.remove(main_file_path)
             break
-    if has_main_file:
-        file_paths = [main_file_path] + file_paths
-    return has_main_file, file_paths
+    return has_main_file
 
 
 class CProject(object):
@@ -134,8 +150,11 @@ class CProject(object):
         self._name = os.path.basename(project_path)
         self.set_build_path(build_dir_path)
 
-        self._src_file_paths = list_files_of_extensions(self._path,
-                                                        c_file.INOC_EXTS)
+        self._ino_file_paths = list_files_of_extensions(self._path,
+                                                        c_file.INO_EXTS)
+        self._cpp_file_paths = list_files_of_extensions(self._path,
+                                                        c_file.CC_EXTS)
+        self._src_file_paths = self._ino_file_paths + self._cpp_file_paths
 
         self._is_cpp_project = False
         self._is_arduino_project = self.check_is_arduino_project()
@@ -150,6 +169,14 @@ class CProject(object):
         """."""
         return self._path
 
+    def get_build_path(self):
+        """."""
+        return self._build_path
+
+    def get_cpp_files(self):
+        """."""
+        return self._cpp_file_paths
+
     def set_build_path(self, build_dir_path):
         """."""
         self._build_path = os.path.join(build_dir_path, self._name)
@@ -158,14 +185,12 @@ class CProject(object):
 
     def check_is_arduino_project(self):
         """."""
-        has_main_file, self._src_file_paths = \
-            check_main_file(self._src_file_paths)
+        has_main_file = check_main_file(self._src_file_paths)
         return has_main_file
 
     def check_is_c_project(self):
         """."""
-        has_main_file, self._src_file_paths = \
-            check_main_file(self._src_file_paths, 'cpp')
+        has_main_file = check_main_file(self._src_file_paths, 'cpp')
         return has_main_file
 
     def is_arduino_project(self):
@@ -176,18 +201,8 @@ class CProject(object):
         """."""
         return self._is_cpp_project
 
-    def get_main_file(self):
+    def gen_arduino_tmp_file(self):
         """."""
-        main_file_path = ''
-        if self.is_arduino_project() or self.is_cpp_project():
-            main_file_path = self._src_file_paths[0]
-            if self.is_arduino_project():
-                ext = os.path.splitext(main_file_path)[1]
-                if ext in c_file.INO_EXTS:
-                    ino_file_paths = \
-                        list_files_of_extensions(self._path, c_file.INO_EXTS)
-                    ino_file_paths.remove(main_file_path)
-                    ino_file_paths = [main_file_path] + ino_file_paths
-                    path = combine_ino_files(ino_file_paths, self._build_path)
-                    main_file_path = path
-        return main_file_path
+        tmp_cpp_name = self._name + '.ino.cpp'
+        tmp_file_path = os.path.join(self._build_path, tmp_cpp_name)
+        combine_ino_files(self._ino_file_paths, tmp_file_path)

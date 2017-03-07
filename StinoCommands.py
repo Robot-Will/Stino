@@ -313,7 +313,8 @@ class StinoBuildCommand(sublime_plugin.TextCommand):
         """."""
         file_path = self.view.file_name()
         dir_path = os.path.dirname(file_path)
-        stino.sketch_builder.put(dir_path)
+        build_info = {'path': dir_path}
+        stino.sketch_builder.put(build_info)
 
     def is_enabled(self):
         """."""
@@ -436,6 +437,32 @@ class StinoVerifyCodeCommand(sublime_plugin.WindowCommand):
         return state
 
 
+class StinoShowBuildDirCommand(sublime_plugin.TextCommand):
+    """Show Sketch Folder."""
+
+    def run(self, edit):
+        """Show Sketch Folder."""
+        file_path = self.view.file_name()
+        if file_path:
+            prj_path = os.path.dirname(file_path)
+            prj_name = os.path.basename(prj_path)
+            arduino_app_path = stino.arduino_info['arduino_app_path']
+            build_path = os.path.join(arduino_app_path, 'build')
+            prj_build_path = os.path.join(build_path, prj_name)
+            if os.path.isdir(prj_build_path):
+                url = 'file://' + prj_build_path
+                sublime.run_command('open_url', {'url': url})
+
+    def is_enabled(self):
+        """."""
+        state = False
+        file_path = self.view.file_name()
+        if file_path:
+            if stino.c_file.is_cpp_file(file_path):
+                state = True
+        return state
+
+
 #############################################
 # Serial and Upload Commands
 #############################################
@@ -459,7 +486,10 @@ class StinoUploadCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         """."""
         file_path = self.view.file_name()
-        stino.upload_sketch(file_path)
+        dir_path = os.path.dirname(file_path)
+        build_info = {'path': dir_path}
+        build_info['upload_mode'] = 'upload'
+        stino.sketch_builder.put(build_info)
 
     def is_enabled(self):
         """."""
@@ -517,7 +547,10 @@ class StinoUploadUsingProgrammerCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         """Upload Using Programmer."""
         file_path = self.view.file_name()
-        stino.upload_by_programmer(file_path)
+        dir_path = os.path.dirname(file_path)
+        build_info = {'path': dir_path}
+        build_info['upload_mode'] = 'programmer'
+        stino.sketch_builder.put(build_info)
 
     def is_enabled(self):
         """."""
