@@ -27,6 +27,13 @@ num_chars = '0123456789.'
 var_chars = chars + num_chars
 none_operator_chars = var_chars
 
+whitespace = r'\s+'
+preprocessor_directive = r'\s*#.*?$'
+multi_line_comment = r'/\*[^*]*(?:\*(?!/)[^*]*)*\*/'
+single_line_comment = r'//.*?$'
+double_quoted_string = r'"(?:[^"\\]|\\.)*"'
+include = r'#include\s*[<"](\S+)[">]'
+
 
 def is_cpp_file(file_name):
     """."""
@@ -930,11 +937,6 @@ def get_index_of_first_statement(src_text):
     Returns:
         index: The index of first statement.
     """
-    preprocessor_directive = r'\s*#.*?$'
-    multi_line_comment = r'/\*[^*]*(?:\*(?!/)[^*]*)*\*/'
-    single_line_comment = r'//.*?$'
-    whitespace = r'\s+'
-
     pattern_text = preprocessor_directive
     pattern_text += '|' + multi_line_comment
     pattern_text += '|' + single_line_comment
@@ -1041,22 +1043,20 @@ class CFile(file.File):
     def list_inclde_headers(self):
         """Doc."""
         self._check_modified()
-        include = r'#include\s*[<"](\S+)[">]'
-        pattern = re.compile(include)
-        headers = pattern.findall(self._text)
+        pattern_text = multi_line_comment
+        pattern_text += '|' + single_line_comment
 
-        for index, header in enumerate(headers):
-            if '/' in header:
-                header = header.split('/')[-1]
-                headers[index] = header
+        pattern = re.compile(pattern_text, re.M | re.S)
+        text = pattern.sub('', self._text)
+
+        pattern = re.compile(include)
+        headers = pattern.findall(text)
         return headers
 
     def get_undeclar_func_defs(self):
         """."""
         func_defs = self.list_function_definitions()
         func_declars = self.list_function_declarations()
-        func_declars.append('void setup()')
-        func_declars.append('void loop()')
 
         undeclar_func_defs = []
         for func_def in func_defs:

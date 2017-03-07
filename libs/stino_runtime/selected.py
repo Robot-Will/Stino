@@ -187,6 +187,18 @@ def get_sel_core_src_path(arduino_info):
     return core_src_path
 
 
+def get_sel_variant_path(arduino_info):
+    """."""
+    variant_path = ''
+    platform_path = get_sel_platform_path(arduino_info)
+    if platform_path:
+        board_info = get_sel_board_info(arduino_info)
+        build_variant = board_info.get('build.variant', '')
+        variants_path = os.path.join(platform_path, 'variants')
+        variant_path = os.path.join(variants_path, build_variant)
+    return variant_path
+
+
 def get_variants(text):
     """."""
     pattern_text = r'\{\S+?}'
@@ -235,10 +247,7 @@ def get_commands_info(arduino_info, project):
     arduino_app_path = arduino_info['arduino_app_path']
     build_path = os.path.join(arduino_app_path, 'build')
     platform_system_path = os.path.join(platform_path, 'system')
-
-    build_variant = board_info.get('build.variant', '')
-    platform_variants_path = os.path.join(platform_path, 'variants')
-    platform_variant_path = os.path.join(platform_variants_path, build_variant)
+    platform_variant_path = get_sel_variant_path(arduino_info)
 
     prj_build_path = os.path.join(build_path, prj_name)
     serial_port = arduino_info['selected'].get('serial_port', '')

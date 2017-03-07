@@ -102,7 +102,7 @@ def combine_ino_files(ino_file_paths, target_file_path):
 
             with codecs.open(target_file_path, 'w', 'utf-8') as target_f:
                 cur_path = f_paths[0]
-                footer_start_line = len(header_text.split('\n')) + 1
+                footer_start_line = len(header_text.split('\n'))
                 text = '#line 1 "%s"\n' % cur_path
                 text += header_text
                 text += '\n#include <Arduino.h>\n'
