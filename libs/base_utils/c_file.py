@@ -9,15 +9,19 @@ from __future__ import division
 from __future__ import unicode_literals
 
 import os
+import re
 from . import file
 
 MAX_LINE_LENGTH = 80
 
 INO_EXTS = ['.ino', '.pde']
 H_EXTS = ['.h', '.hh', '.hpp']
-SRC_EXTS = ['.cpp', '.c', '.cc', '.cxx']
-INOC_EXTS = INO_EXTS + SRC_EXTS
-CPP_EXTS = INO_EXTS + SRC_EXTS + H_EXTS
+C_EXTS = ['.c', '.cc']
+CPP_EXTS = ['.cpp', '.cxx']
+S_EXTS = ['.S']
+CC_EXTS = CPP_EXTS + C_EXTS
+INOC_EXTS = INO_EXTS + CC_EXTS
+SRC_EXTS = INOC_EXTS + H_EXTS
 chars = '_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ'
 num_chars = '0123456789.'
 var_chars = chars + num_chars
@@ -28,7 +32,7 @@ def is_cpp_file(file_name):
     """."""
     state = False
     ext = os.path.splitext(file_name)[1]
-    if ext in CPP_EXTS:
+    if ext in SRC_EXTS:
         state = True
     return state
 
@@ -803,7 +807,6 @@ def collapse_braces(lines):
         line = line.strip()
         if not line:
             continue
-
         if line_on:
             if line.startswith('{'):
                 indent_flags.append('{')
@@ -823,7 +826,8 @@ def collapse_braces(lines):
             elif line.startswith('#endif'):
                 if len(macro_flags) == line_off_level:
                     line_on = True
-                macro_flags.pop()
+                if macro_flags:
+                    macro_flags.pop()
             if line_on and not (line.startswith('#if') or
                                 line.startswith('#endif') or
                                 line.startswith('#define')):
@@ -836,9 +840,10 @@ def collapse_braces(lines):
                 index = len(indent_flags) - index
                 indent_flags = indent_flags[:index]
             elif line.startswith('#endif'):
-                index = indent_flags[::-1].index('#')
-                index = len(indent_flags) - 1 - index
-                indent_flags.pop(index)
+                if '#' in indent_flags:
+                    index = indent_flags[::-1].index('#')
+                    index = len(indent_flags) - 1 - index
+                    indent_flags.pop(index)
 
             if indent_flags.count('{') == 1 and line.startswith('{'):
                 new_lines.append(line)
@@ -913,6 +918,39 @@ def is_main_cpp_file(file_path):
     return state
 
 
+def get_index_of_first_statement(src_text):
+    """
+    Return the index of the first character.
+
+    that's not whitespace a comment or a pre-processor directive.
+
+    Args:
+        src_text: The source code.
+
+    Returns:
+        index: The index of first statement.
+    """
+    preprocessor_directive = r'\s*#.*?$'
+    multi_line_comment = r'/\*[^*]*(?:\*(?!/)[^*]*)*\*/'
+    single_line_comment = r'//.*?$'
+    whitespace = r'\s+'
+
+    pattern_text = preprocessor_directive
+    pattern_text += '|' + multi_line_comment
+    pattern_text += '|' + single_line_comment
+    pattern_text += '|' + whitespace
+
+    pattern = re.compile(pattern_text, re.M | re.S)
+    match_iter = pattern.finditer(src_text)
+
+    index = 0
+    for match in match_iter:
+        if match.start() != index:
+            break
+        index = match.end()
+    return index
+
+
 class CFile(file.File):
     """A c/c++ source file."""
 
@@ -920,9 +958,10 @@ class CFile(file.File):
         """Initiate the source file."""
         super(CFile, self).__init__(file_path)
         self._last_mtime = 0
-        self._lines = self.read().split('\n')
-        self._beautified_lines = self._lines
-        self._simplified_lines = self._lines
+        self._text = self.read()
+        self._lines = self._text.split('\n')
+        self._beautified_lines = []
+        self._simplified_lines = []
 
     def _is_modified(self):
         """Doc."""
@@ -930,14 +969,13 @@ class CFile(file.File):
 
     def is_cpp_file(self):
         """Doc."""
-        return self.get_ext() in CPP_EXTS
+        return self.get_ext() in SRC_EXTS
 
     def _update(self):
         """Doc."""
         self._last_mtime = self.get_mtime()
-        self._lines = self.read().split('\n')
-        self._beautified_lines = beautify_lines(self._lines)
-        self._simplified_lines = simplify_lines(self._lines)
+        self._text = self.read()
+        self._lines = self._text.split('\n')
 
     def _check_modified(self):
         """Doc."""
@@ -957,6 +995,8 @@ class CFile(file.File):
     def get_beautified_text(self):
         """Doc."""
         self._check_modified()
+        if not self._beautified_lines:
+            self._beautified_lines = beautify_lines(self._lines)
         beautified_text = '\n'.join(self._beautified_lines)
         beautified_text = beautified_text.replace('\n\n\n', '\n\n')
         beautified_text = beautified_text.replace('\n;', ';\n')
@@ -965,17 +1005,23 @@ class CFile(file.File):
     def get_simplified_lines(self):
         """Doc."""
         self._check_modified()
+        if not self._simplified_lines:
+            self._simplified_lines = simplify_lines(self._lines)
         return self._simplified_lines
 
     def get_simplified_text(self):
         """Doc."""
         self._check_modified()
+        if not self._simplified_lines:
+            self._simplified_lines = simplify_lines(self._lines)
         return '\n'.join(self._simplified_lines)
 
     def list_function_declarations(self):
         """Doc."""
         self._check_modified()
         function_declarations = []
+        if not self._simplified_lines:
+            self._simplified_lines = simplify_lines(self._lines)
         for line in self._simplified_lines:
             if line.endswith(');'):
                 function_declarations.append(line[:-1])
@@ -985,6 +1031,8 @@ class CFile(file.File):
         """Doc."""
         self._check_modified()
         function_definitions = []
+        if not self._simplified_lines:
+            self._simplified_lines = simplify_lines(self._lines)
         for line in self._simplified_lines:
             if line.endswith('{}'):
                 function_definitions.append(line[:-2])
@@ -993,11 +1041,25 @@ class CFile(file.File):
     def list_inclde_headers(self):
         """Doc."""
         self._check_modified()
-        headers = []
-        for line in self._simplified_lines:
-            if line.startswith('#include'):
-                words = line.split()
-                if len(words) > 1:
-                    header = words[1][1:-1]
-                    headers.append(header)
+        include = r'#include\s*[<"](\S+)[">]'
+        pattern = re.compile(include)
+        headers = pattern.findall(self._text)
+
+        for index, header in enumerate(headers):
+            if '/' in header:
+                header = header.split('/')[-1]
+                headers[index] = header
         return headers
+
+    def get_undeclar_func_defs(self):
+        """."""
+        func_defs = self.list_function_definitions()
+        func_declars = self.list_function_declarations()
+        func_declars.append('void setup()')
+        func_declars.append('void loop()')
+
+        undeclar_func_defs = []
+        for func_def in func_defs:
+            if func_def not in func_declars:
+                undeclar_func_defs.append(func_def)
+        return undeclar_func_defs

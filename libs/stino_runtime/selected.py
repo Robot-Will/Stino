@@ -166,6 +166,19 @@ def get_sel_platform_path(arduino_info):
     return platform_path
 
 
+def get_sel_core_src_path(arduino_info):
+    """."""
+    core_src_path = ''
+    platform_path = get_sel_platform_path(arduino_info)
+    if platform_path:
+        board_info = get_sel_board_info(arduino_info)
+        build_core = board_info.get('build.core', '')
+        if build_core:
+            cores_path = os.path.join(platform_path, 'cores')
+            core_src_path = os.path.join(cores_path, build_core)
+    return core_src_path
+
+
 def get_variants(text):
     """."""
     pattern_text = r'\{\S+?}'
@@ -226,6 +239,8 @@ def get_commands_info(arduino_info, project):
 
     sel_pkg = arduino_info['selected'].get('package')
     sel_ptfm = arduino_info['selected'].get('platform')
+    include_paths = arduino_info.get('include_paths', [])
+    includes = ['"-I%s"' % p.replace('\\', '/') for p in include_paths]
 
     all_info = {}
     all_info['build.project_name'] = prj_name
@@ -235,9 +250,13 @@ def get_commands_info(arduino_info, project):
     all_info['build.variant.path'] = platform_variant_path.replace('\\', '/')
     all_info['build.arch'] = get_platform_arch_by_name(arduino_info,
                                                        sel_pkg, sel_ptfm)
-    all_info['serial.port'] = serial_port
-    all_info['serial.port.file'] = serial_port
+    all_info['serial.port'] = str(serial_port)
+    all_info['serial.port.file'] = str(serial_port)
     all_info['runtime.ide.version'] = '20000'
+    all_info['archive_file'] = 'core.a'
+    all_info['includes'] = ' '.join(includes)
+
+    include_paths = arduino_info.get('include_paths', [])
 
     all_info.update(all_cmds_info)
     all_info.update(programmer_info)
