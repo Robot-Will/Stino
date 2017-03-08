@@ -154,6 +154,22 @@ class StinoImportLibraryCommand(sublime_plugin.TextCommand):
         return state
 
 
+class StinoRefreshInstallLibraryCommand(sublime_plugin.WindowCommand):
+    """Import Library."""
+
+    def run(self):
+        """."""
+        stino.st_menu.update_install_library_menu(stino.arduino_info)
+
+
+class StinoInstallLibCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self, category, name, version):
+        """."""
+        stino.install_library(category, name, version)
+
+
 #############################################
 # Package and Platform Commands
 #############################################

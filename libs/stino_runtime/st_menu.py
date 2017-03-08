@@ -220,6 +220,81 @@ def update_library_menu(arduino_info):
     write_menu('libraries', text)
 
 
+def update_install_library_menu(arduino_info):
+    """."""
+    libraries_info = arduino_info.get('libraries', {})
+    lib_cats = libraries_info.get('categorys', [])
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Install Library",\n'
+    text += '\t' * 4 + '"id": "stino_install_library",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_install_library",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_install_library"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for lib_cat in lib_cats:
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % lib_cat
+        text += '\t' * 6 + '"id": "stino_lib_cat_%s",\n' % lib_cat
+        text += '\t' * 6 + '"children":\n'
+        text += '\t' * 6 + '[\n'
+        text += '\t' * 7 + '{"caption": "-"}'
+
+        cat_info = libraries_info.get(lib_cat, {})
+        names = cat_info.get('names', [])
+        for name in names:
+            text += ',\n'
+            text += '\t' * 7 + '{\n'
+            text += '\t' * 8 + '"caption": "%s",\n' % name
+            text += '\t' * 8 + '"id": "stino_lib_cat_name_%s",\n' % name
+            text += '\t' * 8 + '"children":\n'
+            text += '\t' * 8 + '['
+            text += '\t' * 9 + '{"caption": "-"}'
+
+            name_info = cat_info.get(name, {})
+            versions = name_info.get('versions', [])
+            for version in versions:
+                text += ',\n'
+                text += '\t' * 9 + '{'
+                text += '\t' * 10 + '"caption": "%s",\n' % version
+                text += '\t' * 10 + '"id": '
+                text += '"stino_lib_cat_name_ver_%s",\n' % version
+                text += '\t' * 10 + '"command": "stino_install_lib",\n'
+
+                arg_text = '"args": {"category": "%s", ' % lib_cat
+                arg_text += '"name": "%s", ' % name
+                arg_text += '"version": "%s"}\n' % version
+                text += '\t' * 10 + arg_text
+                text += '\t' * 9 + '}'
+
+            text += '\n' + '\t' * 8 + ']'
+            text += '\t' * 7 + '}'
+
+        text += '\n' + '\t' * 6 + ']\n'
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('install_library', text)
+
+
 def update_install_platform_menu(arduino_info):
     """."""
     packages_info = arduino_info.get('packages', {})

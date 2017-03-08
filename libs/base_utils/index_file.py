@@ -10,6 +10,8 @@ from __future__ import unicode_literals
 
 from . import file
 
+LIB_KEYS = ['category', 'name', 'version']
+
 
 def get_item_info(parent_item, items_id):
     """
@@ -71,12 +73,51 @@ def get_item_info(parent_item, items_id):
     return info
 
 
-class IndexFile(file.JSONFile):
+def classify_infos_by_key(infos, key, do_classify=True):
+    """."""
+    classified_info = {}
+    values_name = key + 's'
+    values = []
+    for info in infos:
+        if key in info:
+            value = info[key]
+            if do_classify:
+                if value not in values:
+                    values.append(value)
+                    classified_info[value] = [info]
+                else:
+                    classified_info[value].append(info)
+            else:
+                if value not in values:
+                    values.append(value)
+                classified_info[value] = info
+    values.sort(key=str.lower)
+    classified_info[values_name] = values
+    return classified_info
+
+
+def classfy_infos_of_levels(infos, keys, level=0):
+    """."""
+    if level == len(keys) - 1:
+        all_info = classify_infos_by_key(infos, keys[level], False)
+    else:
+        all_info = {}
+        c_info = classify_infos_by_key(infos, keys[level])
+        sub_values = c_info.get(keys[level] + 's')
+        for sub_value in sub_values:
+            sub_infos = c_info[sub_value]
+            sub_all_info = classfy_infos_of_levels(sub_infos, keys, level + 1)
+            all_info[sub_value] = sub_all_info
+        all_info[keys[level] + 's'] = sub_values
+    return all_info
+
+
+class PackageIndexFile(file.JSONFile):
     """Class Docs."""
 
     def __init__(self, path):
         """Method Docs."""
-        super(IndexFile, self).__init__(path)
+        super(PackageIndexFile, self).__init__(path)
         self._is_readonly = True
         self._info = {'packages': {}}
         self._info['packages']['names'] = []
@@ -97,14 +138,14 @@ class IndexFile(file.JSONFile):
         return self._info
 
 
-class IndexFiles():
+class PackageIndexFiles():
     """Class Docs."""
 
     def __init__(self, paths):
         """Method Docs."""
         all_packages_info = {'names': []}
         for path in paths:
-            index_file = IndexFile(path)
+            index_file = PackageIndexFile(path)
             index_file_info = index_file.get_info()
 
             packages_info = index_file_info.get('packages')
@@ -113,6 +154,39 @@ class IndexFiles():
             all_packages_info.update(packages_info)
         all_packages_info['names'].sort(key=str.lower)
         self._info = {'packages': all_packages_info}
+
+    def get_info(self):
+        """."""
+        return self._info
+
+
+class LibIndexFile(file.JSONFile):
+    """Class Docs."""
+
+    def __init__(self, path):
+        """Method Docs."""
+        super(LibIndexFile, self).__init__(path)
+        self._is_readonly = True
+        lib_infos = self._data.get('libraries', [])
+        info = classfy_infos_of_levels(lib_infos, LIB_KEYS)
+        self._info = {'libraries': info}
+
+    def get_info(self):
+        """."""
+        return self._info
+
+
+class LibIndexFiles():
+    """Class Docs."""
+
+    def __init__(self, paths):
+        """Method Docs."""
+        infos = []
+        for path in paths:
+            lib_index_file = file.JSONFile(path)
+            infos += lib_index_file.get_data().get('libraries', [])
+        info = classfy_infos_of_levels(infos, LIB_KEYS)
+        self._info = {'libraries': info}
 
     def get_info(self):
         """."""

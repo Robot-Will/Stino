@@ -123,6 +123,19 @@
                     {"caption": "-"}
                 ]
             },
+            {
+                "caption": "Install Library",
+                "id": "stino_install_library",
+                "children":
+                [
+                    {
+                        "caption": "Refresh",
+                        "id": "stino_refresh_install_library",
+                        "command": "stino_refresh_install_library"
+                    },
+                    {"caption": "-"}
+                ]
+            },
             {"caption": "-"},
             {
                 "id": "stino_platform_info",

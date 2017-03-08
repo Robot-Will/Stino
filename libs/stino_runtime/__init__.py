@@ -110,8 +110,16 @@ def get_sketchbook_path(app_dir_settings):
 def get_index_files_info(arduino_dir_path):
     """."""
     file_paths = glob.glob(arduino_dir_path + '/package*_index.json')
-    index_files = index_file.IndexFiles(file_paths)
+    index_files = index_file.PackageIndexFiles(file_paths)
     info = index_files.get_info()
+    return info
+
+
+def get_lib_index_files_info(arduino_dir_path):
+    """."""
+    file_paths = glob.glob(arduino_dir_path + '/library*_index.json')
+    lib_index_files = index_file.LibIndexFiles(file_paths)
+    info = lib_index_files.get_info()
     return info
 
 
@@ -335,6 +343,48 @@ def on_language_select(language_name):
     arduino_info['selected'].set('language', language)
 
 
+def download_lib(url):
+    """."""
+    if url:
+        arduino_app_path = arduino_info['arduino_app_path']
+        sketchbook_path = arduino_info['sketchbook_path']
+        libs_path = os.path.join(sketchbook_path, 'libraries')
+        if not os.path.isdir(libs_path):
+            os.makedirs(libs_path)
+        staging_path = os.path.join(arduino_app_path, 'staging')
+        down_path = os.path.join(staging_path, 'libraries')
+        msg = '[%s] Waiting for download...' % url
+        message_queue.put(msg)
+        is_done = downloader.download(url, down_path, message_queue.put)
+        if is_done:
+            basename = os.path.basename(url)
+            if '-' in basename:
+                basename = basename.split('-')[0]
+            lib_path = os.path.join(libs_path, basename)
+            shutil.rmtree(lib_path)
+
+            msg = 'Installation started.'
+            message_queue.put(msg)
+
+            zip_name = os.path.basename(url)
+            zip_path = os.path.join(down_path, zip_name)
+            if zip_name.endswith('.zip'):
+                with zipfile.ZipFile(zip_path, 'r') as f:
+                    try:
+                        f.extractall(libs_path)
+                    except (IOError, FileNotFoundError) as e:
+                        message_queue.put('%s' % e)
+            elif zip_name.endswith('.gz') or zip_name.endswith('.bz2'):
+                with tarfile.open(zip_path, 'r') as f:
+                    try:
+                        f.extractall(libs_path)
+                    except (IOError, FileNotFoundError) as e:
+                        message_queue.put('%s' % e)
+            msg = 'Installation completed.'
+            message_queue.put(msg)
+            st_menu.update_library_menu(arduino_info)
+
+
 def download_platform_tool(down_info):
     """."""
     global arduino_info
@@ -541,6 +591,26 @@ def import_lib(view, edit, lib_path):
         incs += ['#incldue <%s>' % os.path.basename(p) for p in paths]
     text = '\n'.join(incs) + '\n\n'
     view.insert(edit, 0, text)
+
+
+def install_library(category, name, version):
+    """."""
+    libs_info = arduino_info.get('libraries', {})
+    cat_info = libs_info.get(category, {})
+    name_info = cat_info.get(name, {})
+    ver_info = name_info.get(version, {})
+    url = ver_info.get('url', '')
+    basename = os.path.basename(url)
+    if '-' in basename:
+        basename = basename.split('-')[0]
+    sketchbook_path = arduino_info['sketchbook_path']
+    libs_path = os.path.join(sketchbook_path, 'libraries')
+    lib_path = os.path.join(libs_path, basename)
+    if os.path.isdir(lib_path):
+        msg = '%s already exists. Continue?' % basename
+        result = sublime.yes_no_cancel_dialog(msg)
+        if result == sublime.DIALOG_YES:
+            lib_downloader.put(url)
 
 
 def install_platform(package, platform, version):
@@ -1169,6 +1239,9 @@ def build_sketch(build_info={}):
 def upload_sketch(upload_cmd=''):
     """."""
     if upload_cmd:
+        serial_listener.stop()
+        time.sleep(0.25)
+
         upload_port = arduino_info['selected'].get('serial_port', '')
         serial_file = serial_port.get_serial_file(upload_port)
 
@@ -1186,6 +1259,9 @@ def upload_sketch(upload_cmd=''):
         is_ok = run_upload_command(upload_cmd)
         if is_ok and do_touch:
             serial_port.restore_serial_port(upload_port, 9600)
+
+        time.sleep(0.25)
+        serial_listener.start()
 
 
 def burn_bootloader():
@@ -1280,7 +1356,10 @@ def check_pkgs():
     if is_changed:
         index_files_info = get_index_files_info(arduino_dir_path)
         arduino_info.update(index_files_info)
+        lib_index_files_info = get_lib_index_files_info(arduino_dir_path)
+        arduino_info.update(lib_index_files_info)
         st_menu.update_install_platform_menu(arduino_info)
+        st_menu.update_install_library_menu(arduino_info)
 
 
 def init():
@@ -1312,10 +1391,16 @@ def init():
     arduino_info['etags'] = etag_settings
     if not arduino_info['package_index'].get('arduino'):
         arduino_info['package_index'].set('arduino', const.PACKAGE_INDEX_URL)
+    if not arduino_info['package_index'].get('arduino_lib'):
+        arduino_info['package_index'].set('arduino_lib',
+                                          const.LIBRARY_INDEX_URL)
 
     # 1. init packages info
     index_files_info = get_index_files_info(arduino_dir_path)
     arduino_info.update(index_files_info)
+
+    lib_index_files_info = get_lib_index_files_info(arduino_dir_path)
+    arduino_info.update(lib_index_files_info)
 
     installed_packages_info = get_installed_packages_info(arduino_info)
     arduino_info.update(installed_packages_info)
@@ -1344,6 +1429,7 @@ def init():
     st_menu.update_sketchbook_menu(arduino_info)
     st_menu.update_example_menu(arduino_info)
     st_menu.update_library_menu(arduino_info)
+    st_menu.update_install_library_menu(arduino_info)
 
     st_menu.update_install_platform_menu(arduino_info)
     st_menu.update_platform_menu(arduino_info)
@@ -1369,6 +1455,7 @@ pkgs_checker = task_listener.TaskListener(task=check_pkgs,
 pkgs_checker.start()
 
 platform_tool_downloader = downloader.DownloadQueue(download_platform_tool)
+lib_downloader = downloader.DownloadQueue(download_lib)
 ide_importer = task_queue.TaskQueue(import_avr_platform)
 sketch_builder = task_queue.TaskQueue(build_sketch)
 sketch_uploader = task_queue.TaskQueue(upload_sketch)
