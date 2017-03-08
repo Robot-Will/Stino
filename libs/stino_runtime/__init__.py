@@ -343,6 +343,28 @@ def on_language_select(language_name):
     arduino_info['selected'].set('language', language)
 
 
+def unzip(zip_path, target_dir_path):
+    """."""
+    is_ok = True
+    if zip_path.endswith('.zip'):
+        with zipfile.ZipFile(zip_path, 'r') as f:
+            names = f.namelist()
+            try:
+                f.extractall(target_dir_path)
+            except (IOError, FileNotFoundError) as e:
+                message_queue.put('%s' % e)
+                is_ok = False
+    elif zip_path.endswith('.gz') or zip_path.endswith('.bz2'):
+        with tarfile.open(zip_path, 'r') as f:
+            names = f.getnames()
+            try:
+                f.extractall(target_dir_path)
+            except (IOError, FileNotFoundError) as e:
+                message_queue.put('%s' % e)
+                is_ok = False
+    return is_ok, names
+
+
 def download_lib(url):
     """."""
     if url:
@@ -358,29 +380,26 @@ def download_lib(url):
         is_done = downloader.download(url, down_path, message_queue.put)
         if is_done:
             basename = os.path.basename(url)
+            basename = os.path.splitext(basename)[0]
+            unzip_lib_path = os.path.join(libs_path, basename)
             if '-' in basename:
                 basename = basename.split('-')[0]
             lib_path = os.path.join(libs_path, basename)
-            shutil.rmtree(lib_path)
+            if os.path.isdir(lib_path):
+                shutil.rmtree(lib_path)
 
             msg = 'Installation started.'
             message_queue.put(msg)
 
             zip_name = os.path.basename(url)
             zip_path = os.path.join(down_path, zip_name)
-            if zip_name.endswith('.zip'):
-                with zipfile.ZipFile(zip_path, 'r') as f:
-                    try:
-                        f.extractall(libs_path)
-                    except (IOError, FileNotFoundError) as e:
-                        message_queue.put('%s' % e)
-            elif zip_name.endswith('.gz') or zip_name.endswith('.bz2'):
-                with tarfile.open(zip_path, 'r') as f:
-                    try:
-                        f.extractall(libs_path)
-                    except (IOError, FileNotFoundError) as e:
-                        message_queue.put('%s' % e)
-            msg = 'Installation completed.'
+            is_ok, _ = unzip(zip_path, libs_path)
+            if is_ok:
+                if lib_path != unzip_lib_path:
+                    os.rename(unzip_lib_path, lib_path)
+                msg = 'Installation completed.'
+            else:
+                msg = 'Unzip %s failed.' % lib_path
             message_queue.put(msg)
             st_menu.update_library_menu(arduino_info)
 
@@ -428,28 +447,18 @@ def download_platform_tool(down_info):
 
                 zip_name = os.path.basename(url)
                 zip_path = os.path.join(down_path, zip_name)
-                if zip_name.endswith('.zip'):
-                    with zipfile.ZipFile(zip_path, 'r') as f:
-                        names = f.namelist()
-                        try:
-                            f.extractall(name_path)
-                        except (IOError, FileNotFoundError) as e:
-                            message_queue.put('%s' % e)
-                elif zip_name.endswith('.gz') or zip_name.endswith('.bz2'):
-                    with tarfile.open(zip_path, 'r') as f:
-                        names = f.getnames()
-                        try:
-                            f.extractall(name_path)
-                        except (IOError, FileNotFoundError) as e:
-                            message_queue.put('%s' % e)
+                is_ok, names = unzip(zip_path, name_path)
 
-                if names:
-                    dir_name = names[0]
-                    new_path = os.path.join(name_path, dir_name)
-                    os.rename(new_path, version_path)
+                if is_ok:
+                    if names:
+                        dir_name = names[0]
+                        new_path = os.path.join(name_path, dir_name)
+                        os.rename(new_path, version_path)
 
-                msg = '[%s] %s %s: ' % (package, name, version)
-                msg += 'Installation completed.'
+                    msg = '[%s] %s %s: ' % (package, name, version)
+                    msg += 'Installation completed.'
+                else:
+                    msg = 'Unzip %s failed.' % zip_path
                 message_queue.put(msg)
 
                 if down_type == 'platform':
@@ -601,6 +610,7 @@ def install_library(category, name, version):
     ver_info = name_info.get(version, {})
     url = ver_info.get('url', '')
     basename = os.path.basename(url)
+    basename = os.path.splitext(basename)[0]
     if '-' in basename:
         basename = basename.split('-')[0]
     sketchbook_path = arduino_info['sketchbook_path']
@@ -611,6 +621,8 @@ def install_library(category, name, version):
         result = sublime.yes_no_cancel_dialog(msg)
         if result == sublime.DIALOG_YES:
             lib_downloader.put(url)
+    else:
+        lib_downloader.put(url)
 
 
 def install_platform(package, platform, version):
