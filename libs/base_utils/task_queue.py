@@ -24,7 +24,7 @@ class TaskQueue(object):
         self._delay = delay
         self._callable = callable(self._consumer)
 
-    def put(self, obj):
+    def put(self, obj=None):
         """."""
         if self._callable:
             self._queue.append(obj)
@@ -41,7 +41,10 @@ class TaskQueue(object):
         """."""
         while self._queue:
             obj = self._queue.pop(0)
-            self._task(obj)
+            if obj is None:
+                self._task()
+            else:
+                self._task(obj)
             time.sleep(self._delay)
         self._is_alive = False
 

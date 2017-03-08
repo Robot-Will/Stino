@@ -34,7 +34,7 @@ class StPanel:
             color_scheme = 'Packages/Color Scheme - Default/Eiffel.tmTheme'
         self._panel.settings().set('color_scheme', color_scheme)
 
-    def write(self, text):
+    def write(self, text=''):
         """."""
         if not text.endswith('\n'):
             text += '\n'

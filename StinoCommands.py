@@ -14,10 +14,16 @@ import sublime
 import sublime_plugin
 
 
-def add_relative_dir_to_sys_path(relative_dir):
+def get_relative_path(relative_dir):
     """."""
     cur_path = os.path.dirname(os.path.realpath(__file__))
     dir_path = os.path.normpath(os.path.join(cur_path, relative_dir))
+    return dir_path
+
+
+def add_relative_dir_to_sys_path(relative_dir):
+    """."""
+    dir_path = get_relative_path(relative_dir)
     sys.path.append(dir_path)
 
 
@@ -31,9 +37,8 @@ def plugin_loaded():
     global stino
     import stino_runtime as stino
 
-
-if st_version == 2:
-    plugin_loaded()
+# if st_version == 2:
+#     plugin_loaded()
 
 
 #############################################
@@ -322,7 +327,9 @@ class StinoBuildCommand(sublime_plugin.TextCommand):
         file_path = self.view.file_name()
         if file_path:
             if stino.c_file.is_cpp_file(file_path):
-                state = True
+                info = stino.selected.get_sel_board_info(stino.arduino_info)
+                if info:
+                    state = True
         return state
 
 
@@ -497,7 +504,9 @@ class StinoUploadCommand(sublime_plugin.TextCommand):
         file_path = self.view.file_name()
         sel_serial = stino.arduino_info['selected'].get('serial_port')
         if sel_serial and file_path and stino.c_file.is_cpp_file(file_path):
-            state = True
+            info = stino.selected.get_sel_board_info(stino.arduino_info)
+            if info:
+                state = True
         return state
 
 
@@ -521,6 +530,40 @@ class StinoSelectSerialCommand(sublime_plugin.WindowCommand):
         """."""
         key = 'serial_port'
         state = stino.arduino_info['selected'].get(key) == serial_port
+        return state
+
+
+class StinoGetPortInfoCommand(sublime_plugin.TextCommand):
+    """."""
+
+    def run(self, edit):
+        """."""
+        serials_info = stino.serial_port.get_serials_info()
+        sel_serial = stino.arduino_info['selected'].get('serial_port')
+        if sel_serial:
+            info = serials_info.get(sel_serial, {})
+            if info:
+                port = info.get('port')
+                desc = info.get('description')
+                hwid = info.get('hwid')
+                stino.message_queue.put(port)
+                stino.message_queue.put(desc)
+                stino.message_queue.put(hwid)
+
+                board_info = \
+                    stino.selected.get_sel_board_info(stino.arduino_info)
+                board_name = board_info.get('name')
+                vid_0 = board_info.get('vid.0', 'None')
+                pid_0 = board_info.get('pid.0', 'None')
+                stino.message_queue.put(board_name)
+                stino.message_queue.put('VID:PID=%s:%s' % (vid_0, pid_0))
+
+    def is_enabled(self):
+        """."""
+        state = False
+        sel_serial = stino.arduino_info['selected'].get('serial_port')
+        if sel_serial:
+            state = True
         return state
 
 
@@ -558,7 +601,9 @@ class StinoUploadUsingProgrammerCommand(sublime_plugin.TextCommand):
         file_path = self.view.file_name()
         sel_prog = stino.arduino_info['selected'].get('programmer')
         if sel_prog and file_path and stino.c_file.is_cpp_file(file_path):
-            state = True
+            info = stino.selected.get_sel_board_info(stino.arduino_info)
+            if info:
+                state = True
         return state
 
 
@@ -593,14 +638,19 @@ class StinoBurnBootloaderCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        stino.burn_bootloader()
+        msg = 'Beware: Please check your board type! Continue？'
+        result = sublime.yes_no_cancel_dialog(msg)
+        if result == sublime.DIALOG_YES:
+            stino.bootloader.put()
 
     def is_enabled(self):
         """."""
         state = False
         sel_serial = stino.arduino_info['selected'].get('serial_port')
         if sel_serial:
-            state = True
+            info = stino.selected.get_sel_board_info(stino.arduino_info)
+            if info:
+                state = True
         return state
 
 

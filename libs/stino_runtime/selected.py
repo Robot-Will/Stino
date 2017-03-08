@@ -181,6 +181,8 @@ def get_sel_core_src_path(arduino_info):
     if platform_path:
         board_info = get_sel_board_info(arduino_info)
         build_core = board_info.get('build.core', '')
+        if ':' in build_core:
+            build_core = build_core.split(':')[-1].strip()
         if build_core:
             cores_path = os.path.join(platform_path, 'cores')
             core_src_path = os.path.join(cores_path, build_core)
@@ -229,7 +231,7 @@ def replace_variants(text, info, prefix=''):
     return text
 
 
-def get_commands_info(arduino_info, project):
+def get_commands_info(arduino_info, project=None):
     """."""
     cmds_info = {}
     all_cmds_info = {}
@@ -243,7 +245,9 @@ def get_commands_info(arduino_info, project):
     board_info = get_sel_board_info(arduino_info)
     programmer_info = get_sel_programmer_info(arduino_info)
 
-    prj_name = project.get_name()
+    prj_name = ''
+    if project:
+        prj_name = project.get_name()
     arduino_app_path = arduino_info['arduino_app_path']
     build_path = os.path.join(arduino_app_path, 'build')
     platform_system_path = os.path.join(platform_path, 'system')
@@ -267,8 +271,13 @@ def get_commands_info(arduino_info, project):
     all_info['build.variant.path'] = platform_variant_path.replace('\\', '/')
     all_info['build.arch'] = get_platform_arch_by_name(arduino_info,
                                                        sel_pkg, sel_ptfm)
-    all_info['serial.port'] = str(serial_port)
-    all_info['serial.port.file'] = str(serial_port)
+    serial_port = str(serial_port)
+    all_info['serial.port'] = serial_port
+    if serial_port.startswith('/dev/'):
+        upload_port = serial_port[5:]
+    else:
+        upload_port = serial_port
+    all_info['serial.port.file'] = upload_port
     all_info['runtime.ide.version'] = '20000'
     all_info['archive_file'] = 'core.a'
     all_info['includes'] = ' '.join(includes)
@@ -323,12 +332,16 @@ def get_commands_info(arduino_info, project):
         elif key.startswith('tools.'):
             for tool_name in tool_names:
                 tool_id = 'tools.%s.' % tool_name
-                tool_remote_id = 'tools.%s_remote.' % tool_name
-                if (key.startswith(tool_id) or key.startswith(tool_remote_id))\
-                        and key.endswith('pattern'):
+                tool_rem_id = 'tools.%s_remote.' % tool_name
+                if key.startswith(tool_id) and key.endswith('pattern'):
                     cmd = all_cmds_info[key]
                     cmd = replace_variants(cmd, all_info, tool_id)
-
                     key = key.replace(tool_id, '')
+                    cmds_info[key] = cmd
+                elif key.startswith(tool_rem_id) and key.endswith('pattern'):
+                    cmd = all_cmds_info[key]
+                    cmd = replace_variants(cmd, all_info, tool_id)
+                    key = key.replace(tool_rem_id, '')
+                    key = 'remote.' + key
                     cmds_info[key] = cmd
     return cmds_info

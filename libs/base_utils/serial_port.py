@@ -13,21 +13,35 @@ import threading
 import platform
 import glob
 import serial
+from serial.tools.list_ports import comports
 from . import decos
 
 
 def list_serial_ports():
     """."""
-    try:
-        from serial.tools.list_ports import comports
-    except ImportError:
-        pass
     serial_ports = [port for port, d, h in comports() if port]
 
     if not serial_ports and platform.system() == "Darwin":
         for port in glob("/dev/tty.*"):
             serial_ports.append(port)
     return serial_ports
+
+
+def get_serials_info():
+    """."""
+    serials_info = {'ports': []}
+    for port, desc, hwid in comports():
+        if port:
+            serials_info['ports'].append(port)
+            info = {'port': port, 'description': desc, 'hwid': hwid}
+            serials_info[port] = info
+
+    if not serials_info['ports'] and platform.system() == "Darwin":
+        for port in glob("/dev/tty.*"):
+            serials_info['ports'].append(port)
+            info = {"port": port, "description": "", "hwid": ""}
+            serials_info[port] = info
+    return serials_info
 
 
 @decos.singleton

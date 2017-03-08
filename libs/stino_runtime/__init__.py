@@ -157,14 +157,41 @@ def get_boards_info(arduino_info):
     return boards_info
 
 
-def get_programmers_info(arduino_info):
+def get_programmers_info(arduino_info, src='platform'):
     """."""
     programmers_info = {'programmers': {}}
-    platform_path = selected.get_sel_platform_path(arduino_info)
+    if src == 'platform':
+        platform_path = selected.get_sel_platform_path(arduino_info)
+    else:
+        platform_path = os.path.dirname(os.path.realpath(__file__))
     if platform_path:
         progs_file_path = os.path.join(platform_path, 'programmers.txt')
         progs_file = plain_params_file.ProgrammersFile(progs_file_path)
         programmers_info = progs_file.get_programmers_info()
+    return programmers_info
+
+
+def combine_programmers_info(infos):
+    """."""
+    all_info = {'names': []}
+    for info in infos:
+        names = info.get('names', [])
+        for name in names:
+            if name not in all_info['names']:
+                all_info['names'].append(name)
+            name_info = info.get(name, {})
+            if name_info:
+                all_info[name] = name_info
+    programmers_info = {'programmers': all_info}
+    return programmers_info
+
+
+def get_all_programmers_info(arduino_info):
+    """."""
+    basic_programmers_info = arduino_info.get('basic_programmers', {})
+    programmers_info = get_programmers_info(arduino_info).get('progrmmers', {})
+    programmers_info = combine_programmers_info([basic_programmers_info,
+                                                 programmers_info])
     return programmers_info
 
 
@@ -263,7 +290,7 @@ def on_version_select(version):
     boards_info = get_boards_info(arduino_info)
     arduino_info.update(boards_info)
     check_selected(arduino_info, 'board')
-    programmers_info = get_programmers_info(arduino_info)
+    programmers_info = get_all_programmers_info(arduino_info)
     arduino_info.update(programmers_info)
     check_selected(arduino_info, 'programmer')
     sel_board = arduino_info['selected'].get('board')
@@ -537,7 +564,7 @@ def install_platform(package, platform, version):
         platform_tool_downloader.put(down_info)
 
 
-def import_avr_platform(ide_path):
+def import_avr_platform(ide_path=''):
     """."""
     global arduino_info
     is_ide = False
@@ -717,6 +744,8 @@ def get_dep_cpps(dir_paths, h_path_info, used_cpps, used_headers, used_dirs):
                 f = c_file.CFile(src_path)
                 headers = f.list_inclde_headers()
                 for header in headers:
+                    if '/' in header:
+                        header = header.split('/')[-1]
                     if header in h_path_info:
                         dir_path = h_path_info.get(header)
                         if dir_path not in sub_dir_paths:
@@ -916,6 +945,8 @@ def run_command(cmd):
     return_code = proc.returncode
     stdout = result[0].decode(sys_info.get_sys_encoding())
     stderr = result[1].decode(sys_info.get_sys_encoding())
+    stdout = stdout.replace('\r', '')
+    stderr = stderr.replace('\r', '')
     return return_code, stdout, stderr
 
 
@@ -947,10 +978,10 @@ def run_upload_command(cmd):
         verbose_upload = bool(arduino_info['settings'].get('verbose_upload'))
         if verbose_upload:
             message_queue.put(cmd)
-        if stdout:
-            message_queue.put(stdout.replace('\r', ''))
+            if stdout:
+                message_queue.put(stdout)
         if stderr:
-            message_queue.put(stderr.replace('\r', ''))
+            message_queue.put(stderr)
         if return_code != 0:
             is_ok = False
     return is_ok
@@ -969,6 +1000,20 @@ def run_build_commands(cmds, msgs):
             percent = n / total * 100
         is_ok = run_build_command(percent, cmd, msg)
         if not is_ok:
+            break
+    return is_ok
+
+
+def run_bootloader_cmds(cmds):
+    """."""
+    is_ok = True
+    for cmd in cmds:
+        return_code, stdout, stderr = run_command(cmd)
+        message_queue.put(stdout)
+        message_queue.put(stderr)
+
+        if return_code != 0:
+            is_ok = False
             break
     return is_ok
 
@@ -1048,8 +1093,11 @@ def run_size_command(cmd, regex_info):
                     message_queue.put(result)
 
 
-def build_sketch(build_info):
+def build_sketch(build_info={}):
     """."""
+    if not build_info:
+        return
+
     project_path = build_info.get('path')
     upload_mode = build_info.get('upload_mode', '')
 
@@ -1114,19 +1162,24 @@ def build_sketch(build_info):
                 upload_cmd = cmds_info.get('upload.pattern', '')
                 sketch_uploader.put(upload_cmd)
             elif upload_mode == 'programmer':
-                pass
+                upload_cmd = cmds_info.get('program.pattern', '')
+                sketch_uploader.put(upload_cmd)
 
 
-def upload_sketch(upload_cmd):
+def upload_sketch(upload_cmd=''):
     """."""
     message_queue.put(upload_cmd)
     if upload_cmd:
         run_upload_command(upload_cmd)
 
 
-def upload_by_programmer(file_path):
+def burn_bootloader():
     """."""
-    print(file_path)
+    cmds_info = selected.get_commands_info(arduino_info)
+    erase_cmd = cmds_info.get('erase.pattern', '')
+    bootloader_cmd = cmds_info.get('bootloader.pattern', '')
+    cmds = [erase_cmd, bootloader_cmd]
+    run_bootloader_cmds(cmds)
 
 
 def beautify_src(view, edit, file_path):
@@ -1261,7 +1314,10 @@ def init():
     check_selected(arduino_info, 'board')
     check_board_options_selected(arduino_info)
 
-    programmers_info = get_programmers_info(arduino_info)
+    basic_programmers_info = get_programmers_info(arduino_info, src='buildin')
+    arduino_info['basic_programmers'] = \
+        basic_programmers_info.get('programmers', {})
+    programmers_info = get_all_programmers_info(arduino_info)
     arduino_info.update(programmers_info)
     check_selected(arduino_info, 'programmer')
 
@@ -1301,3 +1357,4 @@ platform_tool_downloader = downloader.DownloadQueue(download_platform_tool)
 ide_importer = task_queue.TaskQueue(import_avr_platform)
 sketch_builder = task_queue.TaskQueue(build_sketch)
 sketch_uploader = task_queue.TaskQueue(upload_sketch)
+bootloader = task_queue.TaskQueue(burn_bootloader)

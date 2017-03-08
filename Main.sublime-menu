@@ -308,6 +308,11 @@
                     {"caption": "-"}
                 ]
             },
+            {
+                "caption": "Get Port Info",
+                "id": "stino_get_port_info",
+                "command": "stino_get_port_info"
+            },
             {"caption": "-"},
             {
                 "id": "stino_programmer_info",
@@ -348,6 +353,14 @@
                 "id": "stino_language",
                 "children":
                 [
+                    {
+                        "caption": "Install",
+                        "id": "stino_install_languages",
+                        "children":
+                        [
+                            {"caption": "-"}
+                        ]
+                    },
                     {
                         "caption": "Refresh",
                         "id": "stino_refresh_languages",
