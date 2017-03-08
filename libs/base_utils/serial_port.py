@@ -15,6 +15,7 @@ import glob
 import serial
 from serial.tools.list_ports import comports
 from . import decos
+from . import sys_info
 
 
 def list_serial_ports():
@@ -74,3 +75,166 @@ class SerialListener(object):
     def stop(self):
         """."""
         self.is_alive = False
+
+
+def flush_serial_buffer(serial_port):
+    """."""
+    ser = serial.Serial(serial_port)
+    ser.flushInput()
+    ser.setDTR(False)
+    ser.setRTS(False)
+    time.sleep(0.1)
+    ser.setDTR(True)
+    ser.setRTS(True)
+    ser.close()
+
+
+def touch_port(serial_port, baudrate):
+    """."""
+    ser = serial.Serial()
+    ser.port = serial_port
+    ser.baudrate = baudrate
+    ser.bytesize = serial.EIGHTBITS
+    ser.stopbits = serial.STOPBITS_ONE
+    ser.parity = serial.PARITY_NONE
+    try:
+        ser.open()
+    except serial.SerialException:
+        pass
+    else:
+        ser.setDTR(True)
+        time.sleep(0.022)
+        ser.setDTR(False)
+        ser.close()
+        time.sleep(0.4)
+
+
+def auto_reset(serial_port):
+    """."""
+    ser = serial.Serial()
+    ser.port = serial_port
+    try:
+        ser.open()
+    except serial.SerialException:
+        pass
+    else:
+        ser.setRTS(False)
+        ser.setDTR(False)
+        ser.setDTR(True)
+        time.sleep(0.05)
+        ser.setDTR(False)
+        ser.setRTS(True)
+        ser.setDTR(True)
+        time.sleep(0.05)
+        ser.setDTR(False)
+        time.sleep(0.05)
+        ser.write('1EAF')
+        time.sleep(0.05)
+        ser.close()
+
+
+def wait_for_new_port(upload_port, before_ports):
+    """."""
+    new_port = None
+    elapsed = 0
+    os_name = sys_info.get_os_name()
+    while elapsed < 10:
+        now_ports = list_serial_ports()
+        diff = list(set(now_ports) - set(before_ports))
+        if diff:
+            new_port = diff[0]
+            break
+
+        before_ports = now_ports
+        time.sleep(0.25)
+        elapsed += 0.25
+
+        if upload_port in now_ports:
+            if elapsed >= 5 and os_name != 'windows':
+                new_port = upload_port
+                break
+
+    if not new_port:
+        text = "Couldn't find a Leonardo on the selected port. "
+        text += 'Check that you have the correct port selected. '
+        text += "If it is correct, try pressing the board's reset "
+        text += 'button after initiating the upload.'
+        print(text)
+    return new_port
+
+
+def auto_detect_upload_port(board_info):
+    """."""
+    upload_port = None
+    vid = board_info.get('build.vid', '')
+    pid = board_info.get('build.pid', '')
+    board_hwid = ("%s:%s" % (vid, pid)).replace('0x', '')
+
+    serials_info = get_serials_info()
+    ports = serials_info.get('ports', [])
+    for port in ports:
+        port_info = serials_info.get(port, {})
+        port_hwid = port_info.get('hwid', '')
+        if 'VID:PID' in port_hwid:
+            if board_hwid in port_hwid:
+                upload_port = port
+                break
+    return upload_port
+
+
+def check_do_touch(board_info):
+    """."""
+    do_touch = False
+    bootloader_file = board_info.get('bootloader.file', '')
+    if 'caterina' in bootloader_file.lower():
+        do_touch = True
+    elif board_info.get('upload.use_1200bps_touch') == 'true':
+        do_touch = True
+    return do_touch
+
+
+def checke_do_reset(board_info):
+    """."""
+    return board_info.get('upload.auto_reset', '') == 'true'
+
+
+def prepare_upload_port(upload_port, do_touch=False, do_reset=False):
+    """."""
+    if do_touch:
+        before_ports = list_serial_ports()
+        if upload_port in before_ports:
+            text = 'Forcing reset using 1200bps open/close '
+            text += 'on port %s.' % upload_port
+            print(text)
+            touch_port(upload_port, 1200)
+
+            if sys_info.get_os_name() != 'osx':
+                time.sleep(0.4)
+            upload_port = wait_for_new_port(upload_port, before_ports)
+
+    if do_reset:
+        text = 'Resetting to bootloader via DTR pulse\\n'
+        print(text)
+        auto_reset(upload_port)
+    return upload_port
+
+
+def restore_serial_port(upload_port, baudrate, timeout=4):
+    """."""
+    time.sleep(0.1)
+    before_time = time.time()
+    while time.time() - before_time < timeout:
+        ports = list_serial_ports()
+        if upload_port in ports:
+            touch_port(upload_port, baudrate)
+        else:
+            break
+        time.sleep(0.25)
+
+
+def get_serial_file(port):
+    """."""
+    serial_file = port
+    if '/dev/' in serial_file:
+        serial_file = serial_file[5:]
+    return serial_file

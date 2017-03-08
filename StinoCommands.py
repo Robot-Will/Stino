@@ -553,10 +553,10 @@ class StinoGetPortInfoCommand(sublime_plugin.TextCommand):
                 board_info = \
                     stino.selected.get_sel_board_info(stino.arduino_info)
                 board_name = board_info.get('name')
-                vid_0 = board_info.get('vid.0', 'None')
-                pid_0 = board_info.get('pid.0', 'None')
+                vid = board_info.get('build.vid', 'None')
+                pid = board_info.get('build.pid', 'None')
                 stino.message_queue.put(board_name)
-                stino.message_queue.put('VID:PID=%s:%s' % (vid_0, pid_0))
+                stino.message_queue.put('VID:PID=%s:%s' % (vid, pid))
 
     def is_enabled(self):
         """."""

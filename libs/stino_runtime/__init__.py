@@ -1168,9 +1168,24 @@ def build_sketch(build_info={}):
 
 def upload_sketch(upload_cmd=''):
     """."""
-    message_queue.put(upload_cmd)
     if upload_cmd:
-        run_upload_command(upload_cmd)
+        upload_port = arduino_info['selected'].get('serial_port', '')
+        serial_file = serial_port.get_serial_file(upload_port)
+
+        board_info = selected.get_sel_board_info(arduino_info)
+        do_touch = serial_port.check_do_touch(board_info)
+        do_reset = serial_port.checke_do_reset(board_info)
+        new_upload_port = serial_port.prepare_upload_port(upload_port,
+                                                          do_touch, do_reset)
+        if new_upload_port != upload_port:
+            new_serial_file = serial_port.get_serial_file(new_upload_port)
+            cmd = cmd.replace(upload_port, new_upload_port)
+            cmd = cmd.replace(serial_file, new_serial_file)
+
+        message_queue.put(upload_cmd)
+        is_ok = run_upload_command(upload_cmd)
+        if is_ok and do_touch:
+            serial_port.restore_serial_port(upload_port, 9600)
 
 
 def burn_bootloader():

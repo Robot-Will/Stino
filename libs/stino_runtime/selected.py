@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 import os
 import re
 
+from base_utils import serial_port
 from base_utils import plain_params_file
 
 
@@ -254,7 +255,7 @@ def get_commands_info(arduino_info, project=None):
     platform_variant_path = get_sel_variant_path(arduino_info)
 
     prj_build_path = os.path.join(build_path, prj_name)
-    serial_port = arduino_info['selected'].get('serial_port', '')
+    ser_port = arduino_info['selected'].get('serial_port', '')
     verbose_upload = bool(arduino_info['settings'].get('verbose_upload'))
     verify_code = bool(arduino_info['settings'].get('verify_code'))
 
@@ -271,13 +272,11 @@ def get_commands_info(arduino_info, project=None):
     all_info['build.variant.path'] = platform_variant_path.replace('\\', '/')
     all_info['build.arch'] = get_platform_arch_by_name(arduino_info,
                                                        sel_pkg, sel_ptfm)
-    serial_port = str(serial_port)
-    all_info['serial.port'] = serial_port
-    if serial_port.startswith('/dev/'):
-        upload_port = serial_port[5:]
-    else:
-        upload_port = serial_port
-    all_info['serial.port.file'] = upload_port
+    ser_port = str(ser_port)
+    all_info['serial.port'] = ser_port
+    serial_file = serial_port.get_serial_file(ser_port)
+
+    all_info['serial.port.file'] = serial_file
     all_info['runtime.ide.version'] = '20000'
     all_info['archive_file'] = 'core.a'
     all_info['includes'] = ' '.join(includes)
@@ -287,6 +286,10 @@ def get_commands_info(arduino_info, project=None):
     all_info.update(all_cmds_info)
     all_info.update(programmer_info)
     all_info.update(board_info)
+
+    extra_build_flag = arduino_info['settings'].get('extra_build_flag', '')
+    extra_flags = all_info.get('build.extra_flags', '')
+    all_info['build.extra_flags'] = ' '.join((extra_flags, extra_build_flag))
 
     tools_info = get_sel_tools_info(arduino_info, platform_info)
     tool_names = tools_info.get('names', [])
