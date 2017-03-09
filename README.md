@@ -23,8 +23,8 @@ Currently it works for Arduino Avr Boards, and still a lot of works to do to com
 ![Installation](https://github.com/Robot-Will/Stino/blob/Wiki-Images/images/s004.jpg)
 
 ### How to use
-#### 1. Add Package and Librarie Index files
-This software do not need Arduino IDE, and it will download everything from internet. Defaultly it has [Arduino Package Index File](http://downloads.arduino.cc/packages/package_index.json) and [Arduino Library Index File](http://downloads.arduino.cc/libraries/library_index.json), and you can add your index files into the list. This software will check new index files every 30 minutes defaultly.
+#### 1. Add Package and Library Index files
+This software do not need Arduino IDE, and it will download everything from internet. Defaultly it has [Arduino Package Index File](http://downloads.arduino.cc/packages/package_index.json) and [Arduino Library Index File](http://downloads.arduino.cc/libraries/library_index.json), and you can add your index files into the list. This software will check new index files every 30 minutes defaultly. Some package index files' link can be found in the [Unofficial list of 3rd party boards support urls](https://github.com/arduino/Arduino/wiki/Unofficial-list-of-3rd-party-boards-support-urls) page.
 
 ![Add Indexes](https://github.com/Robot-Will/Stino/blob/Wiki-Images/images/s002.jpg)
 
