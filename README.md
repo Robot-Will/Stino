@@ -12,6 +12,39 @@ Currently it works for Arduino Avr Boards, and still a lot of works to do to com
 
 ![Screenshot](https://github.com/Robot-Will/Stino/blob/Wiki-Images/images/stino_menu01.jpg)
 
+### Installation
+
+1. Download the .zip file from [github](https://github.com/Robot-Will/Stino)
+
+2. Open SublimeText Packages Folder
+
+3. Unzip the .zip file and copy the unzipped folder to the SublimeText Packages Folder
+
+![Installation](https://github.com/Robot-Will/Stino/blob/Wiki-Images/images/s004.jpg)
+
+### How to use
+#### 1. Add Package and Librarie Index files
+This software do not need Arduino IDE, and it will download everything from internet. Defaultly it has [Arduino Package Index File](http://downloads.arduino.cc/packages/package_index.json) and [Arduino Library Index File](http://downloads.arduino.cc/libraries/library_index.json), and you can add your index files into the list. This software will check new index files every 30 minutes defaultly.
+
+![Add Indexes](https://github.com/Robot-Will/Stino/blob/Wiki-Images/images/s002.jpg)
+
+#### 2. Set the folders
+This software uses 3 folders: Arduino App Foleder, Sketchbook Folder and Arduino IDE folder.
+
+Arduino App Folder is the folder where the packages folder(cores and toolchains), build folder, download folder(staging) and setting files are. Defaultly it is ~/Arduino15 (set to {$default}).
+
+Sketchbook Folder is folder where sketches, examples and libraries are. Defaultly it is [Documents Folder]/Arduino (set to {$default}). You can put examples and libraries into the 'examples' and 'libraries' folders respectively.
+
+If you want integrate SublimeText for portable use, you can set above two folders to {$sublime}, and it will use the [Sublime Packages]/User/Stino folder.
+
+Arduino IDE folder is where is Arduino IDE is. This software supports Arduino IDE, but it do not need it. You can leave blank of this folder.
+
+![Folders](https://github.com/Robot-Will/Stino/blob/Wiki-Images/images/s001.jpg)
+
+Then you can install packages and libraries from internet. And choose the platform, version and board, speed up your work.
+
+![Select Board](https://github.com/Robot-Will/Stino/blob/Wiki-Images/images/s003.jpg)
+
 ### License
 
 Copyright (C) 2012-2017 Sen <robot.will.me AT gmail.com>.
