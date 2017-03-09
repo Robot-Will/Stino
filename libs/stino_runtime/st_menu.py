@@ -135,14 +135,25 @@ def get_example_menu_text(level, paths):
 
 def update_example_menu(arduino_info):
     """."""
+    ext_app_path = arduino_info.get('ext_app_path')
     sketchbook_path = arduino_info.get('sketchbook_path')
-    examples_path = os.path.join(sketchbook_path, 'examples')
-    example_paths = glob.glob(examples_path + '/*')
-    example_paths = [p for p in example_paths if os.path.isdir(p)]
 
-    libraries_path = os.path.join(sketchbook_path, 'libraries')
-    library_paths = glob.glob(libraries_path + '/*')
-    library_paths = [p for p in library_paths if os.path.isdir(p)]
+    paths = []
+    if os.path.isdir(ext_app_path):
+        paths.append(ext_app_path)
+    paths.append(sketchbook_path)
+
+    all_paths = []
+    for path in paths:
+        examples_path = os.path.join(path, 'examples')
+        example_paths = glob.glob(examples_path + '/*')
+        example_paths = [p for p in example_paths if os.path.isdir(p)]
+
+        libraries_path = os.path.join(path, 'libraries')
+        library_paths = glob.glob(libraries_path + '/*')
+        library_paths = [p for p in library_paths if os.path.isdir(p)]
+        all_paths.append(example_paths)
+        all_paths.append(library_paths)
 
     text = '\t' * 0 + '[\n'
     text += '\t' * 1 + '{\n'
@@ -162,9 +173,13 @@ def update_example_menu(arduino_info):
     text += '\t' * 6 + '"command": "stino_refresh_examples"\n'
     text += '\t' * 5 + '},\n'
     text += '\t' * 5 + '{"caption": "-"}'
-    text += get_example_menu_text(5, example_paths)
-    text += ',' + '\t' * 5 + '{"caption": "-"}'
-    text += get_example_menu_text(5, library_paths)
+
+    sep_text = ',\n' + '\t' * 5 + '{"caption": "-"}'
+    sub_texts = []
+    for paths in all_paths:
+        sub_texts.append(get_example_menu_text(5, paths))
+    text += sep_text.join(sub_texts)
+
     text += '\n' + '\t' * 4 + ']\n'
     text += '\t' * 3 + '}\n'
     text += '\t' * 2 + ']\n'
@@ -176,10 +191,20 @@ def update_example_menu(arduino_info):
 
 def update_library_menu(arduino_info):
     """."""
+    ext_app_path = arduino_info.get('ext_app_path')
     sketchbook_path = arduino_info.get('sketchbook_path')
-    libraries_path = os.path.join(sketchbook_path, 'libraries')
-    library_paths = glob.glob(libraries_path + '/*')
-    library_paths = [p for p in library_paths if os.path.isdir(p)]
+
+    paths = []
+    if os.path.isdir(ext_app_path):
+        paths.append(ext_app_path)
+    paths.append(sketchbook_path)
+
+    all_paths = []
+    for path in paths:
+        libraries_path = os.path.join(path, 'libraries')
+        library_paths = glob.glob(libraries_path + '/*')
+        library_paths = [p for p in library_paths if os.path.isdir(p)]
+        all_paths.append(library_paths)
 
     text = '\t' * 0 + '[\n'
     text += '\t' * 1 + '{\n'
@@ -200,16 +225,23 @@ def update_library_menu(arduino_info):
     text += '\t' * 5 + '},\n'
     text += '\t' * 5 + '{"caption": "-"}'
 
-    for library_path in library_paths:
-        library_path = library_path.replace('\\', '/')
-        library_name = os.path.basename(library_path)
-        text += ',\n'
-        text += '\t' * 5 + '{\n'
-        text += '\t' * 6 + '"caption": "%s",\n' % library_name
-        text += '\t' * 6 + '"id": "stino_library_%s",\n' % library_name
-        text += '\t' * 6 + '"command": "stino_import_library",\n'
-        text += '\t' * 6 + '"args": {"library_path": "%s"}\n' % library_path
-        text += '\t' * 5 + '}'
+    sep_text = ',\n' + '\t' * 5 + '{"caption": "-"}'
+    sub_texts = []
+    for paths in all_paths:
+        sub_text = ''
+        for library_path in paths:
+            library_path = library_path.replace('\\', '/')
+            library_name = os.path.basename(library_path)
+            sub_text += ',\n'
+            sub_text += '\t' * 5 + '{\n'
+            sub_text += '\t' * 6 + '"caption": "%s",\n' % library_name
+            sub_text += '\t' * 6 + '"id": "stino_library_%s",\n' % library_name
+            sub_text += '\t' * 6 + '"command": "stino_import_library",\n'
+            sub_text += '\t' * 6 + '"args": {"library_path": '
+            sub_text += '"%s"}\n' % library_path
+            sub_text += '\t' * 5 + '}'
+        sub_texts.append(sub_text)
+    text += sep_text.join(sub_texts)
 
     text += '\n' + '\t' * 4 + ']\n'
     text += '\t' * 3 + '}\n'

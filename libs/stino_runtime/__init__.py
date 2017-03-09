@@ -107,6 +107,15 @@ def get_sketchbook_path(app_dir_settings):
     return dir_path
 
 
+def get_ext_app_path(app_dir_settings):
+    """."""
+    ext_app_path = app_dir_settings.get('additional_app_path')
+    if not isinstance(ext_app_path, str):
+        ext_app_path = ''
+        app_dir_settings.set('additional_app_path', '')
+    return ext_app_path
+
+
 def get_index_files_info(arduino_dir_path):
     """."""
     file_paths = glob.glob(arduino_dir_path + '/package*_index.json')
@@ -127,9 +136,33 @@ def get_installed_packages_info(arduino_info):
     """."""
     installed_packages_info = {'installed_packages': {}}
     arduino_dir_path = arduino_info['arduino_app_path']
+    ext_app_path = arduino_info['ext_app_path']
+
+    package_names = []
+    ext_app_hardware_path = os.path.join(ext_app_path, 'hardware')
+    if os.path.isdir(ext_app_hardware_path):
+        pkg_name = 'Arduino IDE'
+        package_names.append(pkg_name)
+
+        pkg_info = {'platforms': {}}
+        pkg_info['platforms']['names'] = []
+        pkg_dir_paths = glob.glob(ext_app_hardware_path + '/*')
+        pkg_dir_paths = [p for p in pkg_dir_paths if os.path.isdir(p)]
+        pkg_dir_paths = [p for p in pkg_dir_paths
+                         if os.path.basename(p) != 'tools']
+        for pkg_dir_path in pkg_dir_paths:
+            sub_pkg_name = os.path.basename(pkg_dir_path)
+            pkg_info['platforms']['names'].append(sub_pkg_name)
+            arch_dir_paths = glob.glob(pkg_dir_path + '/*')
+            arch_dir_paths = [p for p in arch_dir_paths if os.path.isdir(p)]
+            arch_names = [os.path.basename(p) for p in arch_dir_paths]
+            ptfm_info = {'versions': arch_names}
+            pkg_info['platforms'][sub_pkg_name] = ptfm_info
+        installed_packages_info['installed_packages'][pkg_name] = pkg_info
+
     packages_path = os.path.join(arduino_dir_path, 'packages')
     package_paths = glob.glob(packages_path + '/*')
-    package_names = [os.path.basename(p) for p in package_paths]
+    package_names += [os.path.basename(p) for p in package_paths]
     installed_packages_info['installed_packages']['names'] = package_names
 
     for package_path in package_paths:
@@ -1384,6 +1417,8 @@ def init():
     arduino_info['arduino_app_path'] = arduino_dir_path
     sketchbook_path = get_sketchbook_path(app_dir_settings)
     arduino_info['sketchbook_path'] = sketchbook_path
+    ext_app_path = get_ext_app_path(app_dir_settings)
+    arduino_info['ext_app_path'] = ext_app_path
 
     config_file_path = os.path.join(arduino_dir_path, 'config.stino-settings')
     config_settings = file.SettingsFile(config_file_path)
