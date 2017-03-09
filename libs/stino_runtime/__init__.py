@@ -17,6 +17,7 @@ import platform
 import shutil
 import time
 import subprocess
+import threading
 
 import sublime
 
@@ -807,11 +808,15 @@ def get_h_path_info(project):
     get_h_info = c_project.get_file_info_of_extensions
     excludes = ['examples', 'samples']
     sketchbook_path = arduino_info['sketchbook_path']
+    ext_app_path = arduino_info['ext_app_path']
     platform_path = selected.get_sel_platform_path(arduino_info)
 
-    paths = [sketchbook_path]
+    paths = []
+    if ext_app_path:
+        paths.append(ext_app_path)
     if platform_path:
         paths.append(platform_path)
+    paths.append(sketchbook_path)
 
     for path in paths:
         libraries_path = os.path.join(path, 'libraries')
@@ -907,24 +912,21 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
     sel_board_options = selected.get_sel_board_options(arduino_info)
 
     if not is_full_build:
-        if sel_package and sel_package != last_package:
+        if sel_package != last_package:
+            is_full_build = True
+        elif sel_platform != last_platform:
+            is_full_build = True
+        elif sel_version != last_version:
+            is_full_build = True
+        elif sel_board != last_board:
             is_full_build = True
         else:
-            if sel_platform and sel_platform != last_platform:
-                is_full_build = True
-            else:
-                if sel_version and sel_version != last_version:
+            for option in sel_board_options:
+                key = 'option_%s' % option
+                sel_option = arduino_sel.get(key, '')
+                last_option = last_build_info.get(key, '')
+                if sel_option != last_option:
                     is_full_build = True
-                else:
-                    if sel_board and sel_board != last_board:
-                        is_full_build = True
-                    else:
-                        for option in sel_board_options:
-                            key = 'option_%s' % option
-                            sel_option = arduino_sel.get(key, '')
-                            last_option = last_build_info.get(key, '')
-                            if sel_option and sel_option != last_option:
-                                is_full_build = True
 
     obj_paths = []
     src_paths = all_src_paths[::-1]
@@ -1230,6 +1232,25 @@ def build_sketch(build_info={}):
     if not build_info:
         return
 
+    arduino_sel = arduino_info['selected']
+    sel_package = arduino_sel.get('package', '')
+    sel_platform = arduino_sel.get('platform', '')
+    sel_version = arduino_sel.get('version', '')
+    sel_board = arduino_sel.get('board', '')
+
+    is_ready = True
+    if not (sel_package and sel_platform and sel_version and sel_board):
+        is_ready = False
+    else:
+        sel_board_options = selected.get_sel_board_options(arduino_info)
+        for option in sel_board_options:
+            key = 'option_%s' % option
+            sel_option = arduino_sel.get(key, '')
+            if not sel_option:
+                is_ready = False
+    if not is_ready:
+        return
+
     project_path = build_info.get('path')
     upload_mode = build_info.get('upload_mode', '')
 
@@ -1239,66 +1260,71 @@ def build_sketch(build_info={}):
     message_queue.put(msg)
     platform_info = selected.get_sel_platform_info(arduino_info)
     is_ready = check_tools_deps(platform_info)
-    if is_ready:
-        msg = '[Step 2] Find all source files.'
-        message_queue.put(msg)
-        arduino_app_path = arduino_info['arduino_app_path']
-        build_dir_path = os.path.join(arduino_app_path, 'build')
+    if not is_ready:
+        return
 
-        prj = c_project.CProject(project_path, build_dir_path)
-        prj_build_path = prj.get_build_path()
-        prj_src_dir_paths = [prj.get_path()]
-        if prj.is_arduino_project():
-            prj.gen_arduino_tmp_file()
-            prj_src_dir_paths.append(prj.get_build_path())
+    msg = '[Step 2] Find all source files.'
+    message_queue.put(msg)
+    arduino_app_path = arduino_info['arduino_app_path']
+    build_dir_path = os.path.join(arduino_app_path, 'build')
 
-        all_src_paths = []
-        used_headers = []
-        include_dirs = get_tool_include_dirs()
+    prj = c_project.CProject(project_path, build_dir_path)
+    prj_build_path = prj.get_build_path()
+    prj_src_dir_paths = [prj.get_path()]
+    if prj.is_arduino_project():
+        prj.gen_arduino_tmp_file()
+        prj_src_dir_paths.append(prj.get_build_path())
 
-        h_path_info = get_h_path_info(prj)
-        all_src_paths, used_headers, dep_dirs = \
-            get_dep_cpps(prj_src_dir_paths, h_path_info, all_src_paths,
-                         used_headers, include_dirs)
-        all_src_paths = [p.replace('\\', '/') for p in all_src_paths]
+    all_src_paths = []
+    used_headers = []
+    include_dirs = get_tool_include_dirs()
 
-        core_src_path = selected.get_sel_core_src_path(arduino_info)
-        variant_path = selected.get_sel_variant_path(arduino_info)
-        if core_src_path not in include_dirs:
-            include_dirs.append(core_src_path)
-        if variant_path not in include_dirs:
-            include_dirs.append(variant_path)
-        include_dirs = [p.replace('\\', '/') for p in include_dirs]
-        arduino_info['include_paths'] = include_dirs
+    h_path_info = get_h_path_info(prj)
+    all_src_paths, used_headers, dep_dirs = \
+        get_dep_cpps(prj_src_dir_paths, h_path_info, all_src_paths,
+                     used_headers, include_dirs)
+    all_src_paths = [p.replace('\\', '/') for p in all_src_paths]
 
-        cmds_info = selected.get_commands_info(arduino_info, prj)
-        cmds, msgs = get_build_cmds(cmds_info, prj_build_path, all_src_paths)
+    core_src_path = selected.get_sel_core_src_path(arduino_info)
+    variant_path = selected.get_sel_variant_path(arduino_info)
+    if core_src_path not in include_dirs:
+        include_dirs.append(core_src_path)
+    if variant_path not in include_dirs:
+        include_dirs.append(variant_path)
+    include_dirs = [p.replace('\\', '/') for p in include_dirs]
+    arduino_info['include_paths'] = include_dirs
 
-        msg = '[Step 3] Start building.'
-        message_queue.put(msg)
-        is_ok = run_build_commands(cmds, msgs)
-        if is_ok:
-            arduino_info['settings'].set('full_build', False)
-            size_cmd = cmds_info.get('recipe.size.pattern', '')
+    cmds_info = selected.get_commands_info(arduino_info, prj)
+    cmds, msgs = get_build_cmds(cmds_info, prj_build_path, all_src_paths)
 
-            regex_info = {}
-            regex_keys = ['recipe.size.regex']
-            regex_keys.append('recipe.size.regex.data')
-            regex_keys.append('recipe.size.regex.eeprom')
-            for key in regex_keys:
-                regex = cmds_info.get(key, '')
-                if regex:
-                    regex_info[key] = regex
-            run_size_command(size_cmd, regex_info)
-            if upload_mode == 'upload':
-                upload_cmd = cmds_info.get('upload.pattern', '')
-                sketch_uploader.put(upload_cmd)
-            elif upload_mode == 'programmer':
-                upload_cmd = cmds_info.get('program.pattern', '')
-                sketch_uploader.put(upload_cmd)
-            elif upload_mode == 'network':
-                upload_cmd = cmds_info.get('upload.network_pattern', '')
-                sketch_uploader.put(upload_cmd)
+    msg = '[Step 3] Start building.'
+    message_queue.put(msg)
+    is_ok = run_build_commands(cmds, msgs)
+    if not is_ok:
+        return
+
+    arduino_info['settings'].set('full_build', False)
+    size_cmd = cmds_info.get('recipe.size.pattern', '')
+
+    regex_info = {}
+    regex_keys = ['recipe.size.regex']
+    regex_keys.append('recipe.size.regex.data')
+    regex_keys.append('recipe.size.regex.eeprom')
+    for key in regex_keys:
+        regex = cmds_info.get(key, '')
+        if regex:
+            regex_info[key] = regex
+    run_size_command(size_cmd, regex_info)
+
+    if upload_mode == 'upload':
+        upload_cmd = cmds_info.get('upload.pattern', '')
+        sketch_uploader.put(upload_cmd)
+    elif upload_mode == 'programmer':
+        upload_cmd = cmds_info.get('program.pattern', '')
+        sketch_uploader.put(upload_cmd)
+    elif upload_mode == 'network':
+        upload_cmd = cmds_info.get('upload.network_pattern', '')
+        sketch_uploader.put(upload_cmd)
 
 
 def upload_sketch(upload_cmd=''):
@@ -1427,7 +1453,7 @@ def check_pkgs():
         st_menu.update_install_library_menu(arduino_info)
 
 
-def init():
+def _init():
     """."""
     global arduino_info
 
@@ -1488,7 +1514,7 @@ def init():
     arduino_info.update(programmers_info)
     check_selected(arduino_info, 'programmer')
 
-    # 4. init menus
+    # 3. init menus
     st_menu.update_sketchbook_menu(arduino_info)
     st_menu.update_example_menu(arduino_info)
     st_menu.update_library_menu(arduino_info)
@@ -1506,23 +1532,25 @@ def init():
 
     st_menu.update_language_menu(arduino_info)
 
+    # 4. update index files
+    pkgs_checker.start()
 
+
+arduino_info = {}
 message_queue = task_queue.TaskQueue(st_panel.StPanel().write)
 message_queue.put('Thanks for supporting Stino!')
 
 serial_listener = serial_port.SerialListener(update_serial_info)
 serial_listener.start()
 
-arduino_info = {}
-init()
-
 pkgs_checker = task_listener.TaskListener(task=check_pkgs,
                                           delay=const.REMOTE_CHECK_PERIOD)
-pkgs_checker.start()
-
 platform_tool_downloader = downloader.DownloadQueue(download_platform_tool)
 lib_downloader = downloader.DownloadQueue(download_lib)
 ide_importer = task_queue.TaskQueue(import_avr_platform)
 sketch_builder = task_queue.TaskQueue(build_sketch)
 sketch_uploader = task_queue.TaskQueue(upload_sketch)
 bootloader = task_queue.TaskQueue(burn_bootloader)
+
+_init_thread = threading.Thread(target=_init)
+_init_thread.start()

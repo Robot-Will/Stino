@@ -156,10 +156,10 @@ class CProject(object):
                                                         c_file.CC_EXTS)
         self._src_file_paths = self._ino_file_paths + self._cpp_file_paths
 
-        self._is_cpp_project = False
-        self._is_arduino_project = self.check_is_arduino_project()
-        if not self._is_arduino_project:
-            self._is_cpp_project = self.check_is_c_project()
+        self._is_arduino_project = False
+        self._is_cpp_project = self.check_is_c_project()
+        if not self._is_cpp_project:
+            self._is_arduino_project = self.check_is_arduino_project()
 
     def get_name(self):
         """."""

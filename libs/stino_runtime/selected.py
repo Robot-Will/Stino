@@ -193,9 +193,10 @@ def get_sel_platform_path(arduino_info):
     if sel_pkg and sel_ver:
         if sel_pkg == 'Arduino IDE':
             ext_app_path = arduino_info['ext_app_path']
-            hardware_path = os.path.join(ext_app_path, 'hardware')
-            pkg_path = os.path.join(hardware_path, sel_ptfm)
-            platform_path = os.path.join(pkg_path, sel_ver)
+            if os.path.isdir(ext_app_path):
+                hardware_path = os.path.join(ext_app_path, 'hardware')
+                pkg_path = os.path.join(hardware_path, sel_ptfm)
+                platform_path = os.path.join(pkg_path, sel_ver)
         else:
             arch = get_platform_arch_by_name(arduino_info, sel_pkg, sel_ptfm)
             arduino_app_path = arduino_info['arduino_app_path']
@@ -278,8 +279,8 @@ def get_sel_cmds_info(arduino_info):
 def get_commands_info(arduino_info, project=None):
     """."""
     cmds_info = {}
-
     platform_path = get_sel_platform_path(arduino_info)
+
     all_cmds_info = get_sel_cmds_info(arduino_info)
     board_info = get_sel_board_info(arduino_info)
     programmer_info = get_sel_programmer_info(arduino_info)
@@ -317,6 +318,7 @@ def get_commands_info(arduino_info, project=None):
     core_path = get_sel_core_src_path(arduino_info)
     all_info['runtime.hardware.path'] = ide_pkg_path.replace('\\', '/')
     all_info['build.core.path'] = core_path.replace('\\', '/')
+
     ser_port = str(ser_port)
     all_info['serial.port'] = ser_port
     serial_file = serial_port.get_serial_file(ser_port)

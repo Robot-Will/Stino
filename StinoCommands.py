@@ -95,7 +95,12 @@ class StinoOpenSketchCommand(sublime_plugin.WindowCommand):
 
     def run(self, sketch_path):
         """Open Sketch."""
-        stino.open_project(sketch_path, self.window)
+        in_new = bool(stino.arduino_info['settings'].get('open_in_new_window'))
+        win = self.window
+        if in_new:
+            sublime.run_command('new_window')
+            win = sublime.windows()[-1]
+        stino.open_project(sketch_path, win)
 
 
 class StinoShowSketchDirCommand(sublime_plugin.TextCommand):
@@ -522,6 +527,28 @@ class StinoUploadCommand(sublime_plugin.TextCommand):
         if sel_serial and file_path and stino.c_file.is_cpp_file(file_path):
             info = stino.selected.get_sel_board_info(stino.arduino_info)
             if info:
+                state = True
+        return state
+
+
+class StinoNetworkUploadCommand(sublime_plugin.TextCommand):
+    """."""
+
+    def run(self, edit):
+        """."""
+        file_path = self.view.file_name()
+        dir_path = os.path.dirname(file_path)
+        build_info = {'path': dir_path}
+        build_info['upload_mode'] = 'network'
+        stino.sketch_builder.put(build_info)
+
+    def is_enabled(self):
+        """."""
+        state = False
+        file_path = self.view.file_name()
+        if file_path and stino.c_file.is_cpp_file(file_path):
+            info = stino.selected.get_sel_board_info(stino.arduino_info)
+            if 'upload.network.port' in info:
                 state = True
         return state
 
