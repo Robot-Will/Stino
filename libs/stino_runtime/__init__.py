@@ -714,7 +714,7 @@ def import_avr_platform(ide_path=''):
         index_file_path = os.path.join(hardware_path,
                                        'package_index_bundled.json')
         if os.path.isfile(index_file_path):
-            index_files = index_file.IndexFiles([index_file_path])
+            index_files = index_file.PackageIndexFiles([index_file_path])
             info = index_files.get_info()
             packages_info = info.get('packages', {})
             package_names = packages_info.get('names', [])

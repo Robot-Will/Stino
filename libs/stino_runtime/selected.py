@@ -109,7 +109,7 @@ def get_sel_platform_info(arduino_info):
             index_file_path = os.path.join(hardware_path,
                                            'package_index_bundled.json')
             if os.path.isfile(index_file_path):
-                index_files = index_file.IndexFiles([index_file_path])
+                index_files = index_file.PackageIndexFiles([index_file_path])
                 info = index_files.get_info()
                 pkgs_info = info.get('packages', {})
                 vers = get_platform_versions(pkgs_info, cur_pkg, cur_ptfm)
