@@ -232,16 +232,21 @@ def replace_variants(text, info, prefix=''):
     return text
 
 
-def get_commands_info(arduino_info, project=None):
+def get_sel_cmds_info(arduino_info):
     """."""
     cmds_info = {}
-    all_cmds_info = {}
     platform_path = get_sel_platform_path(arduino_info)
     if platform_path:
         cmd_file_path = os.path.join(platform_path, 'platform.txt')
         cmd_file = plain_params_file.PlainParamsFile(cmd_file_path)
-        all_cmds_info = cmd_file.get_info()
+        cmds_info = cmd_file.get_info()
+    return cmds_info
 
+
+def get_commands_info(arduino_info, project=None):
+    """."""
+    cmds_info = {}
+    all_cmds_info = get_sel_cmds_info(arduino_info)
     platform_info = get_sel_platform_info(arduino_info)
     board_info = get_sel_board_info(arduino_info)
     programmer_info = get_sel_programmer_info(arduino_info)

@@ -10,7 +10,6 @@ from __future__ import unicode_literals
 
 import time
 import threading
-import platform
 import glob
 import serial
 from serial.tools.list_ports import comports
@@ -21,8 +20,8 @@ from . import sys_info
 def list_serial_ports():
     """."""
     serial_ports = [port for port, d, h in comports() if port]
-
-    if not serial_ports and platform.system() == "Darwin":
+    os_name = sys_info.get_os_name()
+    if not serial_ports and os_name == "osx":
         for port in glob("/dev/tty.*"):
             serial_ports.append(port)
     return serial_ports
@@ -37,7 +36,8 @@ def get_serials_info():
             info = {'port': port, 'description': desc, 'hwid': hwid}
             serials_info[port] = info
 
-    if not serials_info['ports'] and platform.system() == "Darwin":
+    os_name = sys_info.get_os_name()
+    if not serials_info['ports'] and os_name == "osx":
         for port in glob("/dev/tty.*"):
             serials_info['ports'].append(port)
             info = {"port": port, "description": "", "hwid": ""}

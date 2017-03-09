@@ -617,9 +617,12 @@ class StinoUploadUsingProgrammerCommand(sublime_plugin.TextCommand):
         file_path = self.view.file_name()
         sel_prog = stino.arduino_info['selected'].get('programmer')
         if sel_prog and file_path and stino.c_file.is_cpp_file(file_path):
-            info = stino.selected.get_sel_board_info(stino.arduino_info)
-            if info:
-                state = True
+            cmds_info = stino.selected.get_sel_cmds_info(stino.arduino_info)
+            upload_cmd = cmds_info.get('program.pattern', '')
+            if upload_cmd:
+                info = stino.selected.get_sel_board_info(stino.arduino_info)
+                if info:
+                    state = True
         return state
 
 
@@ -664,9 +667,13 @@ class StinoBurnBootloaderCommand(sublime_plugin.WindowCommand):
         state = False
         sel_serial = stino.arduino_info['selected'].get('serial_port')
         if sel_serial:
-            info = stino.selected.get_sel_board_info(stino.arduino_info)
-            if info:
-                state = True
+            cmds_info = stino.selected.get_sel_cmds_info(stino.arduino_info)
+            erase_cmd = cmds_info.get('erase.pattern', '')
+            bootloader_cmd = cmds_info.get('bootloader.pattern', '')
+            if erase_cmd and bootloader_cmd:
+                info = stino.selected.get_sel_board_info(stino.arduino_info)
+                if info:
+                    state = True
         return state
 
 
