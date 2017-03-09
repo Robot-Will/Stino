@@ -987,14 +987,16 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
             cmd = ''
         cmd = cmd.replace('{source_file}', src_path)
         cmd = cmd.replace('{object_file}', obj_path)
-        msg = 'Compile %s...' % src_path
+        msg = 'Compiling %s...' % src_path
         cmds.append(cmd)
         msgs.append(msg)
 
-    msg = 'Creating core.a...'
+    msg = 'Linking everything together...'
     msgs.append(msg)
     if not os.path.isfile(core_a_path):
         cmd_pattern = cmds_info.get('recipe.ar.pattern', '')
+        if '/core/' in cmd_pattern:
+            cmd_pattern = cmd_pattern.replace('core/', '')
         for obj_path in obj_paths[1:]:
             cmd = cmd_pattern.replace('{object_file}', obj_path)
             cmds.append(cmd)
@@ -1015,7 +1017,7 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
     if not (os.path.isfile(elf_file_path) and os.path.isfile(bin_file_path)):
         need_gen_bins = True
 
-    msg = 'Creating binary file...'
+    msg = 'Creating binary files...'
     msgs.append(msg)
     if need_gen_bins:
         cmd_pattern = cmds_info.get('recipe.c.combine.pattern', '')
@@ -1036,6 +1038,11 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
         if cmd:
             cmds.append(cmd)
             msgs.append('')
+
+    cmd = cmds_info.get('recipe.hooks.postbuild.1.pattern', '')
+    if cmd:
+        cmds.append(cmd)
+        msgs.append('Opening Teensy Loader...')
     msgs.pop()
 
     last_build_info.set('package', sel_package)
@@ -1054,6 +1061,7 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
 
 def run_command(cmd):
     """."""
+    cmd = cmd.replace('\\', '/')
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
     result = proc.communicate()
@@ -1069,13 +1077,20 @@ def run_build_command(percent, cmd, msg):
     """."""
     is_ok = True
     if cmd:
+        pattern_text = r"'-D[\S\s]*?'"
+        pattern = re.compile(pattern_text)
+        texts = pattern.findall(cmd)
+        for text in texts:
+            new_text = text[1:-1]
+            cmd = cmd.replace(text, new_text)
+
         if msg:
             msg = '[%.1f%%] %s' % (percent, msg)
             message_queue.put(msg)
         return_code, stdout, stderr = run_command(cmd)
         verbose_build = bool(arduino_info['settings'].get('verbose_build'))
         if verbose_build:
-            message_queue.put(cmd)
+            message_queue.put(cmd.replace('\\', '/'))
             if stdout:
                 message_queue.put(stdout.replace('\r', ''))
         if stderr:
@@ -1092,7 +1107,7 @@ def run_upload_command(cmd):
         return_code, stdout, stderr = run_command(cmd)
         verbose_upload = bool(arduino_info['settings'].get('verbose_upload'))
         if verbose_upload:
-            message_queue.put(cmd)
+            message_queue.put(cmd.replace('\\', '/'))
             if stdout:
                 message_queue.put(stdout)
         if stderr:

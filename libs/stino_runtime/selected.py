@@ -92,7 +92,6 @@ def get_platform_arch_by_name(arduino_info, pkg_name, ptfm_name):
 
 def get_sel_platform_info(arduino_info):
     """."""
-    pkgs_info = arduino_info.get('packages', {})
     sel_pkg = arduino_info['selected'].get('package')
     sel_ptfm = arduino_info['selected'].get('platform')
     sel_ver = arduino_info['selected'].get('version')
@@ -112,12 +111,15 @@ def get_sel_platform_info(arduino_info):
                 index_files = index_file.PackageIndexFiles([index_file_path])
                 info = index_files.get_info()
                 pkgs_info = info.get('packages', {})
-                vers = get_platform_versions(pkgs_info, cur_pkg, cur_ptfm)
-                if vers:
-                    cur_ver = vers[0]
-                    ptfm_info = get_platform_info(pkgs_info, cur_pkg,
-                                                  cur_ptfm, cur_ver)
+            else:
+                pkgs_info = arduino_info.get('packages', {})
+            vers = get_platform_versions(pkgs_info, cur_pkg, cur_ptfm)
+            if vers:
+                cur_ver = vers[-1]
+                ptfm_info = get_platform_info(pkgs_info, cur_pkg,
+                                              cur_ptfm, cur_ver)
     else:
+        pkgs_info = arduino_info.get('packages', {})
         ptfm_info = get_platform_info(pkgs_info, sel_pkg, sel_ptfm, sel_ver)
     return ptfm_info
 
@@ -156,10 +158,10 @@ def get_sel_programmer_info(arduino_info):
 def get_sel_tools_info(arduino_info, platform_info):
     """."""
     tools_info = {'names': []}
-    sel_pkg = arduino_info['selected'].get('package')
     arduino_app_path = arduino_info['arduino_app_path']
     packages_path = os.path.join(arduino_app_path, 'packages')
     tools_deps = platform_info.get('toolsDependencies', [])
+
     for tool_info in tools_deps:
         package = tool_info.get('packager', '')
         name = tool_info.get('name', '')
@@ -175,9 +177,6 @@ def get_sel_tools_info(arduino_info, platform_info):
                     path = os.path.join(tool_path, version)
                     if not os.path.isdir(path):
                         path = ''
-
-        if not path and sel_pkg == 'Arduino IDE':
-            pass
 
         tool_info['path'] = path
         tools_info['names'].append(name)
@@ -313,6 +312,11 @@ def get_commands_info(arduino_info, project=None):
     all_info['build.variant.path'] = platform_variant_path.replace('\\', '/')
     all_info['build.arch'] = get_platform_arch_by_name(arduino_info,
                                                        sel_pkg, sel_ptfm)
+
+    ide_pkg_path = os.path.dirname(platform_path)
+    core_path = get_sel_core_src_path(arduino_info)
+    all_info['runtime.hardware.path'] = ide_pkg_path.replace('\\', '/')
+    all_info['build.core.path'] = core_path.replace('\\', '/')
     ser_port = str(ser_port)
     all_info['serial.port'] = ser_port
     serial_file = serial_port.get_serial_file(ser_port)
@@ -334,6 +338,10 @@ def get_commands_info(arduino_info, project=None):
 
     tools_info = get_sel_tools_info(arduino_info, platform_info)
     tool_names = tools_info.get('names', [])
+    upload_tool = all_info.get('upload.tool', '')
+    if upload_tool not in tool_names:
+        tool_names.append(upload_tool)
+
     for tool_name in tool_names:
         tool_info = tools_info.get(tool_name, {})
         tool_path = tool_info.get('path', '')
