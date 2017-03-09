@@ -15,8 +15,10 @@ import zipfile
 import tarfile
 import platform
 import shutil
-import sublime
+import time
 import subprocess
+
+import sublime
 
 from base_utils import file
 from base_utils import c_file
@@ -1294,6 +1296,9 @@ def build_sketch(build_info={}):
             elif upload_mode == 'programmer':
                 upload_cmd = cmds_info.get('program.pattern', '')
                 sketch_uploader.put(upload_cmd)
+            elif upload_mode == 'network':
+                upload_cmd = cmds_info.get('upload.network_pattern', '')
+                sketch_uploader.put(upload_cmd)
 
 
 def upload_sketch(upload_cmd=''):
@@ -1483,10 +1488,6 @@ def init():
     arduino_info.update(programmers_info)
     check_selected(arduino_info, 'programmer')
 
-    # 3. init serial
-    serial_listener = serial_port.SerialListener(update_serial_info)
-    serial_listener.start()
-
     # 4. init menus
     st_menu.update_sketchbook_menu(arduino_info)
     st_menu.update_example_menu(arduino_info)
@@ -1508,6 +1509,9 @@ def init():
 
 message_queue = task_queue.TaskQueue(st_panel.StPanel().write)
 message_queue.put('Thanks for supporting Stino!')
+
+serial_listener = serial_port.SerialListener(update_serial_info)
+serial_listener.start()
 
 arduino_info = {}
 init()
