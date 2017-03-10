@@ -39,6 +39,8 @@ from . import selected
 from . import st_panel
 
 plugin_name = const.PLUGIN_NAME
+_d_pattern_text = r"'-D[\S\s]*?'"
+_d_pattern = re.compile(_d_pattern_text)
 
 
 def get_app_dir_settings():
@@ -759,21 +761,21 @@ def import_avr_platform(ide_path=''):
         message_queue.put(msg)
 
 
-def find_include_dirs(path):
+def find_dirs(path, dir_name):
     """."""
     include_dirs = []
     name = os.path.basename(path)
-    if name == 'include':
+    if name == dir_name:
         include_dirs.append(path)
     else:
         sub_paths = glob.glob(path + '/*')
         sub_paths = [p for p in sub_paths if os.path.isdir(p)]
         for sub_path in sub_paths:
-            include_dirs += find_include_dirs(sub_path)
+            include_dirs += find_dirs(sub_path, dir_name)
     return include_dirs
 
 
-def get_tool_include_dirs():
+def get_tool_dirs(dir_name):
     """."""
     tool_include_dirs = []
     platform_info = selected.get_sel_platform_info(arduino_info)
@@ -783,7 +785,7 @@ def get_tool_include_dirs():
         tool_info = tools_info.get(name, {})
         path = tool_info.get('path', '')
         if path:
-            tool_include_dirs += find_include_dirs(path)
+            tool_include_dirs += find_dirs(path, dir_name)
     return tool_include_dirs
 
 
@@ -1086,7 +1088,6 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
 
 def run_command(cmd):
     """."""
-    cmd = cmd.replace('\\', '/')
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
     result = proc.communicate()
@@ -1102,11 +1103,14 @@ def run_build_command(percent, cmd, msg):
     """."""
     is_ok = True
     if cmd:
-        pattern_text = r"'-D[\S\s]*?'"
-        pattern = re.compile(pattern_text)
-        texts = pattern.findall(cmd)
+        cmd = cmd.replace('\\', '/')
+
+        texts = _d_pattern.findall(cmd)
         for text in texts:
-            new_text = text[1:-1]
+            key, value = text[1:-1].split('=')
+            key = key.strip()
+            value = value.strip().replace('"', '\\"')
+            new_text = key + '="' + value + '"'
             cmd = cmd.replace(text, new_text)
 
         if msg:
@@ -1129,6 +1133,7 @@ def run_upload_command(cmd):
     """."""
     is_ok = True
     if cmd:
+        cmd = cmd.replace('\\', '/')
         return_code, stdout, stderr = run_command(cmd)
         verbose_upload = bool(arduino_info['settings'].get('verbose_upload'))
         if verbose_upload:
@@ -1163,6 +1168,7 @@ def run_bootloader_cmds(cmds):
     """."""
     is_ok = True
     for cmd in cmds:
+        cmd = cmd.replace('\\', '/')
         return_code, stdout, stderr = run_command(cmd)
         message_queue.put(stdout)
         message_queue.put(stderr)
@@ -1188,6 +1194,7 @@ def regular_numner(num):
 def run_size_command(cmd, regex_info):
     """."""
     if cmd:
+        cmd = cmd.replace('\\', '/')
         return_code, stdout, stderr = run_command(cmd)
         if stdout:
             board_info = selected.get_sel_board_info(arduino_info)
@@ -1298,24 +1305,29 @@ def build_sketch(build_info={}):
         prj_src_dir_paths.append(prj.get_build_path())
     prj_src_dir_paths.append(prj.get_path())
 
+    if prj.is_arduino_project():
+        core_src_path = selected.get_sel_core_src_path(arduino_info)
+        variant_path = selected.get_sel_variant_path(arduino_info)
+        prj_src_dir_paths.append(core_src_path)
+        prj_src_dir_paths.append(variant_path)
+
     all_src_paths = []
     used_headers = []
-    include_dirs = get_tool_include_dirs()
+    tool_include_dirs = get_tool_dirs('include')
+    tool_lib_dirs = get_tool_dirs('lib')
 
     h_path_info = get_h_path_info(prj)
     all_src_paths, used_headers, dep_dirs = \
         get_dep_cpps(prj_src_dir_paths, h_path_info, all_src_paths,
-                     used_headers, include_dirs)
+                     used_headers, tool_include_dirs)
     all_src_paths = [p.replace('\\', '/') for p in all_src_paths]
+    for dir_path in dep_dirs:
+        message_queue.put(dir_path)
 
-    core_src_path = selected.get_sel_core_src_path(arduino_info)
-    variant_path = selected.get_sel_variant_path(arduino_info)
-    if core_src_path not in include_dirs:
-        include_dirs.append(core_src_path)
-    if variant_path not in include_dirs:
-        include_dirs.append(variant_path)
-    include_dirs = [p.replace('\\', '/') for p in include_dirs]
+    include_dirs = [p.replace('\\', '/') for p in dep_dirs]
+    lib_dirs = [p.replace('\\', '/') for p in tool_lib_dirs]
     arduino_info['include_paths'] = include_dirs
+    arduino_info['lib_paths'] = lib_dirs
 
     cmds_info = selected.get_commands_info(arduino_info, prj)
     cmds, msgs = get_build_cmds(cmds_info, prj_build_path, all_src_paths)
@@ -1557,9 +1569,10 @@ def _init():
 
     # 4. update index files
     pkgs_checker.start()
+    arduino_info['init_done'] = True
 
 
-arduino_info = {}
+arduino_info = {'init_done': False}
 message_queue = task_queue.TaskQueue(st_panel.StPanel().write)
 message_queue.put('Thanks for supporting Stino!')
 
@@ -1575,6 +1588,5 @@ sketch_builder = task_queue.TaskQueue(build_sketch)
 sketch_uploader = task_queue.TaskQueue(upload_sketch)
 bootloader = task_queue.TaskQueue(burn_bootloader)
 
-# _init_thread = threading.Thread(target=_init)
-# _init_thread.start()
-_init()
+_init_thread = threading.Thread(target=_init)
+_init_thread.start()

@@ -10,6 +10,7 @@ from __future__ import unicode_literals
 
 import os
 import re
+import time
 
 from base_utils import index_file
 from base_utils import serial_port
@@ -304,8 +305,14 @@ def get_commands_info(arduino_info, project=None):
 
     include_paths = arduino_info.get('include_paths', [])
     includes = ['"-I%s"' % p.replace('\\', '/') for p in include_paths]
+    # lib_paths = arduino_info.get('lib_paths', [])
+    # includes += ['"-L%s"' % p.replace('\\', '/') for p in lib_paths]
 
     all_info = {}
+    all_info['extra.time.utc'] = str(int(time.time()))
+    all_info['extra.time.local'] = str(int(time.mktime(time.localtime())))
+    all_info['extra.time.zone'] = str(int(time.timezone))
+    all_info['extra.time.dst'] = str(int(time.daylight))
     all_info['build.project_name'] = prj_name
     all_info['build.path'] = prj_build_path.replace('\\', '/')
     all_info['runtime.platform.path'] = platform_path.replace('\\', '/')
@@ -327,8 +334,6 @@ def get_commands_info(arduino_info, project=None):
     all_info['runtime.ide.version'] = '20000'
     all_info['archive_file'] = 'core.a'
     all_info['includes'] = ' '.join(includes)
-
-    include_paths = arduino_info.get('include_paths', [])
 
     all_info.update(all_cmds_info)
     all_info.update(programmer_info)
