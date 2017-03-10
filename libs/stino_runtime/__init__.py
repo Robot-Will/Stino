@@ -249,7 +249,7 @@ def update_serial_info(serial_ports):
 
 def check_platform_selected(arduino_info):
     """."""
-    sel_settings = arduino_info.get('selected', {})
+    sel_settings = arduino_info.get('selected')
     sel_package = sel_settings.get('package', '')
     sel_platform = sel_settings.get('platform', '')
     sel_version = sel_settings.get('version', '')
@@ -288,7 +288,7 @@ def check_platform_selected(arduino_info):
 
 def check_selected(arduino_info, item_type):
     """."""
-    sel_settings = arduino_info.get('selected', {})
+    sel_settings = arduino_info.get('selected')
     sel_item = sel_settings.get(item_type, '')
     sel_item_info = arduino_info.get('%ss' % item_type, {})
     names = sel_item_info.get('names', [])
@@ -1575,5 +1575,6 @@ sketch_builder = task_queue.TaskQueue(build_sketch)
 sketch_uploader = task_queue.TaskQueue(upload_sketch)
 bootloader = task_queue.TaskQueue(burn_bootloader)
 
-_init_thread = threading.Thread(target=_init)
-_init_thread.start()
+# _init_thread = threading.Thread(target=_init)
+# _init_thread.start()
+_init()
