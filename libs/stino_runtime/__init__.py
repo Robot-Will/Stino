@@ -376,7 +376,7 @@ def on_serial_select(serial_port):
 def on_language_select(language_name):
     """."""
     global arduino_info
-    arduino_info['selected'].set('language', language)
+    arduino_info['selected'].set('language', language_name)
 
 
 def unzip(zip_path, target_dir_path):
@@ -387,7 +387,7 @@ def unzip(zip_path, target_dir_path):
             names = f.namelist()
             try:
                 f.extractall(target_dir_path)
-            except (IOError, FileNotFoundError) as e:
+            except (IOError, zipfile.FileNotFoundError) as e:
                 message_queue.put('%s' % e)
                 is_ok = False
     elif zip_path.endswith('.gz') or zip_path.endswith('.bz2'):
@@ -395,7 +395,7 @@ def unzip(zip_path, target_dir_path):
             names = f.getnames()
             try:
                 f.extractall(target_dir_path)
-            except (IOError, FileNotFoundError) as e:
+            except (IOError, tarfile.FileNotFoundError) as e:
                 message_queue.put('%s' % e)
                 is_ok = False
     return is_ok, names
@@ -526,40 +526,25 @@ def check_tools_deps(platform_info):
 
             packages_info = arduino_info.get('packages', {})
             package_info = packages_info.get(package, {})
-            tools_info = package_info.get('tools', {})
-            tool_info = tools_info.get(name, {})
-            version_info = tool_info.get(version, {})
+            down_tools_info = package_info.get('tools', {})
+            down_tool_info = down_tools_info.get(name, {})
+            version_info = down_tool_info.get(version, {})
             systems_info = version_info.get('systems', [])
             for system_info in systems_info:
                 host = system_info.get('host', '')
                 url = system_info.get('url', '')
-                if '-' in host:
-                    host_infos = host.split('-')
-                    if len(host_infos) > 1:
-                        arch = host_infos[0]
-                        os_name = host_infos[1]
 
-                        go_down = False
-                        if sys_info.get_os_name() == 'windows':
-                            if os_name == 'mingw32':
-                                go_down = True
-                                break
-                        elif sys_info.get_os_name() == 'osx':
-                            if os_name == 'apple':
-                                go_down = True
-                                break
-                        elif sys_info.get_os_name() == 'linux':
-                            if os_name == 'linux':
-                                machine = platform.machine()
-                                if machine == 'i686' and arch == 'i686':
-                                    go_down = True
-                                    break
-                                elif machine == 'x86_64' and arch == 'x86_64':
-                                    go_down = True
-                                    break
-                                elif arch == 'arm':
-                                    go_down = True
-                                    break
+                if sys_info.get_os_name() == 'windows':
+                    id_text = '-mingw32'
+                elif sys_info.get_os_name() == 'osx':
+                    id_text = '-apple'
+                elif sys_info.get_os_name() == 'linux':
+                    id_text = '%s-' % platform.machine()
+
+                go_down = False
+                if id_text in host:
+                    go_down = True
+                    break
 
             if go_down:
                 down_info = {}
@@ -1381,8 +1366,8 @@ def upload_sketch(upload_cmd=''):
                                                           do_touch, do_reset)
         if new_upload_port != upload_port:
             new_serial_file = serial_port.get_serial_file(new_upload_port)
-            cmd = cmd.replace(upload_port, new_upload_port)
-            cmd = cmd.replace(serial_file, new_serial_file)
+            upload_cmd = upload_cmd.replace(upload_port, new_upload_port)
+            upload_cmd = upload_cmd.replace(serial_file, new_serial_file)
 
         message_queue.put(upload_cmd)
         is_ok = run_upload_command(upload_cmd)
@@ -1475,7 +1460,7 @@ def check_pkgs():
         remote_etag = downloader.get_remote_etag(url)
         if remote_etag:
             local_etag = arduino_info['etags'].get(key)
-            if remote_etag != local_etag:
+            if remote_etag and remote_etag != local_etag:
                 is_done = downloader.download(url, arduino_dir_path,
                                               message_queue.put,
                                               mode='replace')
