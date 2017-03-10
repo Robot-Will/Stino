@@ -163,6 +163,14 @@ def get_sel_tools_info(arduino_info, platform_info):
     packages_path = os.path.join(arduino_app_path, 'packages')
     tools_deps = platform_info.get('toolsDependencies', [])
 
+    if not tools_deps:
+        pkgs_info = arduino_info.get('packages', {})
+        pkg_name = 'arduino'
+        ptfm_name = 'Arduino AVR Boards'
+        ptfm_ver = get_platform_versions(pkgs_info, pkg_name,ptfm_name)[-1]
+        ptfm_info = get_platform_info(pkgs_info, pkg_name, ptfm_name, ptfm_ver)
+        tools_deps = ptfm_info.get('toolsDependencies', [])
+
     for tool_info in tools_deps:
         package = tool_info.get('packager', '')
         name = tool_info.get('name', '')

@@ -1017,7 +1017,7 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
             cmd = ''
         cmd = cmd.replace('{source_file}', src_path)
         cmd = cmd.replace('{object_file}', obj_path)
-        msg = 'Compiling %s...' % src_path
+        msg = 'Compiling %s...' % os.path.basename(src_path)
         cmds.append(cmd)
         msgs.append(msg)
 
@@ -1050,6 +1050,12 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
     msg = 'Creating binary files...'
     msgs.append(msg)
     if need_gen_bins:
+        exts = ['.eep', '.hex', '.bin']
+        bin_file_paths = c_project.list_files_of_extensions(prj_build_path,
+                                                            exts)
+        for bin_file_path in bin_file_paths:
+            os.remove(bin_file_path)
+
         cmd_pattern = cmds_info.get('recipe.c.combine.pattern', '')
         cmd = cmd_pattern.replace('{object_files}', '"%s"' % obj_paths[0])
         cmds.append(cmd)
@@ -1321,8 +1327,6 @@ def build_sketch(build_info={}):
         get_dep_cpps(prj_src_dir_paths, h_path_info, all_src_paths,
                      used_headers, tool_include_dirs)
     all_src_paths = [p.replace('\\', '/') for p in all_src_paths]
-    for dir_path in dep_dirs:
-        message_queue.put(dir_path)
 
     include_dirs = [p.replace('\\', '/') for p in dep_dirs]
     lib_dirs = [p.replace('\\', '/') for p in tool_lib_dirs]
