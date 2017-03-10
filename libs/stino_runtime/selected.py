@@ -167,7 +167,7 @@ def get_sel_tools_info(arduino_info, platform_info):
         pkgs_info = arduino_info.get('packages', {})
         pkg_name = 'arduino'
         ptfm_name = 'Arduino AVR Boards'
-        ptfm_ver = get_platform_versions(pkgs_info, pkg_name,ptfm_name)[-1]
+        ptfm_ver = get_platform_versions(pkgs_info, pkg_name, ptfm_name)[-1]
         ptfm_info = get_platform_info(pkgs_info, pkg_name, ptfm_name, ptfm_ver)
         tools_deps = ptfm_info.get('toolsDependencies', [])
 
@@ -340,7 +340,11 @@ def get_commands_info(arduino_info, project=None):
 
     all_info['serial.port.file'] = serial_file
     all_info['runtime.ide.version'] = '20000'
-    all_info['archive_file'] = 'core.a'
+
+    archive_file_name = 'core.a'
+    archive_file_path = os.path.join(prj_build_path, archive_file_name)
+    all_info['archive_file'] = archive_file_name
+    all_info['archive_file_path'] = archive_file_path
     all_info['includes'] = ' '.join(includes)
 
     all_info.update(all_cmds_info)
