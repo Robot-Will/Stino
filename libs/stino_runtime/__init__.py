@@ -845,10 +845,21 @@ def get_dep_cpps(dir_paths, h_path_info, used_cpps, used_headers, used_dirs):
     for dir_path in dir_paths:
         if dir_path not in used_dirs:
             used_dirs.append(dir_path)
-            h_paths = c_project.list_files_of_extensions(dir_path,
-                                                         c_file.H_EXTS)
-            cpp_paths = c_project.list_files_of_extensions(dir_path,
-                                                           c_file.CC_EXTS)
+
+            parent_path = os.path.dirname(dir_path)
+            parent_name = os.path.basename(parent_path)
+            if parent_name == 'build':
+                prj_name = os.path.basename(dir_path)
+                ino_cpp_name = prj_name + '.ino.cpp'
+                ino_cpp_path = os.path.join(dir_path, ino_cpp_name)
+                h_paths = []
+                cpp_paths = [ino_cpp_path]
+            else:
+                h_paths = \
+                    c_project.list_files_of_extensions(dir_path, c_file.H_EXTS)
+                cpp_paths = \
+                    c_project.list_files_of_extensions(dir_path,
+                                                       c_file.CC_EXTS)
 
             unused_src_paths = []
             for h_path in h_paths:
@@ -939,12 +950,15 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
 
     build_src_paths = []
     build_obj_paths = []
+
+    main_file_changed = False
     libs_changed = False
     need_gen_bins = False
 
     if is_full_build:
         build_src_paths = src_paths
         build_obj_paths = obj_paths
+        main_file_changed = True
         libs_changed = True
         need_gen_bins = True
     else:
@@ -957,6 +971,7 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
         if need_compile:
             build_src_paths.append(src_paths[0])
             build_obj_paths.append(obj_paths[0])
+            main_file_changed = True
             need_gen_bins = True
 
         for src_path, obj_path in zip(src_paths[1:], obj_paths[1:]):
@@ -977,6 +992,30 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
 
     cmds = []
     msgs = []
+
+    if main_file_changed:
+        pass
+    #     cmd = cmds_info.get('recipe.preproc.includes', '')
+    #     cmd = cmd.replace('{source_file}', build_src_paths[0])
+    #     msg = 'Detecting libraries used...'
+    #     cmds.append(cmd)
+    #     msgs.append(msg)
+
+    #     preproc_file_name = 'ctags_target_for_gcc_minus_e.cpp'
+    #     preproc_file_name = os.path.join(prj_build_path, preproc_file_name)
+    #     cmd = cmds_info.get('recipe.preproc.macros', '')
+    #     cmd = cmd.replace('{source_file}', build_src_paths[0])
+    #     cmd = cmd.replace('{preprocessed_file_path}', preproc_file_name)
+    #     msg = 'Generating function prototypes...'
+    #     cmds.append(cmd)
+    #     msgs.append(msg)
+
+    # Maybe need somting to do with ctags_target_for_gcc_minus_e.cpp!
+    # "arduino-1.8.1\tools-builder\ctags\5.8-arduino11/ctags" -u
+    # --language-force=c++ -f - --c++-kinds=svpf --fields=KSTtzns
+    # --line-directives
+    # "Temp\arduino_build_248932\preproc\ctags_target_for_gcc_minus_e.cpp"
+
     for src_path, obj_path in zip(build_src_paths, build_obj_paths):
         src_ext = os.path.splitext(src_path)[-1]
         if src_ext in c_file.CPP_EXTS or src_ext in c_file.INO_EXTS:
@@ -1028,20 +1067,17 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
         cmd = cmd_pattern.replace('{object_files}', '"%s"' % obj_paths[0])
         cmds.append(cmd)
 
-        cmd = cmds_info.get('recipe.objcopy.eep.pattern', '')
-        if cmd:
-            cmds.append(cmd)
-            msgs.append('')
+        bin_keys = ['recipe.objcopy.eep.pattern']
+        for key in cmds_info:
+            if key.startswith('recipe.objcopy.') and key.endswith('.pattern'):
+                if '.eep.' not in key:
+                    bin_keys.append(key)
 
-        cmd = cmds_info.get('recipe.objcopy.hex.pattern', '')
-        if cmd:
-            cmds.append(cmd)
-            msgs.append('')
-
-        cmd = cmds_info.get('recipe.objcopy.bin.pattern', '')
-        if cmd:
-            cmds.append(cmd)
-            msgs.append('')
+        for key in bin_keys:
+            cmd = cmds_info.get(key, '')
+            if cmd:
+                cmds.append(cmd)
+                msgs.append('')
 
     cmd = cmds_info.get('recipe.hooks.postbuild.1.pattern', '')
     if cmd:
@@ -1270,10 +1306,12 @@ def build_sketch(build_info={}):
 
     prj = c_project.CProject(project_path, build_dir_path)
     prj_build_path = prj.get_build_path()
-    prj_src_dir_paths = [prj.get_path()]
+
+    prj_src_dir_paths = []
     if prj.is_arduino_project():
         prj.gen_arduino_tmp_file()
         prj_src_dir_paths.append(prj.get_build_path())
+    prj_src_dir_paths.append(prj.get_path())
 
     all_src_paths = []
     used_headers = []

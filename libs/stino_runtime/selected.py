@@ -379,7 +379,7 @@ def get_commands_info(arduino_info, project=None):
                 all_info.get('%sprogram.params.noverify', '')
 
     for key in all_cmds_info:
-        if key.startswith('recipe.') or key.startswith('preproc.'):
+        if key.startswith('recipe.'):
             cmd = all_cmds_info[key]
             cmd = replace_variants(cmd, all_info)
             cmds_info[key] = cmd

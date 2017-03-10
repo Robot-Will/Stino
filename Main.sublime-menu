@@ -362,6 +362,11 @@
             },
             {"caption": "-"},
             {
+                "caption": "Show Message Panel",
+                "id": "stino_show_panel",
+                "command": "stino_show_panel"
+            },
+            {
                 "caption": "Language",
                 "id": "stino_language",
                 "children":

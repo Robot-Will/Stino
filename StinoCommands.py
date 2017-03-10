@@ -724,6 +724,15 @@ class StinoAutoFormatCommand(sublime_plugin.TextCommand):
 #############################################
 # Help Commands
 #############################################
+class StinoShowPanelCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        panel_name = 'output.stino_panel'
+        self.window.run_command("show_panel", {"panel": panel_name})
+
+
 class StinoRefreshLangsCommand(sublime_plugin.WindowCommand):
     """."""
 
