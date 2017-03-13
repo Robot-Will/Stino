@@ -78,6 +78,12 @@ class StinoChangeSketchbookLocationCommand(sublime_plugin.WindowCommand):
             caption = stino.translate('Sketchbook Path:')
             self.window.show_input_panel(caption, sketchbook_path,
                                          self.on_done, None, None)
+            stino.do_action.put(stino.st_menu.update_sketchbook_menu,
+                                stino.arduino_info)
+            stino.do_action.put(stino.st_menu.update_example_menu,
+                                stino.arduino_info)
+            stino.do_action.put(stino.st_menu.update_library_menu,
+                                stino.arduino_info)
 
     def on_done(self, sketchbook_path):
         """New Sketch."""
@@ -257,6 +263,13 @@ class StinoAddIdeCommand(sublime_plugin.WindowCommand):
             caption = stino.translate('Arduino IDE Path:')
             self.window.show_input_panel(caption, ide_path, self.on_done,
                                          None, None)
+            stino.do_action.put(stino.init_inst_pkgs_info)
+            stino.do_action.put(stino.st_menu.update_install_platform_menu,
+                                stino.arduino_info)
+            stino.do_action.put(stino.st_menu.update_example_menu,
+                                stino.arduino_info)
+            stino.do_action.put(stino.st_menu.update_library_menu,
+                                stino.arduino_info)
 
     def on_done(self, ide_path):
         """New Sketch."""

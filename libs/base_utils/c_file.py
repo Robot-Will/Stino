@@ -910,7 +910,8 @@ def is_main_ino_file(file_path):
     state = False
     f = CFile(file_path)
     funcs = f.list_function_definitions()
-    if 'void setup()' in funcs and 'void loop()' in funcs:
+    funcs = [f.split('(')[0] for f in funcs]
+    if 'void setup' in funcs and 'void loop' in funcs:
         state = True
     return state
 
@@ -920,7 +921,8 @@ def is_main_cpp_file(file_path):
     state = False
     f = CFile(file_path)
     funcs = f.list_function_definitions()
-    if 'void main()' in funcs or 'int main()' in funcs:
+    funcs = [f.split('(')[0] for f in funcs]
+    if 'void main' in funcs or 'int main' in funcs:
         state = True
     return state
 
