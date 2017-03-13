@@ -13,6 +13,7 @@ import glob
 import codecs
 from base_utils import file
 from base_utils import default_st_dirs
+from base_utils import c_file
 from . import const
 from . import selected
 
@@ -30,9 +31,97 @@ def write_menu(menu_type, menu_text):
         f.write(menu_text)
 
 
+def get_sketch_menu_text(level, paths):
+    """."""
+    text = ''
+    none_sketches = ['libraries', 'examples']
+    for path in paths:
+        path = path.replace('\\', '/')
+        name = os.path.basename(path)
+        if name in none_sketches:
+            continue
+
+        has_sketch = False
+        next_paths = glob.glob(path + '/*')
+        next_file_paths = [p for p in next_paths if os.path.isfile(p)]
+        next_dir_paths = [p for p in next_paths if os.path.isdir(p)]
+
+        for file_path in next_file_paths:
+            ext = os.path.splitext(file_path)[-1]
+            if ext in c_file.INOC_EXTS:
+                has_sketch = True
+                break
+
+        if not (has_sketch or next_dir_paths):
+            continue
+        elif not next_dir_paths:
+            text += ',\n'
+            text += '\t' * level + '{\n'
+            text += '\t' * (level + 1)
+            text += '"caption": "%s",\n' % name
+            text += '\t' * (level + 1)
+            text += '"id": "stino_sketch_%s",\n' % name
+            text += '\t' * (level + 1)
+            text += '"command": "stino_open_sketch",\n'
+            text += '\t' * (level + 1)
+            text += '"args": {"sketch_path": "%s"}\n' % path
+            text += '\t' * level
+            text += '}'
+        elif not has_sketch:
+            text += ',\n'
+            text += '\t' * level + '{\n'
+            text += '\t' * (level + 1)
+            text += '"caption": "%s",\n' % name
+            text += '\t' * (level + 1)
+            text += '"id": "stino_sketch_%s",\n' % name
+            text += '\t' * (level + 1)
+            text += '"children":\n'
+            text += '\t' * (level + 1)
+            text += '[\n'
+            text += '\t' * (level + 2)
+            text += '{"caption": "-"}'
+            text += get_sketch_menu_text(level + 2, next_paths)
+            text += '\t' * (level + 1)
+            text += ']\n'
+            text += '\t' * level
+            text += '}'
+        else:
+            text += ',\n'
+            text += '\t' * level + '{\n'
+            text += '\t' * (level + 1)
+            text += '"caption": "%s",\n' % name
+            text += '\t' * (level + 1)
+            text += '"id": "stino_sketch_%s",\n' % name
+
+            text += '\t' * (level + 1)
+            text += '"children":\n'
+            text += '\t' * (level + 1)
+            text += '[\n'
+            text += '\t' * (level + 1) + '{\n'
+            text += '\t' * (level + 2)
+            text += '"caption": "Open",\n'
+            text += '\t' * (level + 2)
+            text += '"id": "stino_open_%s",\n' % name
+            text += '\t' * (level + 2)
+            text += '"command": "stino_open_sketch",\n'
+            text += '\t' * (level + 2)
+            text += '"args": {"sketch_path": "%s"}\n' % path
+            text += '\t' * (level + 1)
+            text += '},'
+
+            text += '\t' * (level + 2)
+            text += '{"caption": "-"}'
+            text += get_sketch_menu_text(level + 2, next_paths)
+            text += '\t' * (level + 1)
+            text += ']\n'
+
+            text += '\t' * level
+            text += '}'
+    return text
+
+
 def update_sketchbook_menu(arduino_info):
     """."""
-    none_sketches = ['libraries', 'examples']
     sketchbook_path = arduino_info.get('sketchbook_path')
     sketch_paths = glob.glob(sketchbook_path + '/*')
     sketch_paths = [p for p in sketch_paths if os.path.isdir(p)]
@@ -73,18 +162,7 @@ def update_sketchbook_menu(arduino_info):
     text += '\t' * 5 + '},\n'
     text += '\t' * 5 + '{"caption": "-"}'
 
-    for sketch_path in sketch_paths:
-        sketch_path = sketch_path.replace('\\', '/')
-        sketch_name = os.path.basename(sketch_path)
-        if sketch_name in none_sketches:
-            continue
-        text += ',\n'
-        text += '\t' * 5 + '{\n'
-        text += '\t' * 6 + '"caption": "%s",\n' % sketch_name
-        text += '\t' * 6 + '"id": "stino_sketch_%s",\n' % sketch_name
-        text += '\t' * 6 + '"command": "stino_open_sketch",\n'
-        text += '\t' * 6 + '"args": {"sketch_path": "%s"}\n' % sketch_path
-        text += '\t' * 5 + '}'
+    text += get_sketch_menu_text(5, sketch_paths)
 
     text += '\n' + '\t' * 4 + ']\n'
     text += '\t' * 3 + '}\n'
@@ -93,6 +171,71 @@ def update_sketchbook_menu(arduino_info):
     text += '\t' * 0 + ']\n'
 
     write_menu('sketchbook', text)
+
+
+# def update_sketchbook_menu(arduino_info):
+#     """."""
+#     none_sketches = ['libraries', 'examples']
+#     sketchbook_path = arduino_info.get('sketchbook_path')
+#     sketch_paths = glob.glob(sketchbook_path + '/*')
+#     sketch_paths = [p for p in sketch_paths if os.path.isdir(p)]
+
+#     text = '\t' * 0 + '[\n'
+#     text += '\t' * 1 + '{\n'
+#     text += '\t' * 2 + '"caption": "Arduino",\n'
+#     text += '\t' * 2 + '"mnemonic": "A",\n'
+#     text += '\t' * 2 + '"id": "arduino",\n'
+#     text += '\t' * 2 + '"children":\n'
+#     text += '\t' * 2 + '[\n'
+#     text += '\t' * 3 + '{\n'
+#     text += '\t' * 4 + '"caption": "Open Sketch",\n'
+#     text += '\t' * 4 + '"id": "stino_sketchbook",\n'
+#     text += '\t' * 4 + '"children":\n'
+#     text += '\t' * 4 + '[\n'
+#     text += '\t' * 5 + '{\n'
+#     text += '\t' * 6 + '"caption": "Refresh",\n'
+#     text += '\t' * 6 + '"id": "stino_refresh_sketchbook",\n'
+#     text += '\t' * 6 + '"command": "stino_refresh_sketchbook"\n'
+#     text += '\t' * 5 + '},\n'
+#     text += '\t' * 5 + '{\n'
+#     text += '\t' * 6 + '"caption": "Change Location...",\n'
+#     text += '\t' * 6 + '"id": "stino_change_sketchbook_location",\n'
+#     text += '\t' * 6 + '"command": "stino_change_sketchbook_location"\n'
+#     text += '\t' * 5 + '},\n'
+#     text += '\t' * 5 + '{\n'
+#     text += '\t' * 6 + '"caption": "In New Window",\n'
+#     text += '\t' * 6 + '"id": "stino_open_in_new_win",\n'
+#     text += '\t' * 6 + '"command": "stino_open_in_new_win",\n'
+#     text += '\t' * 6 + '"checkbox": true\n'
+#     text += '\t' * 5 + '},\n'
+#     text += '\t' * 5 + '{"caption": "-"},'
+#     text += '\t' * 5 + '{\n'
+#     text += '\t' * 6 + '"caption": "New Sketch...",\n'
+#     text += '\t' * 6 + '"id": "stino_new_sketch",\n'
+#     text += '\t' * 6 + '"command": "stino_new_sketch"\n'
+#     text += '\t' * 5 + '},\n'
+#     text += '\t' * 5 + '{"caption": "-"}'
+
+#     for sketch_path in sketch_paths:
+#         sketch_path = sketch_path.replace('\\', '/')
+#         sketch_name = os.path.basename(sketch_path)
+#         if sketch_name in none_sketches:
+#             continue
+#         text += ',\n'
+#         text += '\t' * 5 + '{\n'
+#         text += '\t' * 6 + '"caption": "%s",\n' % sketch_name
+#         text += '\t' * 6 + '"id": "stino_sketch_%s",\n' % sketch_name
+#         text += '\t' * 6 + '"command": "stino_open_sketch",\n'
+#         text += '\t' * 6 + '"args": {"sketch_path": "%s"}\n' % sketch_path
+#         text += '\t' * 5 + '}'
+
+#     text += '\n' + '\t' * 4 + ']\n'
+#     text += '\t' * 3 + '}\n'
+#     text += '\t' * 2 + ']\n'
+#     text += '\t' * 1 + '}\n'
+#     text += '\t' * 0 + ']\n'
+
+#     write_menu('sketchbook', text)
 
 
 def get_example_menu_text(level, paths):

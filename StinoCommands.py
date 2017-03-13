@@ -50,7 +50,8 @@ class StinoRefreshSketchbookCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_sketchbook_menu(stino.arduino_info)
+            stino.do_action.put(stino.st_menu.update_sketchbook_menu,
+                                stino.arduino_info)
 
 
 class StinoNewSketchCommand(sublime_plugin.WindowCommand):
@@ -135,7 +136,8 @@ class StinoRefreshExamplesCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_example_menu(stino.arduino_info)
+            stino.do_action.put(stino.st_menu.update_example_menu,
+                                stino.arduino_info)
 
 
 class StinoOpenExampleCommand(sublime_plugin.WindowCommand):
@@ -152,7 +154,8 @@ class StinoRefreshLibrariesCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_library_menu(stino.arduino_info)
+            stino.do_action.put(stino.st_menu.update_library_menu,
+                                stino.arduino_info)
 
 
 class StinoImportLibraryCommand(sublime_plugin.TextCommand):
@@ -175,12 +178,14 @@ class StinoImportLibraryCommand(sublime_plugin.TextCommand):
 
 
 class StinoRefreshInstallLibraryCommand(sublime_plugin.WindowCommand):
-    """Import Library."""
+    """."""
 
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_install_library_menu(stino.arduino_info)
+            stino.do_action.put(stino.init_libs_info)
+            stino.do_action.put(stino.st_menu.update_install_library_menu,
+                                stino.arduino_info)
 
 
 class StinoInstallLibCommand(sublime_plugin.WindowCommand):
@@ -189,7 +194,7 @@ class StinoInstallLibCommand(sublime_plugin.WindowCommand):
     def run(self, category, name, version):
         """."""
         if stino.arduino_info['init_done']:
-            stino.install_library(category, name, version)
+            stino.do_action.put(stino.install_library, category, name, version)
 
 
 #############################################
@@ -219,7 +224,9 @@ class StinoRefreshInstallPlatformCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_install_platform_menu(stino.arduino_info)
+            stino.do_action.put(stino.init_pkgs_info)
+            stino.do_action.put(stino.st_menu.update_install_platform_menu,
+                                stino.arduino_info)
 
 
 class StinoAddPackageCommand(sublime_plugin.WindowCommand):
@@ -254,7 +261,8 @@ class StinoInstallPlatformCommand(sublime_plugin.WindowCommand):
     def run(self, package_name, platform_name, version):
         """."""
         if stino.arduino_info['init_done']:
-            stino.install_platform(package_name, platform_name, version)
+            stino.do_action.put(stino.install_platform, package_name,
+                                platform_name, version)
 
     def is_enabled(self, package_name, platform_name, version):
         """."""
@@ -275,7 +283,9 @@ class StinoRefreshPlatformsCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_platform_menu(stino.arduino_info)
+            stino.do_action.put(stino.init_inst_pkgs_info)
+            stino.do_action.put(stino.st_menu.update_platform_menu,
+                                stino.arduino_info)
 
 
 class StinoSelectPlatformCommand(sublime_plugin.WindowCommand):
@@ -285,7 +295,8 @@ class StinoSelectPlatformCommand(sublime_plugin.WindowCommand):
         """."""
         if stino.arduino_info['init_done']:
             if not self.is_checked(package_name, platform_name):
-                stino.on_platform_select(package_name, platform_name)
+                stino.do_action.put(stino.on_platform_select, package_name,
+                                    platform_name)
 
     def is_checked(self, package_name, platform_name):
         """."""
@@ -304,7 +315,9 @@ class StinoRefreshPlatformVersionsCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_version_menu(stino.arduino_info)
+            stino.do_action.put(stino.init_inst_pkgs_info)
+            stino.do_action.put(stino.st_menu.update_version_menu,
+                                stino.arduino_info)
 
 
 class StinoCheckToolsCommand(sublime_plugin.WindowCommand):
@@ -315,7 +328,7 @@ class StinoCheckToolsCommand(sublime_plugin.WindowCommand):
         if stino.arduino_info['init_done']:
             platform_info = \
                 stino.selected.get_sel_platform_info(stino.arduino_info)
-            stino.check_tools_deps(platform_info)
+            stino.do_action.put(stino.check_tools_deps, platform_info)
 
 
 class StinoSelectVersionCommand(sublime_plugin.WindowCommand):
@@ -325,7 +338,7 @@ class StinoSelectVersionCommand(sublime_plugin.WindowCommand):
         """."""
         if stino.arduino_info['init_done']:
             if not self.is_checked(version):
-                stino.on_version_select(version)
+                stino.do_action.put(stino.on_version_select, version)
 
     def is_checked(self, version):
         """."""
@@ -341,7 +354,9 @@ class StinoRefreshPlatformExamplesCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_platform_example_menu(stino.arduino_info)
+            stino.do_action.put(stino.init_inst_pkgs_info)
+            stino.do_action.put(stino.st_menu.update_platform_example_menu,
+                                stino.arduino_info)
 
 
 class StinoRefreshPlatformLibrariesCommand(sublime_plugin.WindowCommand):
@@ -350,7 +365,9 @@ class StinoRefreshPlatformLibrariesCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_platform_library_menu(stino.arduino_info)
+            stino.do_action.put(stino.init_inst_pkgs_info)
+            stino.do_action.put(stino.st_menu.update_platform_library_menu,
+                                stino.arduino_info)
 
 
 #############################################
@@ -402,7 +419,10 @@ class StinoRefreshBoardsCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_board_menu(stino.arduino_info)
+            stino.do_action.put(stino.init_inst_pkgs_info)
+            stino.do_action.put(stino.init_boards_info)
+            stino.do_action.put(stino.st_menu.update_board_menu,
+                                stino.arduino_info)
 
 
 class StinoSelectBoardCommand(sublime_plugin.WindowCommand):
@@ -412,7 +432,7 @@ class StinoSelectBoardCommand(sublime_plugin.WindowCommand):
         """."""
         if stino.arduino_info['init_done']:
             if not self.is_checked(board_name):
-                stino.on_board_select(board_name)
+                stino.do_action.put(stino.on_board_select, board_name)
 
     def is_checked(self, board_name):
         """."""
@@ -428,7 +448,10 @@ class StinoRefreshBoardOptionsCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_board_options_menu(stino.arduino_info)
+            stino.do_action.put(stino.init_inst_pkgs_info)
+            stino.do_action.put(stino.init_boards_info)
+            stino.do_action.put(stino.st_menu.update_board_options_menu,
+                                stino.arduino_info)
 
 
 class StinoSelectBoardOptionCommand(sublime_plugin.WindowCommand):
@@ -631,7 +654,8 @@ class StinoRefreshSerialsCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_serial_menu(stino.arduino_info)
+            stino.do_action.put(stino.st_menu.update_serial_menu,
+                                stino.arduino_info)
 
 
 class StinoSelectSerialCommand(sublime_plugin.WindowCommand):
@@ -743,7 +767,10 @@ class StinoRefreshProgrammersCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_programmer_menu(stino.arduino_info)
+            stino.do_action.put(stino.init_inst_pkgs_info)
+            stino.do_action.put(stino.init_programmers_info)
+            stino.do_action.put(stino.st_menu.update_programmer_menu,
+                                stino.arduino_info)
 
 
 class StinoSelectProgrammerCommand(sublime_plugin.WindowCommand):
@@ -831,7 +858,8 @@ class StinoRefreshLangsCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            stino.st_menu.update_language_menu(stino.arduino_info)
+            stino.do_action.put(stino.st_menu.update_language_menu,
+                                stino.arduino_info)
 
 
 class StinoSelectLanguageCommand(sublime_plugin.WindowCommand):
@@ -841,7 +869,7 @@ class StinoSelectLanguageCommand(sublime_plugin.WindowCommand):
         """."""
         if stino.arduino_info['init_done']:
             if self.is_checked(language):
-                stino.on_language_select(language)
+                stino.do_action.put(stino.on_language_select, language)
 
     def is_checked(self, language):
         """."""

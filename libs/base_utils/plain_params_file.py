@@ -157,7 +157,6 @@ def get_option_block_info(block):
                 block_info['names'].append(item_name)
             block_info[item_name] = item_info
 
-    block_info['names'].sort(key=str.lower)
     return block_info
 
 

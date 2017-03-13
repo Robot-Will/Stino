@@ -17,7 +17,6 @@ import platform
 import shutil
 import time
 import subprocess
-import threading
 
 import sublime
 
@@ -571,10 +570,8 @@ def open_project(project_path, win):
             has_prj_file = True
             break
 
-    if not has_prj_file:
-        file_name = prj_name + '.ino'
-        file_path = os.path.join(project_path, file_name)
-    win.open_file(file_path)
+    if has_prj_file:
+        win.open_file(file_path)
 
 
 def new_sketch(sketch_name, win):
@@ -1492,31 +1489,63 @@ def check_pkgs():
         st_menu.update_install_library_menu(arduino_info)
 
 
-def _init():
+def init_app_dir_settings():
     """."""
     global arduino_info
-
-    # 0. init paths and settings
     app_dir_settings = get_app_dir_settings()
-    arduino_dir_path = get_arduino_dir_path(app_dir_settings)
-    arduino_info['arduino_app_path'] = arduino_dir_path
+    arduino_info['app_dir_settings'] = app_dir_settings
+
+
+def init_ardunio_app_path():
+    """."""
+    global arduino_info
+    app_dir_settings = arduino_info.get('app_dir_settings')
+    arduino_app_path = get_arduino_dir_path(app_dir_settings)
+    arduino_info['arduino_app_path'] = arduino_app_path
+
+
+def init_sketchbook_path():
+    """."""
+    global arduino_info
+    app_dir_settings = arduino_info.get('app_dir_settings')
     sketchbook_path = get_sketchbook_path(app_dir_settings)
     arduino_info['sketchbook_path'] = sketchbook_path
+
+
+def init_ext_app_path():
+    """."""
+    global arduino_info
+    app_dir_settings = arduino_info.get('app_dir_settings')
     ext_app_path = get_ext_app_path(app_dir_settings)
     arduino_info['ext_app_path'] = ext_app_path
 
-    config_file_path = os.path.join(arduino_dir_path, 'config.stino-settings')
+
+def init_config_settings():
+    """."""
+    global arduino_info
+    arduino_app_path = arduino_info['arduino_app_path']
+    config_file_path = os.path.join(arduino_app_path, 'config.stino-settings')
     config_settings = file.SettingsFile(config_file_path)
     if config_settings.get('extra_build_flag') is None:
         config_settings.set('extra_build_flag', '')
     arduino_info['settings'] = config_settings
 
-    sel_file_path = os.path.join(arduino_dir_path, 'selected.stino-settings')
+
+def init_selected_settings():
+    """."""
+    global arduino_info
+    arduino_app_path = arduino_info['arduino_app_path']
+    sel_file_path = os.path.join(arduino_app_path, 'selected.stino-settings')
     sel_settings = file.SettingsFile(sel_file_path)
     arduino_info['selected'] = sel_settings
 
-    pkgs_file_path = os.path.join(arduino_dir_path, 'packages.stino-settings')
-    etags_file_path = os.path.join(arduino_dir_path, 'etags.stino-settings')
+
+def init_index_settings():
+    """."""
+    global arduino_info
+    arduino_app_path = arduino_info['arduino_app_path']
+    pkgs_file_path = os.path.join(arduino_app_path, 'packages.stino-settings')
+    etags_file_path = os.path.join(arduino_app_path, 'etags.stino-settings')
     pkg_index_settings = file.SettingsFile(pkgs_file_path)
     etag_settings = file.SettingsFile(etags_file_path)
     arduino_info['package_index'] = pkg_index_settings
@@ -1527,25 +1556,45 @@ def _init():
         arduino_info['package_index'].set('arduino_lib',
                                           const.LIBRARY_INDEX_URL)
 
-    # 1. init packages info
-    index_files_info = get_index_files_info(arduino_dir_path)
+
+def init_pkgs_info():
+    """."""
+    global arduino_info
+    arduino_app_path = arduino_info['arduino_app_path']
+    index_files_info = get_index_files_info(arduino_app_path)
     arduino_info.update(index_files_info)
 
-    lib_index_files_info = get_lib_index_files_info(arduino_dir_path)
+
+def init_libs_info():
+    """."""
+    global arduino_info
+    arduino_app_path = arduino_info['arduino_app_path']
+    lib_index_files_info = get_lib_index_files_info(arduino_app_path)
     arduino_info.update(lib_index_files_info)
 
+
+def init_inst_pkgs_info():
+    """."""
+    global arduino_info
     installed_packages_info = get_installed_packages_info(arduino_info)
     arduino_info.update(installed_packages_info)
     check_platform_selected(arduino_info)
 
-    # 2. init board info
+
+def init_boards_info():
+    """."""
+    global arduino_info
     arduino_info['boards'] = {}
-    arduino_info['programmers'] = {}
     boards_info = get_boards_info(arduino_info)
     arduino_info.update(boards_info)
     check_selected(arduino_info, 'board')
     check_board_options_selected(arduino_info)
 
+
+def init_programmers_info():
+    """."""
+    global arduino_info
+    arduino_info['programmers'] = {}
     basic_programmers_info = get_programmers_info(arduino_info, src='buildin')
     arduino_info['basic_programmers'] = \
         basic_programmers_info.get('programmers', {})
@@ -1553,7 +1602,9 @@ def _init():
     arduino_info.update(programmers_info)
     check_selected(arduino_info, 'programmer')
 
-    # 3. init menus
+
+def init_menus():
+    """."""
     st_menu.update_sketchbook_menu(arduino_info)
     st_menu.update_example_menu(arduino_info)
     st_menu.update_library_menu(arduino_info)
@@ -1570,6 +1621,31 @@ def _init():
     st_menu.update_programmer_menu(arduino_info)
 
     st_menu.update_language_menu(arduino_info)
+
+
+def _init():
+    """."""
+    # 0. init paths and settings
+    init_app_dir_settings()
+    init_ardunio_app_path()
+    init_sketchbook_path()
+    init_ext_app_path()
+
+    init_config_settings()
+    init_selected_settings()
+    init_index_settings()
+
+    # 1. init packages info
+    init_pkgs_info()
+    init_libs_info()
+    init_inst_pkgs_info()
+
+    # 2. init board info
+    init_boards_info()
+    init_programmers_info()
+
+    # 3. init menus
+    init_menus()
 
     # 4. update index files
     pkgs_checker.start()
@@ -1592,5 +1668,5 @@ sketch_builder = task_queue.TaskQueue(build_sketch)
 sketch_uploader = task_queue.TaskQueue(upload_sketch)
 bootloader = task_queue.TaskQueue(burn_bootloader)
 
-_init_thread = threading.Thread(target=_init)
-_init_thread.start()
+do_action = task_queue.ActionQueue()
+do_action.put(_init)
