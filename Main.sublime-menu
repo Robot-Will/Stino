@@ -157,9 +157,9 @@
                         "command": "stino_add_package"
                     },
                     {
-                        "caption": "Import from IDE",
-                        "id": "stino_import_avr_platform",
-                        "command": "stino_import_avr_platform"
+                        "caption": "Add Arduino IDE",
+                        "id": "stino_add_ide",
+                        "command": "stino_add_ide"
                     },
                     {"caption": "-"}
                 ]

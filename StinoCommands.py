@@ -74,11 +74,17 @@ class StinoChangeSketchbookLocationCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            plugin_name = stino.plugin_name
-            conf_path = \
-                stino.default_st_dirs.get_plugin_config_path(plugin_name)
-            file_path = os.path.join(conf_path, 'app_dir.stino-settings')
-            self.window.open_file(file_path)
+            sketchbook_path = stino.arduino_info['sketchbook_path']
+            caption = stino.translate('Sketchbook Path:')
+            self.window.show_input_panel(caption, sketchbook_path,
+                                         self.on_done, None, None)
+
+    def on_done(self, sketchbook_path):
+        """New Sketch."""
+        sketchbook_path = sketchbook_path.replace('\\', '/')
+        stino.arduino_info['sketchbook_path'] = sketchbook_path
+        stino.arduino_info['app_dir_settings'].set('sketchbook_path',
+                                                   sketchbook_path)
 
 
 class StinoOpenInNewWinCommand(sublime_plugin.WindowCommand):
@@ -239,6 +245,24 @@ class StinoAddPackageCommand(sublime_plugin.WindowCommand):
             file_path = \
                 os.path.join(arduino_app_path, 'packages.stino-settings')
             self.window.open_file(file_path)
+
+
+class StinoAddIdeCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            ide_path = stino.arduino_info['ext_app_path']
+            caption = stino.translate('Arduino IDE Path:')
+            self.window.show_input_panel(caption, ide_path, self.on_done,
+                                         None, None)
+
+    def on_done(self, ide_path):
+        """New Sketch."""
+        ide_path = ide_path.replace('\\', '/')
+        stino.arduino_info['ext_app_path'] = ide_path
+        stino.arduino_info['app_dir_settings'].set('ext_app_path', ide_path)
 
 
 class StinoImportAvrPlatformCommand(sublime_plugin.WindowCommand):

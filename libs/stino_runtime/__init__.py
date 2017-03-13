@@ -44,9 +44,11 @@ _d_pattern = re.compile(_d_pattern_text)
 
 def get_app_dir_settings():
     """."""
+    global arduino_info
     dir_path = default_st_dirs.get_plugin_config_path(plugin_name)
     file_path = os.path.join(dir_path, 'app_dir.stino-settings')
     app_dir_settings = file.SettingsFile(file_path)
+    arduino_info['app_dir_settings'] = app_dir_settings
     return app_dir_settings
 
 
@@ -572,6 +574,13 @@ def open_project(project_path, win):
 
     if has_prj_file:
         win.open_file(file_path)
+    else:
+        paths = glob.glob(project_path + '/*')
+        file_paths = [p for p in paths if os.path.isfile(p)]
+        for file_path in file_paths:
+            ext = os.path.splitext(file_path)[-1]
+            if ext in c_file.INOC_EXTS:
+                win.open_file(file_path)
 
 
 def new_sketch(sketch_name, win):
