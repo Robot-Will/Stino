@@ -924,8 +924,9 @@ class StinoAboutCommand(sublime_plugin.WindowCommand):
 class StinoPanelWriteCommand(sublime_plugin.TextCommand):
     """."""
 
-    def run(self, edit, text):
+    def run(self, edit, text, do_scroll=True):
         """."""
         point = self.view.size()
         self.view.insert(edit, point, text)
-        self.view.show(point)
+        if do_scroll:
+            self.view.show(point)

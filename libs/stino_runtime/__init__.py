@@ -291,17 +291,18 @@ def check_platform_selected(arduino_info):
 
 def check_selected(arduino_info, item_type):
     """."""
-    sel_settings = arduino_info.get('selected')
-    sel_item = sel_settings.get(item_type, '')
-    sel_item_info = arduino_info.get('%ss' % item_type, {})
-    names = sel_item_info.get('names', [])
-    if names:
-        if sel_item not in names:
-            sel_item = names[0]
+    if arduino_info['init_done']:
+        sel_settings = arduino_info.get('selected')
+        sel_item = sel_settings.get(item_type, '')
+        sel_item_info = arduino_info.get('%ss' % item_type, {})
+        names = sel_item_info.get('names', [])
+        if names:
+            if sel_item not in names:
+                sel_item = names[0]
+                sel_settings.set(item_type, sel_item)
+        else:
+            sel_item = None
             sel_settings.set(item_type, sel_item)
-    else:
-        sel_item = None
-        sel_settings.set(item_type, sel_item)
 
 
 def check_board_options_selected(arduino_info):
@@ -1065,11 +1066,12 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
         cmd_pattern = cmds_info.get('recipe.c.combine.pattern', '')
         cmd = cmd_pattern.replace('{object_files}', '"%s"' % obj_paths[0])
         cmds.append(cmd)
+        msgs.append('')
 
         bin_keys = ['recipe.objcopy.eep.pattern']
         for key in cmds_info:
             if key.startswith('recipe.objcopy.') and key.endswith('.pattern'):
-                if '.eep.' not in key:
+                if '.eep.' not in key and key not in bin_keys:
                     bin_keys.append(key)
 
         for key in bin_keys:
