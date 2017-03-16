@@ -275,7 +275,8 @@ class StinoAddIdeCommand(sublime_plugin.WindowCommand):
         """New Sketch."""
         ide_path = ide_path.replace('\\', '/')
         stino.arduino_info['ext_app_path'] = ide_path
-        stino.arduino_info['app_dir_settings'].set('ext_app_path', ide_path)
+        stino.arduino_info['app_dir_settings'].set('additional_app_path',
+                                                   ide_path)
 
 
 class StinoImportAvrPlatformCommand(sublime_plugin.WindowCommand):
