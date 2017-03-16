@@ -132,8 +132,8 @@ class File(AbstractFile):
         try:
             with codecs.open(self._path, 'r', self._encoding) as f:
                 text = f.read()
-        except (IOError, UnicodeError):
-            pass
+        except (IOError, UnicodeError) as e:
+            print(e)
         return text
 
     def write(self, text, append=False):

@@ -12,7 +12,6 @@ import os
 import re
 import time
 
-from base_utils import index_file
 from base_utils import serial_port
 from base_utils import plain_params_file
 
@@ -91,37 +90,40 @@ def get_platform_arch_by_name(arduino_info, pkg_name, ptfm_name):
     return ptfm_arch
 
 
+def get_full_platform_info(arduino_info, pkg, ptfm, ver):
+    """."""
+    pkgs_info = arduino_info.get('packages', {})
+    inst_pkgs_info = arduino_info.get('installed_packages', {})
+    inst_ptfm_info = get_platform_info(inst_pkgs_info, pkg, ptfm, ver)
+
+    cur_pkg = inst_ptfm_info.get('package', '')
+    cur_arch = inst_ptfm_info.get('architecture', '')
+    cur_ver = inst_ptfm_info.get('version', '')
+    cur_path = inst_ptfm_info.get('path', '')
+
+    cur_ptfm = get_platform_name_by_arch(arduino_info, cur_pkg,
+                                         cur_arch)
+    if not cur_ver and cur_ptfm:
+        vers = get_platform_versions(pkgs_info, cur_pkg, cur_ptfm)
+        cur_ver = vers[-1]
+
+    ptfm_info = get_platform_info(pkgs_info, cur_pkg, cur_ptfm, cur_ver)
+
+    if not ptfm_info:
+        ptfm_info = inst_ptfm_info
+    else:
+        ptfm_info['package'] = cur_pkg
+        ptfm_info['path'] = cur_path
+    return ptfm_info
+
+
 def get_sel_platform_info(arduino_info):
     """."""
     sel_pkg = arduino_info['selected'].get('package')
     sel_ptfm = arduino_info['selected'].get('platform')
     sel_ver = arduino_info['selected'].get('version')
-
-    ptfm_info = {}
-    if sel_pkg == 'Arduino IDE':
-        ext_app_path = arduino_info['ext_app_path']
-        hardware_path = os.path.join(ext_app_path, 'hardware')
-        if sel_ptfm == 'arduino':
-            cur_pkg = 'arduino'
-            cur_arch = sel_ver
-            cur_ptfm = get_platform_name_by_arch(arduino_info, cur_pkg,
-                                                 cur_arch)
-            index_file_path = os.path.join(hardware_path,
-                                           'package_index_bundled.json')
-            if os.path.isfile(index_file_path):
-                index_files = index_file.PackageIndexFiles([index_file_path])
-                info = index_files.get_info()
-                pkgs_info = info.get('packages', {})
-            else:
-                pkgs_info = arduino_info.get('packages', {})
-            vers = get_platform_versions(pkgs_info, cur_pkg, cur_ptfm)
-            if vers:
-                cur_ver = vers[-1]
-                ptfm_info = get_platform_info(pkgs_info, cur_pkg,
-                                              cur_ptfm, cur_ver)
-    else:
-        pkgs_info = arduino_info.get('packages', {})
-        ptfm_info = get_platform_info(pkgs_info, sel_pkg, sel_ptfm, sel_ver)
+    ptfm_info = get_full_platform_info(arduino_info, sel_pkg,
+                                       sel_ptfm, sel_ver)
     return ptfm_info
 
 
@@ -156,20 +158,103 @@ def get_sel_programmer_info(arduino_info):
     return programmer_info
 
 
-def get_sel_tools_info(arduino_info, platform_info):
+def get_sel_platform_path(arduino_info):
+    """."""
+    ptfm_info = get_sel_platform_info(arduino_info)
+    platform_path = ptfm_info.get('path', '')
+    return platform_path
+
+
+def get_alternate_platform_info(arduino_info, pkg, arch):
+    """."""
+    ptfm_info = {}
+    ptfm = get_platform_name_by_arch(arduino_info, pkg, arch)
+    if ptfm:
+        pkgs_info = arduino_info.get('packages', {})
+        vers = get_platform_versions(pkgs_info, pkg, ptfm)
+        ver = vers[-1]
+        ptfm_info = get_full_platform_info(arduino_info, pkg, ptfm, ver)
+    return ptfm_info
+
+
+def get_build_platform_info(arduino_info):
+    """."""
+    ptfm_info = get_sel_platform_info(arduino_info)
+
+    board_info = get_sel_board_info(arduino_info)
+    build_core = board_info.get('build.core', '')
+    if ':' in build_core:
+        core_infos = build_core.split(':')
+        pkg = core_infos[0].strip()
+        arch = ptfm_info.get('architecture', '')
+        ptfm_info = get_alternate_platform_info(arduino_info, pkg, arch)
+    return ptfm_info
+
+
+def get_build_platform_path(arduino_info):
+    """."""
+    ptfm_info = get_build_platform_info(arduino_info)
+    platform_path = ptfm_info.get('path', '')
+    return platform_path
+
+
+def get_build_core_src_path(arduino_info):
+    """."""
+    core_src_path = ''
+    platform_path = get_build_platform_path(arduino_info)
+    if platform_path:
+        board_info = get_sel_board_info(arduino_info)
+        build_core = board_info.get('build.core', '')
+        if ':' in build_core:
+            build_core = build_core.split(':')[-1].strip()
+        if build_core:
+            cores_path = os.path.join(platform_path, 'cores')
+            core_src_path = os.path.join(cores_path, build_core)
+    return core_src_path
+
+
+def get_build_variant_path(arduino_info):
+    """."""
+    variant_path = ''
+    ptfm_info = get_sel_platform_info(arduino_info)
+    board_info = get_sel_board_info(arduino_info)
+    build_variant = board_info.get('build.variant', '')
+    if ':' in build_variant:
+        pkg, build_variant = build_variant.split(':')
+        pkg = pkg.strip()
+        build_variant = build_variant.strip()
+        arch = ptfm_info.get('architecture', '')
+        ptfm_info = get_alternate_platform_info(arduino_info, pkg, arch)
+
+    platform_path = ptfm_info.get('path', '')
+    if platform_path:
+        variants_path = os.path.join(platform_path, 'variants')
+        variant_path = os.path.join(variants_path, build_variant)
+    return variant_path
+
+
+def get_default_tools_deps(arduino_info):
+    """."""
+    pkgs_info = arduino_info.get('packages', {})
+    pkg_name = 'arduino'
+    ptfm_name = 'Arduino AVR Boards'
+    ptfm_ver = get_platform_versions(pkgs_info, pkg_name, ptfm_name)[-1]
+    ptfm_info = get_platform_info(pkgs_info, pkg_name,
+                                  ptfm_name, ptfm_ver)
+    tools_deps = ptfm_info.get('toolsDependencies', [])
+    return tools_deps
+
+
+def get_build_tools_info(arduino_info, platform_info):
     """."""
     tools_info = {'names': []}
     arduino_app_path = arduino_info['arduino_app_path']
     packages_path = os.path.join(arduino_app_path, 'packages')
     tools_deps = platform_info.get('toolsDependencies', [])
+    ptfm_name = platform_info.get('name', '')
 
-    if platform_info and not tools_deps:
-        pkgs_info = arduino_info.get('packages', {})
-        pkg_name = 'arduino'
-        ptfm_name = 'Arduino AVR Boards'
-        ptfm_ver = get_platform_versions(pkgs_info, pkg_name, ptfm_name)[-1]
-        ptfm_info = get_platform_info(pkgs_info, pkg_name, ptfm_name, ptfm_ver)
-        tools_deps = ptfm_info.get('toolsDependencies', [])
+    if ptfm_name and not tools_deps:
+        tools_deps = get_default_tools_deps(arduino_info)
 
     for tool_info in tools_deps:
         package = tool_info.get('packager', '')
@@ -191,57 +276,6 @@ def get_sel_tools_info(arduino_info, platform_info):
         tools_info['names'].append(name)
         tools_info[name] = tool_info
     return tools_info
-
-
-def get_sel_platform_path(arduino_info):
-    """."""
-    platform_path = ''
-    sel_pkg = arduino_info['selected'].get('package')
-    sel_ptfm = arduino_info['selected'].get('platform')
-    sel_ver = arduino_info['selected'].get('version')
-    if sel_pkg and sel_ver:
-        if sel_pkg == 'Arduino IDE':
-            ext_app_path = arduino_info['ext_app_path']
-            if os.path.isdir(ext_app_path):
-                hardware_path = os.path.join(ext_app_path, 'hardware')
-                pkg_path = os.path.join(hardware_path, sel_ptfm)
-                platform_path = os.path.join(pkg_path, sel_ver)
-        else:
-            arch = get_platform_arch_by_name(arduino_info, sel_pkg, sel_ptfm)
-            arduino_app_path = arduino_info['arduino_app_path']
-            packages_path = os.path.join(arduino_app_path, 'packages')
-            package_path = os.path.join(packages_path, sel_pkg)
-            hardware_path = os.path.join(package_path, 'hardware')
-            platforms_path = os.path.join(hardware_path, arch)
-            platform_path = os.path.join(platforms_path, sel_ver)
-    return platform_path
-
-
-def get_sel_core_src_path(arduino_info):
-    """."""
-    core_src_path = ''
-    platform_path = get_sel_platform_path(arduino_info)
-    if platform_path:
-        board_info = get_sel_board_info(arduino_info)
-        build_core = board_info.get('build.core', '')
-        if ':' in build_core:
-            build_core = build_core.split(':')[-1].strip()
-        if build_core:
-            cores_path = os.path.join(platform_path, 'cores')
-            core_src_path = os.path.join(cores_path, build_core)
-    return core_src_path
-
-
-def get_sel_variant_path(arduino_info):
-    """."""
-    variant_path = ''
-    platform_path = get_sel_platform_path(arduino_info)
-    if platform_path:
-        board_info = get_sel_board_info(arduino_info)
-        build_variant = board_info.get('build.variant', '')
-        variants_path = os.path.join(platform_path, 'variants')
-        variant_path = os.path.join(variants_path, build_variant)
-    return variant_path
 
 
 def get_variants(text):
@@ -274,10 +308,10 @@ def replace_variants(text, info, prefix=''):
     return text
 
 
-def get_sel_cmds_info(arduino_info):
+def get_build_cmds_info(arduino_info):
     """."""
     cmds_info = {}
-    platform_path = get_sel_platform_path(arduino_info)
+    platform_path = get_build_platform_path(arduino_info)
     if platform_path:
         cmd_file_path = os.path.join(platform_path, 'platform.txt')
         cmd_file = plain_params_file.PlainParamsFile(cmd_file_path)
@@ -288,23 +322,22 @@ def get_sel_cmds_info(arduino_info):
 def get_commands_info(arduino_info, project=None):
     """."""
     cmds_info = {}
-    platform_path = get_sel_platform_path(arduino_info)
+    build_platform_path = get_build_platform_path(arduino_info)
 
-    all_cmds_info = get_sel_cmds_info(arduino_info)
+    all_cmds_info = get_build_cmds_info(arduino_info)
     board_info = get_sel_board_info(arduino_info)
     programmer_info = get_sel_programmer_info(arduino_info)
 
     sel_pkg = arduino_info['selected'].get('package', '')
     sel_ptfm = arduino_info['selected'].get('platform', '')
-    platform_info = get_sel_platform_info(arduino_info)
 
     prj_name = ''
     if project:
         prj_name = project.get_name()
     arduino_app_path = arduino_info['arduino_app_path']
     build_path = os.path.join(arduino_app_path, 'build')
-    platform_system_path = os.path.join(platform_path, 'system')
-    platform_variant_path = get_sel_variant_path(arduino_info)
+    platform_system_path = os.path.join(build_platform_path, 'system')
+    platform_variant_path = get_build_variant_path(arduino_info)
 
     prj_build_path = os.path.join(build_path, prj_name)
     ser_port = arduino_info['selected'].get('serial_port', '')
@@ -313,8 +346,6 @@ def get_commands_info(arduino_info, project=None):
 
     include_paths = arduino_info.get('include_paths', [])
     includes = ['"-I%s"' % p.replace('\\', '/') for p in include_paths]
-    # lib_paths = arduino_info.get('lib_paths', [])
-    # includes += ['"-L%s"' % p.replace('\\', '/') for p in lib_paths]
 
     all_info = {}
     all_info['extra.time.utc'] = str(int(time.time()))
@@ -323,14 +354,14 @@ def get_commands_info(arduino_info, project=None):
     all_info['extra.time.dst'] = str(int(time.daylight))
     all_info['build.project_name'] = prj_name
     all_info['build.path'] = prj_build_path.replace('\\', '/')
-    all_info['runtime.platform.path'] = platform_path.replace('\\', '/')
+    all_info['runtime.platform.path'] = build_platform_path.replace('\\', '/')
     all_info['build.system.path'] = platform_system_path.replace('\\', '/')
     all_info['build.variant.path'] = platform_variant_path.replace('\\', '/')
     all_info['build.arch'] = get_platform_arch_by_name(arduino_info,
                                                        sel_pkg, sel_ptfm)
 
-    ide_pkg_path = os.path.dirname(platform_path)
-    core_path = get_sel_core_src_path(arduino_info)
+    ide_pkg_path = os.path.dirname(build_platform_path)
+    core_path = get_build_core_src_path(arduino_info)
     all_info['runtime.hardware.path'] = ide_pkg_path.replace('\\', '/')
     all_info['build.core.path'] = core_path.replace('\\', '/')
 
@@ -355,7 +386,15 @@ def get_commands_info(arduino_info, project=None):
     extra_flags = all_info.get('build.extra_flags', '')
     all_info['build.extra_flags'] = ' '.join((extra_flags, extra_build_flag))
 
-    tools_info = get_sel_tools_info(arduino_info, platform_info)
+    if 'arm' in all_info.get('compiler.c.cmd', '') or \
+            'arm' in all_info.get('build.command.gcc', ''):
+        if 'compiler.c.elf.extra_flags' in all_info:
+            all_info['compiler.c.elf.extra_flags'] += ' --specs=nosys.specs'
+        elif 'build.flags.libs' in all_info:
+            all_info['build.flags.libs'] += ' --specs=nosys.specs'
+
+    build_platform_info = get_build_platform_info(arduino_info)
+    tools_info = get_build_tools_info(arduino_info, build_platform_info)
     tool_names = tools_info.get('names', [])
     upload_tool = all_info.get('upload.tool', '')
     if upload_tool not in tool_names:

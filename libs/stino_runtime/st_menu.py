@@ -34,7 +34,7 @@ def write_menu(menu_type, menu_text):
 def get_sketch_menu_text(level, paths):
     """."""
     text = ''
-    none_sketches = ['libraries', 'examples']
+    none_sketches = ['libraries', 'examples', 'hardware']
     for path in paths:
         path = path.replace('\\', '/')
         name = os.path.basename(path)

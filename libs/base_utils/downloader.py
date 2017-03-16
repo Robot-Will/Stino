@@ -62,6 +62,7 @@ def download(url, target_dir,
     is_done = False
     trunk_size = 1024
     done_size = 0
+    is_msg_quiet = True
 
     file_name = os.path.basename(url)
     target_file_path = os.path.join(target_dir, file_name)
@@ -91,9 +92,11 @@ def download(url, target_dir,
             try:
                 remote_f = urllib.request.urlopen(req)
             except (ValueError, urllib.error.HTTPError, urllib.error.URLError):
-                message_consumer('[Error] Can not fetch %s\n' % url)
+                message_consumer('[Error] Can not fetch %s\n' % url,
+                                 is_msg_quiet)
             else:
-                message_consumer('[%s] Download started.\n' % url)
+                message_consumer('[%s] Download started.\n' % url,
+                                 is_msg_quiet)
                 block = b''
                 retry_counter = 0
 
@@ -127,7 +130,7 @@ def download(url, target_dir,
                             text += ' M / '
                             text += '%.2f' % (remote_size / 1024 / 1024)
                             text += ' M)\n'
-                            message_consumer(text)
+                            message_consumer(text, is_msg_quiet)
 
                 if done_size < remote_size:
                     f.write(block)
@@ -139,9 +142,11 @@ def download(url, target_dir,
                     if os.path.isfile(target_file_path):
                         os.remove(target_file_path)
                     os.rename(tmp_file_path, target_file_path)
-                    message_consumer('[%s] Download completed.\n' % url)
+                    message_consumer('[%s] Download completed.\n' % url,
+                                     is_msg_quiet)
                 else:
-                    message_consumer('[%s] Download failed.\n' % url)
+                    message_consumer('[%s] Download failed.\n' % url,
+                                     is_msg_quiet)
     return is_done
 
 

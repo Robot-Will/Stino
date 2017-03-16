@@ -65,10 +65,10 @@ class TaskQueue(object):
         self._delay = delay
         self._callable = callable(self._consumer)
 
-    def put(self, obj=None):
+    def put(self, *args):
         """."""
         if self._callable:
-            self._queue.append(obj)
+            self._queue.append(args)
             self._start()
 
     def _start(self):
@@ -81,10 +81,7 @@ class TaskQueue(object):
     def _run(self):
         """."""
         while self._queue:
-            obj = self._queue.pop(0)
-            if obj is None:
-                self._consumer()
-            else:
-                self._consumer(obj)
+            args = self._queue.pop(0)
+            self._consumer(*args)
             time.sleep(self._delay)
         self._is_alive = False

@@ -363,9 +363,7 @@ class StinoCheckToolsCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            platform_info = \
-                stino.selected.get_sel_platform_info(stino.arduino_info)
-            stino.do_action.put(stino.check_tools_deps, platform_info)
+            stino.do_action.put(stino.check_platform_dep)
 
 
 class StinoSelectVersionCommand(sublime_plugin.WindowCommand):
@@ -788,7 +786,7 @@ class StinoUploadUsingProgrammerCommand(sublime_plugin.TextCommand):
             sel_prog = stino.arduino_info['selected'].get('programmer')
             if sel_prog and file_path and stino.c_file.is_cpp_file(file_path):
                 cmds_info = \
-                    stino.selected.get_sel_cmds_info(stino.arduino_info)
+                    stino.selected.get_build_cmds_info(stino.arduino_info)
                 upload_cmd = cmds_info.get('program.pattern', '')
                 if upload_cmd:
                     info = \
@@ -849,7 +847,7 @@ class StinoBurnBootloaderCommand(sublime_plugin.WindowCommand):
             sel_serial = stino.arduino_info['selected'].get('serial_port')
             if sel_serial:
                 cmds_info = \
-                    stino.selected.get_sel_cmds_info(stino.arduino_info)
+                    stino.selected.get_build_cmds_info(stino.arduino_info)
                 erase_cmd = cmds_info.get('erase.pattern', '')
                 bootloader_cmd = cmds_info.get('bootloader.pattern', '')
                 if erase_cmd and bootloader_cmd:
@@ -885,8 +883,11 @@ class StinoShowPanelCommand(sublime_plugin.WindowCommand):
 
     def run(self):
         """."""
-        panel_name = 'output.stino_panel'
-        self.window.run_command("show_panel", {"panel": panel_name})
+        panel_name = 'stino_panel'
+        if not self.window.find_output_panel(panel_name):
+            stino.message_queue.put()
+        out_panel_name = 'output.stino_panel'
+        self.window.run_command("show_panel", {"panel": out_panel_name})
 
 
 class StinoRefreshLangsCommand(sublime_plugin.WindowCommand):
@@ -937,9 +938,15 @@ class StinoAboutCommand(sublime_plugin.WindowCommand):
 class StinoPanelWriteCommand(sublime_plugin.TextCommand):
     """."""
 
-    def run(self, edit, text, do_scroll=True):
+    def run(self, edit, text, mode='insert', do_scroll=True):
         """."""
         point = self.view.size()
-        self.view.insert(edit, point, text)
+        if mode == 'insert':
+            self.view.insert(edit, point, text)
+        else:
+            region = sublime.Region(0, point)
+            self.view.replace(edit, region, text)
+
         if do_scroll:
+            point = self.view.size()
             self.view.show(point)
