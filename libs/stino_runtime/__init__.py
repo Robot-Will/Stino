@@ -965,6 +965,24 @@ def is_modified(file_path, info):
     return state
 
 
+def get_hooks_cmds(cmds_info, pattern_key):
+    """."""
+    keys = []
+    cmds = []
+    msgs = []
+    pattern_key = 'recipe.hooks.' + pattern_key
+    for key in cmds_info:
+        if key.startswith('recipe.hooks.') and key.endswith('.pattern'):
+            if pattern_key in key:
+                keys.append(key)
+    keys.sort()
+    for key in keys:
+        cmd = cmds_info.get(key, '')
+        cmds.append(cmd)
+        msgs.append('')
+    return cmds, msgs
+
+
 def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
     """."""
     is_full_build = bool(arduino_info['settings'].get('full_build'))
@@ -1080,6 +1098,12 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
     # --line-directives
     # "Temp\arduino_build_248932\preproc\ctags_target_for_gcc_minus_e.cpp
 
+    if build_src_paths:
+        sketch_prebuild_cmds, _msgs = get_hooks_cmds(cmds_info,
+                                                     'sketch.prebuild')
+        cmds += sketch_prebuild_cmds
+        msgs += _msgs
+
     for src_path, obj_path in zip(build_src_paths, build_obj_paths):
         src_ext = os.path.splitext(src_path)[-1]
         if src_ext in c_file.CPP_EXTS or src_ext in c_file.INO_EXTS:
@@ -1098,9 +1122,21 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
         cmds.append(cmd)
         msgs.append(msg)
 
-    msg = 'Linking everything together...'
-    msgs.append(msg)
+    if build_src_paths:
+        sketch_postbuild_cmds, _msgs = get_hooks_cmds(cmds_info,
+                                                      'sketch.postbuild')
+        cmds += sketch_postbuild_cmds
+        msgs += _msgs
+
     if not os.path.isfile(core_a_path):
+        msg = 'Linking everything together...'
+        msgs.append(msg)
+
+        linking_prelink_cmds, _msgs = get_hooks_cmds(cmds_info,
+                                                     'linking.prelink')
+        cmds += linking_prelink_cmds
+        msgs += _msgs
+
         cmd_pattern = cmds_info.get('recipe.ar.pattern', '')
         if '/core/' in cmd_pattern:
             cmd_pattern = cmd_pattern.replace('core/', '')
@@ -1108,7 +1144,12 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
             cmd = cmd_pattern.replace('{object_file}', obj_path)
             cmds.append(cmd)
             msgs.append('')
-    msgs.pop()
+        msgs.pop()
+
+        linking_postlink_cmds, _msgs = get_hooks_cmds(cmds_info,
+                                                      'linking.postlink')
+        cmds += linking_postlink_cmds
+        msgs += _msgs
 
     out_file_name = cmds_info.get('recipe.output.save_file', '')
     if out_file_name:
@@ -1144,17 +1185,26 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
                 if '.eep.' not in key and key not in bin_keys:
                     bin_keys.append(key)
 
+        objcopy_preobjcopy_cmds, _msgs = get_hooks_cmds(cmds_info,
+                                                        'objcopy.preobjcopy')
+        cmds += objcopy_preobjcopy_cmds
+        msgs += _msgs
+
         for key in bin_keys:
             cmd = cmds_info.get(key, '')
             if cmd:
                 cmds.append(cmd)
                 msgs.append('')
+        msgs.pop()
 
-    cmd = cmds_info.get('recipe.hooks.postbuild.1.pattern', '')
-    if cmd:
-        cmds.append(cmd)
-        msgs.append('Opening Teensy Loader...')
-    msgs.pop()
+        objcopy_postobjcopy_cmds, _msgs = get_hooks_cmds(cmds_info,
+                                                         'objcopy.postobjcopy')
+        cmds += objcopy_postobjcopy_cmds
+        msgs += _msgs
+
+    postbuild_cmds, _msgs = get_hooks_cmds(cmds_info, 'postbuild')
+    cmds += postbuild_cmds
+    msgs += _msgs
 
     last_build_info.set('package', sel_package)
     last_build_info.set('platform', sel_platform)
@@ -1339,6 +1389,20 @@ def run_size_command(cmd, regex_info):
                     message_queue.put(result)
 
 
+def save_project_files(project_path):
+    """."""
+    project_path = project_path.replace('\\', '/')
+    wins = sublime.windows()
+    for win in wins:
+        views = win.views()
+        for view in views:
+            file_path = view.file_name()
+            if file_path:
+                file_path = file_path.replace('\\', '/')
+                if project_path in file_path:
+                    view.run_command('save')
+
+
 def build_sketch(build_info={}):
     """."""
     if not build_info:
@@ -1349,6 +1413,13 @@ def build_sketch(build_info={}):
     sel_platform = arduino_sel.get('platform', '')
     sel_version = arduino_sel.get('version', '')
     sel_board = arduino_sel.get('board', '')
+
+    project_path = build_info.get('path')
+    upload_mode = build_info.get('upload_mode', '')
+
+    save_before_build = arduino_info['settings'].get('save_before_build', True)
+    if save_before_build:
+        save_project_files(project_path)
 
     is_ready = True
     if not (sel_package and sel_platform and sel_version and sel_board):
@@ -1362,9 +1433,6 @@ def build_sketch(build_info={}):
                 is_ready = False
     if not is_ready:
         return
-
-    project_path = build_info.get('path')
-    upload_mode = build_info.get('upload_mode', '')
 
     msg = '[Build] %s...' % project_path
     message_queue.put(msg)
@@ -1606,6 +1674,8 @@ def init_config_settings():
     config_settings = file.SettingsFile(config_file_path)
     if config_settings.get('extra_build_flag') is None:
         config_settings.set('extra_build_flag', '')
+    if config_settings.get('save_before_build') is None:
+        config_settings.set('save_before_build', True)
     arduino_info['settings'] = config_settings
 
 

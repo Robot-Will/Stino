@@ -519,6 +519,25 @@ class StinoSetExtraFlagCommand(sublime_plugin.WindowCommand):
             self.window.open_file(file_path)
 
 
+class StinoSaveBeforeBuildCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            state = \
+                bool(stino.arduino_info['settings'].get('save_before_build'))
+            stino.arduino_info['settings'].set('save_before_build', not state)
+
+    def is_checked(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            state = \
+                bool(stino.arduino_info['settings'].get('save_before_build'))
+        return state
+
+
 class StinoToggleFullBuildCommand(sublime_plugin.WindowCommand):
     """."""
 
