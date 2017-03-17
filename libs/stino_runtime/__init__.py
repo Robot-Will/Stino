@@ -524,7 +524,12 @@ def download_platform_tool(down_info):
                 if is_ok:
                     if names:
                         dir_name = names[0]
+                        if '/' in dir_name:
+                            dir_name = dir_name.split('/')[0]
                         new_path = os.path.join(name_path, dir_name)
+                        if os.path.exists(version_path):
+                            move_path = os.path.join(new_path, version)
+                            shutil.move(version_path, move_path)
                         os.rename(new_path, version_path)
 
                     msg = '[%s] %s %s: ' % (package, name, version)
@@ -551,21 +556,22 @@ def check_platform_dep():
     build_platform_info = selected.get_build_platform_info(arduino_info)
     url = build_platform_info.get('url', '')
     platform_path = build_platform_info.get('path', '')
-    if not url:
-        is_ready = False
-    elif url and not platform_path:
-        is_ready = False
-        package = build_platform_info.get('package', '')
-        name = build_platform_info.get('name', '')
-        version = build_platform_info.get('version', '')
 
-        down_info = {}
-        down_info['type'] = 'platform'
-        down_info['package'] = package
-        down_info['name'] = name
-        down_info['version'] = version
-        down_info['url'] = url
-        platform_tool_downloader.put(down_info)
+    if not platform_path:
+        is_ready = False
+        if url:
+            is_ready = False
+            package = build_platform_info.get('package', '')
+            name = build_platform_info.get('name', '')
+            version = build_platform_info.get('version', '')
+
+            down_info = {}
+            down_info['type'] = 'platform'
+            down_info['package'] = package
+            down_info['name'] = name
+            down_info['version'] = version
+            down_info['url'] = url
+            platform_tool_downloader.put(down_info)
 
     if is_ready:
         is_ready = check_tools_deps(build_platform_info)
@@ -1072,7 +1078,7 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
     # "arduino-1.8.1\tools-builder\ctags\5.8-arduino11/ctags" -u
     # --language-force=c++ -f - --c++-kinds=svpf --fields=KSTtzns
     # --line-directives
-    # "Temp\arduino_build_248932\preproc\ctags_target_for_gcc_minus_e.cpp"
+    # "Temp\arduino_build_248932\preproc\ctags_target_for_gcc_minus_e.cpp
 
     for src_path, obj_path in zip(build_src_paths, build_obj_paths):
         src_ext = os.path.splitext(src_path)[-1]

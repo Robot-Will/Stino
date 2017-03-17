@@ -235,6 +235,6 @@ def restore_serial_port(upload_port, baudrate, timeout=4):
 def get_serial_file(port):
     """."""
     serial_file = port
-    if '/dev/' in serial_file:
+    if serial_file and '/dev/' in serial_file:
         serial_file = serial_file[5:]
     return serial_file

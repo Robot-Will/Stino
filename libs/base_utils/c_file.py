@@ -382,71 +382,6 @@ def regular_chars(words):
         if pre_word in '([!~^:' or word[0] in '[]]);,:?.^':
             new_word += word
 
-        elif pre_word == '<':
-            if words[0] == '#include' or word == '<':
-                new_word += word
-            else:
-                new_words.append(new_word)
-                new_word = word
-
-        elif word == '=':
-            if pre_word in '+-*/%<>!=&|^':
-                new_word += word
-            else:
-                new_words.append(new_word)
-                new_word = word
-
-        elif pre_word == '+':
-            if word == '+':
-                new_word += word
-            else:
-                new_words.append(new_word)
-                new_word = word
-
-        elif pre_word == '-':
-            if word == '->':
-                new_word += word
-            else:
-                is_negtive = False
-                pre_2_index = index - 2
-                if pre_2_index >= 0:
-                    pre_2_word = words[index - 2]
-                    if pre_2_word not in (none_operator_chars + ')]'):
-                        is_negtive = True
-                if is_negtive:
-                    new_word += word
-                else:
-                    new_words.append(new_word)
-                    new_word = word
-
-        elif pre_word == '>':
-            if word == '>':
-                new_word += word
-            else:
-                new_words.append(new_word)
-                new_word = word
-
-        elif pre_word == '&':
-            if word == '&':
-                new_word += word
-            else:
-                new_words.append(new_word)
-                new_word = word
-
-        elif pre_word == '|':
-            if word == '|':
-                new_word += word
-            else:
-                new_words.append(new_word)
-                new_word = word
-
-        elif word == '>':
-            if words[0] == '#include':
-                new_word += word
-            else:
-                new_words.append(new_word)
-                new_word = word
-
         elif word == '(':
             if pre_word in ('if', 'for', 'while', 'switch'):
                 new_words.append(new_word)
@@ -459,6 +394,71 @@ def regular_chars(words):
                 new_word = word
             else:
                 new_word += word
+
+        elif word == '=':
+            if pre_word in '+-*/%<>!=&|^':
+                new_word += word
+            else:
+                new_words.append(new_word)
+                new_word = word
+
+        elif pre_word == '+':
+            if word in '+':
+                new_word += word
+            else:
+                new_words.append(new_word)
+                new_word = word
+
+        elif pre_word == '-':
+            if word in '->':
+                new_word += word
+            else:
+                is_negtive = False
+                pre_2_index = index - 2
+                if pre_2_index >= 0:
+                    pre_2_word = words[index - 2]
+                    if pre_2_word[-1] not in (none_operator_chars + ')]'):
+                        is_negtive = True
+                if is_negtive:
+                    new_word += word
+                else:
+                    new_words.append(new_word)
+                    new_word = word
+
+        elif pre_word == '<':
+            if words[0] == '#include' or word in '<=':
+                new_word += word
+            else:
+                new_words.append(new_word)
+                new_word = word
+
+        elif pre_word == '>':
+            if word in '>=':
+                new_word += word
+            else:
+                new_words.append(new_word)
+                new_word = word
+
+        elif pre_word == '&':
+            if word in '&':
+                new_word += word
+            else:
+                new_words.append(new_word)
+                new_word = word
+
+        elif pre_word == '|':
+            if word in '|':
+                new_word += word
+            else:
+                new_words.append(new_word)
+                new_word = word
+
+        elif word == '>':
+            if words[0] == '#include':
+                new_word += word
+            else:
+                new_words.append(new_word)
+                new_word = word
 
         elif word.startswith('//'):
             new_words.append(new_word)
