@@ -883,6 +883,7 @@ class StinoAutoFormatCommand(sublime_plugin.TextCommand):
 
     def run(self, edit):
         """Auto Format Src."""
+        self.view.run_command('save')
         file_path = self.view.file_name()
         stino.beautify_src(self.view, edit, file_path)
 

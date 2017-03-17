@@ -15,7 +15,7 @@ from . import file
 from . import c_file
 
 
-def list_files_of_extension(dir_path, ext='', mode='recursion'):
+def list_files_of_extension(dir_path, ext='', mode='norecursion'):
     """."""
     paths = []
     if mode == 'recursion':
@@ -27,7 +27,7 @@ def list_files_of_extension(dir_path, ext='', mode='recursion'):
     return paths
 
 
-def list_files_of_extensions(dir_path, exts, mode='recursion'):
+def list_files_of_extensions(dir_path, exts, mode='norecursion'):
     """."""
     paths = []
     for ext in exts:
@@ -36,7 +36,7 @@ def list_files_of_extensions(dir_path, exts, mode='recursion'):
 
 
 def get_file_info_of_extension(dir_path, ext='',
-                               mode='recursion', excludes=[]):
+                               mode='norecursion', excludes=[]):
     """."""
     info = {}
     if mode == 'recursion':
@@ -44,7 +44,7 @@ def get_file_info_of_extension(dir_path, ext='',
         sub_dir_paths = [p for p in sub_file_paths if os.path.isdir(p)]
         for sub_dir_path in sub_dir_paths:
             dir_name = os.path.basename(sub_dir_path)
-            if dir_name not in excludes:
+            if dir_name.lower() not in excludes:
                 sub_info = get_file_info_of_extension(sub_dir_path, ext,
                                                       'recursion', excludes)
                 info.update(sub_info)
@@ -56,7 +56,8 @@ def get_file_info_of_extension(dir_path, ext='',
     return info
 
 
-def get_file_info_of_extensions(dir_path, exts, mode='recursion', excludes=[]):
+def get_file_info_of_extensions(dir_path, exts,
+                                mode='norecursion', excludes=[]):
     """."""
     info = {}
     for ext in exts:

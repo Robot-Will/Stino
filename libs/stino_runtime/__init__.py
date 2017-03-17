@@ -41,6 +41,8 @@ plugin_name = const.PLUGIN_NAME
 _d_pattern_text = r"'-D[\S\s]*?'"
 _d_pattern = re.compile(_d_pattern_text)
 
+EXCLUDES = ['examples', 'samples', 'test']
+
 
 def get_app_dir_settings():
     """."""
@@ -686,11 +688,20 @@ def new_sketch(sketch_name, win):
         sublime.error_message(msg)
 
 
+def get_real_lib_path(lib_path):
+    """."""
+    sub_dirs = ['src', 'include']
+    for sub_dir in sub_dirs:
+        path = os.path.join(lib_path, sub_dir)
+        if os.path.isdir(path):
+            lib_path = path
+            break
+    return lib_path
+
+
 def import_lib(view, edit, lib_path):
     """."""
-    src_path = os.path.join(lib_path, 'src')
-    if not os.path.isdir(src_path):
-        src_path = lib_path
+    src_path = get_real_lib_path(lib_path)
 
     incs = []
     for ext in c_file.H_EXTS:
@@ -866,7 +877,7 @@ def get_h_path_info(project):
     """."""
     h_path_info = {}
     get_h_info = c_project.get_file_info_of_extensions
-    excludes = ['examples', 'samples']
+
     sketchbook_path = arduino_info['sketchbook_path']
     ext_app_path = arduino_info['ext_app_path']
     platform_path = selected.get_sel_platform_path(arduino_info)
@@ -883,10 +894,9 @@ def get_h_path_info(project):
         lib_paths = glob.glob(libraries_path + '/*')
         lib_paths = [p for p in lib_paths if os.path.isdir(p)]
         for lib_path in lib_paths:
-            src_path = os.path.join(lib_path, 'src')
-            if not os.path.isdir(src_path):
-                src_path = lib_path
-            info = get_h_info(src_path, c_file.H_EXTS, 'recursion', excludes)
+            src_path = get_real_lib_path(lib_path)
+
+            info = get_h_info(src_path, c_file.H_EXTS, 'recursion', EXCLUDES)
             h_path_info.update(info)
 
     if project.is_arduino_project():
@@ -896,10 +906,10 @@ def get_h_path_info(project):
         for src_path in src_paths:
             if src_path:
                 info = get_h_info(src_path, c_file.H_EXTS,
-                                  'recursion', excludes)
+                                  'recursion', EXCLUDES)
                 h_path_info.update(info)
 
-    info = get_h_info(project.get_path(), c_file.H_EXTS, 'recursion', excludes)
+    info = get_h_info(project.get_path(), c_file.H_EXTS, 'recursion', EXCLUDES)
     h_path_info.update(info)
     return h_path_info
 
