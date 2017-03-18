@@ -1243,6 +1243,12 @@ def run_command(cmd):
     return return_code, stdout, stderr
 
 
+def handle_build_error_messages(error_msg):
+    """."""
+    message_queue.put(error_msg)
+    print(error_msg)
+
+
 def run_build_command(percent, cmd, msg):
     """."""
     is_ok = True
@@ -1267,7 +1273,7 @@ def run_build_command(percent, cmd, msg):
             if stdout:
                 message_queue.put(stdout.replace('\r', ''))
         if stderr:
-            message_queue.put(stderr.replace('\r', ''))
+            handle_build_error_messages(stderr.replace('\r', ''))
         if return_code != 0:
             is_ok = False
     return is_ok

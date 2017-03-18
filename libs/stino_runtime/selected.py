@@ -12,6 +12,7 @@ import os
 import re
 import time
 
+from base_utils import sys_info
 from base_utils import serial_port
 from base_utils import plain_params_file
 
@@ -316,6 +317,17 @@ def get_build_cmds_info(arduino_info):
         cmd_file_path = os.path.join(platform_path, 'platform.txt')
         cmd_file = plain_params_file.PlainParamsFile(cmd_file_path)
         cmds_info = cmd_file.get_info()
+
+        os_name = sys_info.get_os_name()
+        if os_name == 'osx':
+            os_name = 'macosx'
+        os_name = '.' + os_name
+        keys = cmds_info.keys()
+        for key in keys:
+            if key.endswith(os_name):
+                value = cmds_info[key]
+                key = key.replace(os_name, '')
+                cmds_info[key] = value
     return cmds_info
 
 
