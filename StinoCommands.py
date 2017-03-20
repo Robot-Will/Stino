@@ -679,30 +679,6 @@ class StinoUploadCommand(sublime_plugin.TextCommand):
         return state
 
 
-class StinoNetworkUploadCommand(sublime_plugin.TextCommand):
-    """."""
-
-    def run(self, edit):
-        """."""
-        if stino.arduino_info['init_done']:
-            file_path = self.view.file_name()
-            dir_path = os.path.dirname(file_path)
-            build_info = {'path': dir_path}
-            build_info['upload_mode'] = 'network'
-            stino.sketch_builder.put(build_info)
-
-    def is_enabled(self):
-        """."""
-        state = False
-        if stino.arduino_info['init_done']:
-            file_path = self.view.file_name()
-            if file_path and stino.c_file.is_cpp_file(file_path):
-                info = stino.selected.get_sel_board_info(stino.arduino_info)
-                if 'upload.network.port' in info:
-                    state = True
-        return state
-
-
 class StinoRefreshSerialsCommand(sublime_plugin.WindowCommand):
     """."""
 
@@ -795,7 +771,7 @@ class StinoUploadUsingProgrammerCommand(sublime_plugin.TextCommand):
             file_path = self.view.file_name()
             dir_path = os.path.dirname(file_path)
             build_info = {'path': dir_path}
-            build_info['upload_mode'] = 'programmer'
+            build_info['upload_mode'] = 'program'
             stino.sketch_builder.put(build_info)
 
     def is_enabled(self):
@@ -804,11 +780,10 @@ class StinoUploadUsingProgrammerCommand(sublime_plugin.TextCommand):
         if stino.arduino_info['init_done']:
             file_path = self.view.file_name()
             sel_prog = stino.arduino_info['selected'].get('programmer')
-            if sel_prog and file_path and stino.c_file.is_cpp_file(file_path):
-                cmds_info = \
-                    stino.selected.get_build_cmds_info(stino.arduino_info)
-                upload_cmd = cmds_info.get('program.pattern', '')
-                if upload_cmd:
+            if file_path and stino.c_file.is_cpp_file(file_path) and sel_prog:
+                cmd = stino.selected.get_upload_command(stino.arduino_info,
+                                                        mode='program')
+                if cmd:
                     info = \
                         stino.selected.get_sel_board_info(stino.arduino_info)
                     if info:
@@ -864,13 +839,11 @@ class StinoBurnBootloaderCommand(sublime_plugin.WindowCommand):
         """."""
         state = False
         if stino.arduino_info['init_done']:
-            sel_serial = stino.arduino_info['selected'].get('serial_port')
-            if sel_serial:
-                cmds_info = \
-                    stino.selected.get_build_cmds_info(stino.arduino_info)
-                erase_cmd = cmds_info.get('erase.pattern', '')
-                bootloader_cmd = cmds_info.get('bootloader.pattern', '')
-                if erase_cmd and bootloader_cmd:
+            sel_prog = stino.arduino_info['selected'].get('programmer')
+            if sel_prog:
+                cmds = \
+                    stino.selected.get_bootloader_commands(stino.arduino_info)
+                if cmds and cmds[0] and cmds[1]:
                     info = \
                         stino.selected.get_sel_board_info(stino.arduino_info)
                     if info:

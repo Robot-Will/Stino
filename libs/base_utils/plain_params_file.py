@@ -106,12 +106,14 @@ def remove_block_head(block, head):
     return new_block
 
 
-def get_generic_info(block):
+def get_generic_info(block, category):
     """."""
     generic_info = {}
     generic_block = get_generic_block(block)
     for line in generic_block:
         key, value = get_key_value(line)
+        if key == 'name':
+            key = category + '.' + key
         generic_info[key] = value
     return generic_info
 
@@ -186,7 +188,7 @@ class PlainParamsFile(file.File):
         lines = (l.strip() for l in lines)
         self._lines = [l for l in lines if l and not l.startswith('#')]
         self._names = get_names(self._lines)
-        self._names.sort(key=str.lower)
+        # self._names.sort(key=str.lower)
 
     def get_info(self):
         """."""
@@ -231,7 +233,7 @@ class BoardsFile(PlainParamsFile):
             block = get_lines_with_name(self._lines, name)
             head = get_heads(block)[0]
             block = remove_block_head(block, head)
-            generic_info = get_generic_info(block)
+            generic_info = get_generic_info(block, 'board')
             menu_blocks_info = get_menu_blocks_info(block, sub_menu_info)
             boards_info['boards'][name]['generic'] = generic_info
             boards_info['boards'][name].update(menu_blocks_info)
@@ -254,6 +256,6 @@ class ProgrammersFile(PlainParamsFile):
             block = get_lines_with_name(self._lines, name)
             head = get_heads(block)[0]
             block = remove_block_head(block, head)
-            generic_info = get_generic_info(block)
+            generic_info = get_generic_info(block, 'programmer')
             programmers_info['programmers'][name] = generic_info
         return programmers_info

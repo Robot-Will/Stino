@@ -271,8 +271,8 @@ def get_all_programmers_info(arduino_info):
     programmers_info = \
         get_programmers_info(arduino_info,
                              src='platform').get('programmers', {})
-    programmers_info = combine_programmers_info([basic_programmers_info,
-                                                 programmers_info])
+    programmers_info = combine_programmers_info([programmers_info,
+                                                 basic_programmers_info])
     return programmers_info
 
 
@@ -584,7 +584,7 @@ def check_tools_deps(platform_info):
     """."""
     is_ready = True
 
-    tools_info = selected.get_build_tools_info(arduino_info, platform_info)
+    tools_info = selected.get_dep_tools_info(arduino_info, platform_info)
     tool_names = tools_info.get('names', [])
     for name in tool_names:
         has_tool = False
@@ -863,7 +863,7 @@ def get_tool_dirs(dir_name):
     """Find include dirs."""
     tool_include_dirs = []
     platform_info = selected.get_sel_platform_info(arduino_info)
-    tools_info = selected.get_build_tools_info(arduino_info, platform_info)
+    tools_info = selected.get_dep_tools_info(arduino_info, platform_info)
     tool_names = tools_info.get('names', [])
     for name in tool_names:
         tool_info = tools_info.get(name, {})
@@ -1043,14 +1043,12 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
     build_src_paths = []
     build_obj_paths = []
 
-    main_file_changed = False
     libs_changed = False
     need_gen_bins = False
 
     if is_full_build:
         build_src_paths = src_paths
         build_obj_paths = obj_paths
-        main_file_changed = True
         libs_changed = True
         need_gen_bins = True
     else:
@@ -1063,7 +1061,6 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
         if need_compile:
             build_src_paths.append(src_paths[0])
             build_obj_paths.append(obj_paths[0])
-            main_file_changed = True
             need_gen_bins = True
 
         for src_path, obj_path in zip(src_paths[1:], obj_paths[1:]):
@@ -1084,29 +1081,6 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
 
     cmds = []
     msgs = []
-
-    if main_file_changed:
-        pass
-    #     cmd = cmds_info.get('recipe.preproc.includes', '')
-    #     cmd = cmd.replace('{source_file}', build_src_paths[0])
-    #     msg = 'Detecting libraries used...'
-    #     cmds.append(cmd)
-    #     msgs.append(msg)
-
-    #     preproc_file_name = 'ctags_target_for_gcc_minus_e.cpp'
-    #     preproc_file_name = os.path.join(prj_build_path, preproc_file_name)
-    #     cmd = cmds_info.get('recipe.preproc.macros', '')
-    #     cmd = cmd.replace('{source_file}', build_src_paths[0])
-    #     cmd = cmd.replace('{preprocessed_file_path}', preproc_file_name)
-    #     msg = 'Generating function prototypes...'
-    #     cmds.append(cmd)
-    #     msgs.append(msg)
-
-    # Maybe need somting to do with ctags_target_for_gcc_minus_e.cpp!
-    # "arduino-1.8.1\tools-builder\ctags\5.8-arduino11/ctags" -u
-    # --language-force=c++ -f - --c++-kinds=svpf --fields=KSTtzns
-    # --line-directives
-    # "Temp\arduino_build_248932\preproc\ctags_target_for_gcc_minus_e.cpp
 
     if build_src_paths:
         sketch_prebuild_cmds, _msgs = get_hooks_cmds(cmds_info,
@@ -1288,8 +1262,9 @@ def run_upload_command(cmd):
         verbose_upload = bool(arduino_info['settings'].get('verbose_upload'))
         if verbose_upload:
             message_queue.put(cmd.replace('\\', '/'))
-            if stdout:
-                message_queue.put(stdout)
+
+        if stdout:
+            message_queue.put(stdout)
         if stderr:
             message_queue.put(stderr)
         if return_code != 0:
@@ -1320,8 +1295,10 @@ def run_bootloader_cmds(cmds):
     for cmd in cmds:
         cmd = cmd.replace('\\', '/')
         return_code, stdout, stderr = run_command(cmd)
-        message_queue.put(stdout)
-        message_queue.put(stderr)
+        if stdout:
+            message_queue.put(stdout)
+        if stderr:
+            message_queue.put(stderr)
 
         if return_code != 0:
             is_ok = False
@@ -1492,7 +1469,7 @@ def build_sketch(build_info={}):
     include_dirs = [p.replace('\\', '/') for p in dep_dirs]
     arduino_info['include_paths'] = include_dirs
 
-    cmds_info = selected.get_commands_info(arduino_info, prj)
+    cmds_info = selected.get_build_commands_info(arduino_info, prj)
     cmds, msgs = get_build_cmds(cmds_info, prj_build_path, all_src_paths)
 
     msg = '[Step 3] Start building.'
@@ -1514,20 +1491,16 @@ def build_sketch(build_info={}):
             regex_info[key] = regex
     run_size_command(size_cmd, regex_info)
 
-    if upload_mode == 'upload':
-        upload_cmd = cmds_info.get('upload.pattern', '')
-        sketch_uploader.put(upload_cmd)
-    elif upload_mode == 'programmer':
-        upload_cmd = cmds_info.get('program.pattern', '')
-        sketch_uploader.put(upload_cmd)
-    elif upload_mode == 'network':
-        upload_cmd = cmds_info.get('upload.network_pattern', '')
+    if upload_mode:
+        upload_cmd = selected.get_upload_command(arduino_info, prj,
+                                                 upload_mode)
         sketch_uploader.put(upload_cmd)
 
 
 def upload_sketch(upload_cmd=''):
     """."""
     if upload_cmd:
+        message_queue.put('[Upload]...')
         serial_listener.stop()
         time.sleep(0.25)
 
@@ -1544,7 +1517,6 @@ def upload_sketch(upload_cmd=''):
             upload_cmd = upload_cmd.replace(upload_port, new_upload_port)
             upload_cmd = upload_cmd.replace(serial_file, new_serial_file)
 
-        message_queue.put(upload_cmd)
         is_ok = run_upload_command(upload_cmd)
         if is_ok and do_touch:
             serial_port.restore_serial_port(upload_port, 9600)
@@ -1555,10 +1527,7 @@ def upload_sketch(upload_cmd=''):
 
 def burn_bootloader():
     """."""
-    cmds_info = selected.get_commands_info(arduino_info)
-    erase_cmd = cmds_info.get('erase.pattern', '')
-    bootloader_cmd = cmds_info.get('bootloader.pattern', '')
-    cmds = [erase_cmd, bootloader_cmd]
+    cmds = selected.get_bootloader_commands(arduino_info)
     run_bootloader_cmds(cmds)
 
 

@@ -16,6 +16,9 @@ from base_utils import sys_info
 from base_utils import serial_port
 from base_utils import plain_params_file
 
+in_braces_pattern_text = r'\{[^{}]*}'
+in_braces_pattern = re.compile(in_braces_pattern_text)
+
 
 def get_package_names(pkgs_info):
     """."""
@@ -166,7 +169,7 @@ def get_sel_platform_path(arduino_info):
     return platform_path
 
 
-def get_alternate_platform_info(arduino_info, pkg, arch):
+def get_refering_platform_info(arduino_info, pkg, arch):
     """."""
     ptfm_info = {}
     ptfm = get_platform_name_by_arch(arduino_info, pkg, arch)
@@ -178,17 +181,87 @@ def get_alternate_platform_info(arduino_info, pkg, arch):
     return ptfm_info
 
 
-def get_build_platform_info(arduino_info):
+def get_refering_platform_path(arduino_info, pkg, arch):
+    """."""
+    ptfm_info = get_refering_platform_info(arduino_info, pkg, arch)
+    platform_path = ptfm_info.get('path', '')
+    return platform_path
+
+
+def get_platform_file_params_info(platform_path):
+    """."""
+    cmds_info = {}
+    if platform_path:
+        cmd_file_path = os.path.join(platform_path, 'platform.txt')
+        cmd_file = plain_params_file.PlainParamsFile(cmd_file_path)
+        cmds_info = cmd_file.get_info()
+
+        os_name = sys_info.get_os_name()
+        if os_name == 'osx':
+            os_name = 'macosx'
+        os_name = '.' + os_name
+        keys = cmds_info.keys()
+        for key in keys:
+            if key.endswith(os_name):
+                value = cmds_info[key]
+                key = key.replace(os_name, '')
+                cmds_info[key] = value
+    return cmds_info
+
+
+def get_refering_params_info(arduino_info, pkg, arch):
+    """."""
+    platform_path = get_refering_platform_path(arduino_info, pkg, arch)
+    cmds_info = get_platform_file_params_info(platform_path)
+    return cmds_info
+
+
+####################
+def find_variants_in_braces(text):
+    """."""
+    variants = in_braces_pattern.findall(text)
+    return variants
+
+
+def replace_variants_in_braces(text, info, prefix=''):
+    """."""
+    variants = find_variants_in_braces(text)
+    for variant in variants:
+        go_replace = False
+        key = variant[1:-1]
+
+        if key in info:
+            value = info[key]
+            go_replace = True
+        if prefix:
+            prefix_key = prefix + key
+            if prefix_key in info:
+                value = info[prefix_key]
+                go_replace = True
+
+        if go_replace:
+            value = replace_variants_in_braces(value, info, prefix)
+            text = text.replace(variant, value)
+    return text
+
+
+# Build Paths#########
+def get_target_platform_info(arduino_info, value):
     """."""
     ptfm_info = get_sel_platform_info(arduino_info)
-
-    board_info = get_sel_board_info(arduino_info)
-    build_core = board_info.get('build.core', '')
-    if ':' in build_core:
-        core_infos = build_core.split(':')
+    if ':' in value:
+        core_infos = value.split(':')
         pkg = core_infos[0].strip()
         arch = ptfm_info.get('architecture', '')
-        ptfm_info = get_alternate_platform_info(arduino_info, pkg, arch)
+        ptfm_info = get_refering_platform_info(arduino_info, pkg, arch)
+    return ptfm_info
+
+
+def get_build_platform_info(arduino_info):
+    """."""
+    board_info = get_sel_board_info(arduino_info)
+    build_core = board_info.get('build.core', '')
+    ptfm_info = get_target_platform_info(arduino_info, build_core)
     return ptfm_info
 
 
@@ -225,7 +298,7 @@ def get_build_variant_path(arduino_info):
         pkg = pkg.strip()
         build_variant = build_variant.strip()
         arch = ptfm_info.get('architecture', '')
-        ptfm_info = get_alternate_platform_info(arduino_info, pkg, arch)
+        ptfm_info = get_refering_platform_info(arduino_info, pkg, arch)
 
     platform_path = ptfm_info.get('path', '')
     if platform_path:
@@ -234,6 +307,43 @@ def get_build_variant_path(arduino_info):
     return variant_path
 
 
+# Base Infos#########
+def get_generic_info():
+    """."""
+    generic_info = {}
+    # Ardunio IDE version > 10000
+    generic_info['runtime.ide.version'] = '20000'
+
+    # Time Info
+    generic_info['extra.time.utc'] = str(int(time.time()))
+    generic_info['extra.time.local'] = str(int(time.mktime(time.localtime())))
+    generic_info['extra.time.zone'] = str(int(time.timezone))
+    generic_info['extra.time.dst'] = str(int(time.daylight))
+    return generic_info
+
+
+def get_project_info(arduino_info, project=None):
+    """."""
+    project_info = {}
+    # Project Info
+    prj_name = ''
+    if project:
+        prj_name = project.get_name()
+    arduino_app_path = arduino_info['arduino_app_path']
+    build_path = os.path.join(arduino_app_path, 'build')
+    prj_build_path = os.path.join(build_path, prj_name)
+    project_info['build.project_name'] = prj_name
+    project_info['build.path'] = prj_build_path.replace('\\', '/')
+
+    # core.a Info
+    archive_file_name = 'core.a'
+    archive_file_path = os.path.join(prj_build_path, archive_file_name)
+    project_info['archive_file'] = archive_file_name
+    project_info['archive_file_path'] = archive_file_path
+    return project_info
+
+
+#################################################################
 def get_default_tools_deps(arduino_info):
     """."""
     pkgs_info = arduino_info.get('packages', {})
@@ -246,7 +356,7 @@ def get_default_tools_deps(arduino_info):
     return tools_deps
 
 
-def get_build_tools_info(arduino_info, platform_info):
+def get_dep_tools_info(arduino_info, platform_info):
     """."""
     tools_info = {'names': []}
     arduino_app_path = arduino_info['arduino_app_path']
@@ -279,191 +389,241 @@ def get_build_tools_info(arduino_info, platform_info):
     return tools_info
 
 
-def get_variants(text):
+def get_runtime_tools_path_info(arduino_info, platform_info):
     """."""
-    pattern_text = r'\{\S+?}'
-    pattern = re.compile(pattern_text)
-    variants = pattern.findall(text)
-    return variants
-
-
-def replace_variants(text, info, prefix=''):
-    """."""
-    variants = get_variants(text)
-    for variant in variants:
-        go_replace = False
-        key = variant[1:-1]
-
-        if key in info:
-            value = info[key]
-            go_replace = True
-        if prefix:
-            prefix_key = prefix + key
-            if prefix_key in info:
-                value = info[prefix_key]
-                go_replace = True
-
-        if go_replace:
-            value = replace_variants(value, info, prefix)
-            text = text.replace(variant, value)
-    return text
-
-
-def get_build_cmds_info(arduino_info):
-    """."""
-    cmds_info = {}
-    platform_path = get_build_platform_path(arduino_info)
-    if platform_path:
-        cmd_file_path = os.path.join(platform_path, 'platform.txt')
-        cmd_file = plain_params_file.PlainParamsFile(cmd_file_path)
-        cmds_info = cmd_file.get_info()
-
-        os_name = sys_info.get_os_name()
-        if os_name == 'osx':
-            os_name = 'macosx'
-        os_name = '.' + os_name
-        keys = cmds_info.keys()
-        for key in keys:
-            if key.endswith(os_name):
-                value = cmds_info[key]
-                key = key.replace(os_name, '')
-                cmds_info[key] = value
-    return cmds_info
-
-
-def get_commands_info(arduino_info, project=None):
-    """."""
-    cmds_info = {}
-    build_platform_path = get_build_platform_path(arduino_info)
-
-    all_cmds_info = get_build_cmds_info(arduino_info)
-    board_info = get_sel_board_info(arduino_info)
-    programmer_info = get_sel_programmer_info(arduino_info)
-
-    sel_pkg = arduino_info['selected'].get('package', '')
-    sel_ptfm = arduino_info['selected'].get('platform', '')
-
-    prj_name = ''
-    if project:
-        prj_name = project.get_name()
-    arduino_app_path = arduino_info['arduino_app_path']
-    build_path = os.path.join(arduino_app_path, 'build')
-    platform_system_path = os.path.join(build_platform_path, 'system')
-    platform_variant_path = get_build_variant_path(arduino_info)
-
-    prj_build_path = os.path.join(build_path, prj_name)
-    ser_port = arduino_info['selected'].get('serial_port', '')
-    verbose_upload = bool(arduino_info['settings'].get('verbose_upload'))
-    verify_code = bool(arduino_info['settings'].get('verify_code'))
-
-    include_paths = arduino_info.get('include_paths', [])
-    includes = ['"-I%s"' % p.replace('\\', '/') for p in include_paths]
-
-    all_info = {}
-    all_info['extra.time.utc'] = str(int(time.time()))
-    all_info['extra.time.local'] = str(int(time.mktime(time.localtime())))
-    all_info['extra.time.zone'] = str(int(time.timezone))
-    all_info['extra.time.dst'] = str(int(time.daylight))
-    all_info['build.project_name'] = prj_name
-    all_info['build.path'] = prj_build_path.replace('\\', '/')
-    all_info['runtime.platform.path'] = build_platform_path.replace('\\', '/')
-    all_info['build.system.path'] = platform_system_path.replace('\\', '/')
-    all_info['build.variant.path'] = platform_variant_path.replace('\\', '/')
-    all_info['build.arch'] = get_platform_arch_by_name(arduino_info,
-                                                       sel_pkg, sel_ptfm)
-
-    ide_pkg_path = os.path.dirname(build_platform_path)
-    core_path = get_build_core_src_path(arduino_info)
-    all_info['runtime.hardware.path'] = ide_pkg_path.replace('\\', '/')
-    all_info['build.core.path'] = core_path.replace('\\', '/')
-
-    ser_port = str(ser_port)
-    all_info['serial.port'] = ser_port
-    serial_file = serial_port.get_serial_file(ser_port)
-
-    all_info['serial.port.file'] = serial_file
-    all_info['runtime.ide.version'] = '20000'
-
-    archive_file_name = 'core.a'
-    archive_file_path = os.path.join(prj_build_path, archive_file_name)
-    all_info['archive_file'] = archive_file_name
-    all_info['archive_file_path'] = archive_file_path
-    all_info['includes'] = ' '.join(includes)
-
-    all_info.update(all_cmds_info)
-    all_info.update(programmer_info)
-    all_info.update(board_info)
-
-    extra_build_flag = arduino_info['settings'].get('extra_build_flag', '')
-    extra_flags = all_info.get('build.extra_flags', '')
-    all_info['build.extra_flags'] = ' '.join((extra_flags, extra_build_flag))
-
-    if 'arm' in all_info.get('compiler.c.cmd', '') or \
-            'arm' in all_info.get('build.command.gcc', ''):
-        if 'compiler.c.elf.extra_flags' in all_info:
-            all_info['compiler.c.elf.extra_flags'] += ' --specs=nosys.specs'
-        elif 'build.flags.libs' in all_info:
-            all_info['build.flags.libs'] += ' --specs=nosys.specs'
-
-    build_platform_info = get_build_platform_info(arduino_info)
-    tools_info = get_build_tools_info(arduino_info, build_platform_info)
+    path_info = {}
+    tools_info = get_dep_tools_info(arduino_info, platform_info)
     tool_names = tools_info.get('names', [])
-    upload_tool = all_info.get('upload.tool', '')
-    if upload_tool not in tool_names:
-        tool_names.append(upload_tool)
 
     for tool_name in tool_names:
         tool_info = tools_info.get(tool_name, {})
         tool_path = tool_info.get('path', '')
-        all_info['runtime.tools.%s.path' % tool_name] = \
+        path_info['runtime.tools.%s.path' % tool_name] = \
             tool_path.replace('\\', '/')
+    return path_info
 
-        tool_id = 'tools.%s.' % tool_name
-        if verbose_upload:
-            all_info['%supload.verbose' % tool_id] = \
-                all_info.get('%supload.params.verbose', '')
-            all_info['%sprogram.verbose' % tool_id] = \
-                all_info.get('%sprogram.params.verbose', '')
-            all_info['%sbootloader.verbose' % tool_id] = \
-                all_info.get('%sbootloader.params.verbose', '')
-            all_info['%serase.verbose' % tool_id] = \
-                all_info.get('%serase.params.verbose', '')
-        else:
-            all_info['%supload.verbose' % tool_id] = \
-                all_info.get('%supload.params.quiet', '')
-            all_info['%sprogram.verbose' % tool_id] = \
-                all_info.get('%sprogram.params.quiet', '')
-            all_info['%sbootloader.verbose' % tool_id] = \
-                all_info.get('%sbootloader.params.quiet', '')
-            all_info['%serase.verbose' % tool_id] = \
-                all_info.get('%serase.params.quiet', '')
 
-        if ('%supload.verify' % tool_id) not in all_info:
-            all_info['%supload.verify' % tool_id] = ''
-        if not verify_code:
-            all_info['%supload.verify' % tool_id] = \
-                all_info.get('%supload.params.noverify', '')
-            all_info['%sprogram.verify' % tool_id] = \
-                all_info.get('%sprogram.params.noverify', '')
+def get_runtime_path_info(arduino_info, platform_info):
+    """."""
+    path_info = {}
+    platform_path = platform_info.get('path', '')
+    path_info['runtime.platform.path'] = platform_path.replace('\\', '/')
 
-    for key in all_cmds_info:
+    # Runtime Tools Path
+    runtime_tools_path_info = \
+        get_runtime_tools_path_info(arduino_info, platform_info)
+    path_info.update(runtime_tools_path_info)
+    return path_info
+
+
+#####################################################################
+def get_base_info(arduino_info, project=None):
+    """."""
+    base_info = {}
+    generic_info = get_generic_info()
+    project_info = get_project_info(arduino_info, project)
+    base_info.update(generic_info)
+    base_info.update(project_info)
+    return base_info
+
+
+def get_runtime_build_info(arduino_info):
+    """."""
+    build_info = {}
+    # Include Paths Info
+    include_paths = arduino_info.get('include_paths', [])
+    includes = ['"-I%s"' % p.replace('\\', '/') for p in include_paths]
+    build_info['includes'] = ' '.join(includes)
+
+    # Arch Info
+    sel_pkg = arduino_info['selected'].get('package', '')
+    sel_ptfm = arduino_info['selected'].get('platform', '')
+    build_info['build.arch'] = get_platform_arch_by_name(arduino_info,
+                                                         sel_pkg, sel_ptfm)
+
+    # Platform Info
+    build_platform_path = get_build_platform_path(arduino_info)
+    platform_system_path = os.path.join(build_platform_path, 'system')
+    platform_variant_path = get_build_variant_path(arduino_info)
+
+    build_info['build.system.path'] = platform_system_path.replace('\\', '/')
+    build_info['build.variant.path'] = \
+        platform_variant_path.replace('\\', '/')
+
+    # Core Src Path Info
+    core_path = get_build_core_src_path(arduino_info)
+    build_info['build.core.path'] = core_path.replace('\\', '/')
+
+    # User defined Extra Build Flags Info
+    user_build_flags = arduino_info['settings'].get('extra_build_flag', '')
+    extra_build_flags = build_info.get('build.extra_flags', '')
+    build_info['build.extra_flags'] = ' '.join((extra_build_flags,
+                                                user_build_flags))
+
+    # For Ardunio IDE / hardware path
+    ide_pkg_path = os.path.dirname(build_platform_path)
+    build_info['runtime.hardware.path'] = ide_pkg_path.replace('\\', '/')
+
+    build_platform_info = get_build_platform_info(arduino_info)
+    path_info = get_runtime_path_info(arduino_info, build_platform_info)
+    build_info.update(path_info)
+    return build_info
+
+
+def get_build_params_info(arduino_info):
+    """."""
+    build_params_info = {}
+    platform_path = get_build_platform_path(arduino_info)
+    params_info = get_platform_file_params_info(platform_path)
+    for key in params_info:
+        if not key.startswith('tools'):
+            build_params_info[key] = params_info[key]
+    return build_params_info
+
+
+def get_build_commands_info(arduino_info, project=None):
+    """."""
+    base_info = get_base_info(arduino_info, project)
+    runtime_build_info = get_runtime_build_info(arduino_info)
+    build_params_info = get_build_params_info(arduino_info)
+    board_info = get_sel_board_info(arduino_info)
+
+    all_info = {}
+    all_info.update(base_info)
+    all_info.update(runtime_build_info)
+    all_info.update(build_params_info)
+    all_info.update(board_info)
+
+    cmds_info = {}
+    for key in build_params_info:
         if key.startswith('recipe.'):
-            cmd = all_cmds_info[key]
-            cmd = replace_variants(cmd, all_info)
+            cmd = build_params_info[key]
+            cmd = replace_variants_in_braces(cmd, all_info)
             cmds_info[key] = cmd
-        elif key.startswith('tools.'):
-            for tool_name in tool_names:
-                tool_id = 'tools.%s.' % tool_name
-                tool_rem_id = 'tools.%s_remote.' % tool_name
-                if key.startswith(tool_id) and key.endswith('pattern'):
-                    cmd = all_cmds_info[key]
-                    cmd = replace_variants(cmd, all_info, tool_id)
-                    key = key.replace(tool_id, '')
-                    cmds_info[key] = cmd
-                elif key.startswith(tool_rem_id) and key.endswith('pattern'):
-                    cmd = all_cmds_info[key]
-                    cmd = replace_variants(cmd, all_info, tool_id)
-                    key = key.replace(tool_rem_id, '')
-                    key = 'remote.' + key
-                    cmds_info[key] = cmd
     return cmds_info
+
+
+##################################################################
+def get_tool_params_info(arduino_info, tool_platform_path, tool_name):
+    """."""
+    tool_params_info = {}
+    params_info = get_platform_file_params_info(tool_platform_path)
+
+    tool_key = 'tools.%s.' % tool_name
+    for key in params_info:
+        if key.startswith(tool_key):
+            short_key = key.replace(tool_key, '')
+            tool_params_info[short_key] = params_info[key]
+    return tool_params_info
+
+
+def get_upload_command(arduino_info, project=None, mode='upload'):
+    """."""
+    all_info = {}
+
+    base_info = get_base_info(arduino_info, project)
+    all_info.update(base_info)
+
+    board_info = get_sel_board_info(arduino_info)
+    programmer_info = get_sel_programmer_info(arduino_info)
+
+    ser_port = arduino_info['selected'].get('serial_port', '')
+    ser_port = str(ser_port)
+    all_info['serial.port'] = ser_port
+    serial_file = serial_port.get_serial_file(ser_port)
+    all_info['serial.port.file'] = serial_file
+
+    tool_name = 'None'
+    if mode == 'upload':
+        tool_name = board_info.get('upload.tool', '')
+    elif mode == 'program':
+        tool_name = programmer_info.get('program.tool', '')
+
+    tool_ptfm_info = get_target_platform_info(arduino_info, tool_name)
+    path_info = get_runtime_path_info(arduino_info, tool_ptfm_info)
+    all_info.update(path_info)
+
+    tool_ptfm_path = tool_ptfm_info.get('path', '')
+    tool_params_info = get_tool_params_info(arduino_info,
+                                            tool_ptfm_path, tool_name)
+    all_info.update(tool_params_info)
+    all_info.update(board_info)
+    all_info.update(programmer_info)
+
+    tool_key = 'upload.pattern'
+    key = 'None.pattern'
+    if mode == 'upload':
+        is_network_upload = False
+        if is_network_upload:
+            key = 'upload.network_pattern'
+    elif mode == 'program':
+        key = 'program.pattern'
+
+    if key in all_info:
+        tool_key = key
+    else:
+        mode = 'upload'
+
+    is_verbose_upload = bool(arduino_info['settings'].get('verbose_upload'))
+    is_verify_code = bool(arduino_info['settings'].get('verify_code'))
+    verbose_mode = 'verbose' if is_verbose_upload else 'quiet'
+    verify_mode = '' if is_verify_code else '.noverify'
+
+    param_verbose_key = '%s.params.%s' % (mode, verbose_mode)
+    param_verbose_value = all_info.get(param_verbose_key, '')
+    param_verify_key = '%s.params%s' % (mode, verify_mode)
+    param_verify_value = all_info.get(param_verify_key, '')
+
+    all_info['%s.verbose' % mode] = param_verbose_value
+    all_info['%s.verify' % mode] = param_verify_value
+
+    tool_cmd = all_info.get(tool_key, '')
+    tool_cmd = replace_variants_in_braces(tool_cmd, all_info)
+    return tool_cmd
+
+
+def get_bootloader_commands(arduino_info):
+    """."""
+    all_info = {}
+    generic_info = get_generic_info()
+    board_info = get_sel_board_info(arduino_info)
+    programmer_info = get_sel_programmer_info(arduino_info)
+    tool_name = board_info.get('bootloader.tool', '')
+
+    all_info.update(generic_info)
+
+    ser_port = arduino_info['selected'].get('serial_port', '')
+    ser_port = str(ser_port)
+    all_info['serial.port'] = ser_port
+    serial_file = serial_port.get_serial_file(ser_port)
+    all_info['serial.port.file'] = serial_file
+
+    tool_ptfm_info = get_target_platform_info(arduino_info, tool_name)
+    path_info = get_runtime_path_info(arduino_info, tool_ptfm_info)
+    all_info.update(path_info)
+
+    tool_ptfm_path = tool_ptfm_info.get('path', '')
+    tool_params_info = get_tool_params_info(arduino_info,
+                                            tool_ptfm_path, tool_name)
+    all_info.update(tool_params_info)
+    all_info.update(board_info)
+    all_info.update(programmer_info)
+
+    erase_cmd = all_info.get('erase.pattern', '')
+    bootloader_cmd = all_info.get('bootloader.pattern', '')
+
+    cmds = []
+    is_verbose = bool(arduino_info['settings'].get('verbose_upload'))
+    verbose_mode = 'verbose' if is_verbose else 'quiet'
+    if erase_cmd and bootloader_cmd:
+        modes = ['erase', 'bootloader']
+        for mode in modes:
+            param_verbose_key = '%s.params.%s' % (mode, verbose_mode)
+            param_verbose_value = all_info.get(param_verbose_key, '')
+            all_info['%s.verbose' % mode] = param_verbose_value
+
+            cmd_key = '%s.pattern' % mode
+            cmd = all_info.get(cmd_key, '')
+            cmd = replace_variants_in_braces(cmd, all_info)
+            cmds.append(cmd)
+    return cmds
