@@ -2,14 +2,12 @@
 ---
 # http://www.sublimetext.com/docs/3/syntax.html
 name: Arduino
-file_extensions:
-  - ino
-  - pde
+file_extensions: [ino, pde]
 scope: source.arduino
 
 contexts:
   main:
-    - match: .
+    - match: ''
       push: Packages/C++/C++.sublime-syntax
       with_prototype:
         - match: \b(HIGH|LOW|INPUT|OUTPUT|INPUT_PULLUP|LED_BUILTIN)\b
