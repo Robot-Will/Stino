@@ -706,7 +706,7 @@ def import_lib(view, edit, lib_path):
     incs = []
     for ext in c_file.H_EXTS:
         paths = glob.glob(src_path + '/*' + ext)
-        incs += ['#incldue <%s>' % os.path.basename(p) for p in paths]
+        incs += ['#include <%s>' % os.path.basename(p) for p in paths]
     text = '\n'.join(incs) + '\n\n'
     view.insert(edit, 0, text)
 
