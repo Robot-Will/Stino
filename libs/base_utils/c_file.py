@@ -860,18 +860,28 @@ def collapse_braces(lines):
 def simplify_to_one_line(lines):
     """Doc."""
     new_lines = []
-    new_line = ''
+    in_one_lines = []
     is_line_end = False
     for line in lines:
-        new_line += line
-        if line.startswith('#') or line.endswith(';') or line.endswith('}'):
+        is_start_break = False
+        if line.startswith('void') or line.startswith('#'):
             is_line_end = True
+            is_start_break = True
         if is_line_end:
-            new_lines.append(new_line)
-            new_line = ''
+            new_lines.append(' '.join(in_one_lines))
+            in_one_lines = []
             is_line_end = False
+        in_one_lines.append(line)
+
+        if not is_start_break:
+            if line.endswith(';') or line.endswith('}'):
+                is_line_end = True
+            if is_line_end:
+                new_lines.append(' '.join(in_one_lines))
+                in_one_lines = []
+                is_line_end = False
     if not is_line_end:
-        new_lines.append(new_line)
+        new_lines.append(' '.join(in_one_lines))
     return new_lines
 
 
@@ -911,7 +921,15 @@ def is_main_ino_file(file_path):
     f = CFile(file_path)
     funcs = f.list_function_definitions()
     funcs = [f.split('(')[0] for f in funcs]
-    if 'void setup' in funcs and 'void loop' in funcs:
+
+    count = 0
+    for func in funcs:
+        if ' setup' in func or ' loop' in func:
+            count += 1
+            if count == 2:
+                break
+
+    if count == 2:
         state = True
     return state
 
@@ -922,8 +940,10 @@ def is_main_cpp_file(file_path):
     f = CFile(file_path)
     funcs = f.list_function_definitions()
     funcs = [f.split('(')[0] for f in funcs]
-    if 'void main' in funcs or 'int main' in funcs:
-        state = True
+    for func in funcs:
+        if ' main' in func:
+            state = True
+            break
     return state
 
 
@@ -1038,8 +1058,8 @@ class CFile(file.File):
         if not self._simplified_lines:
             self._simplified_lines = simplify_lines(self._lines)
         for line in self._simplified_lines:
-            if line.endswith('{}'):
-                function_definitions.append(line[:-2])
+            if line.endswith('}'):
+                function_definitions.append(line.split('{')[0].strip())
         return function_definitions
 
     def list_inclde_headers(self):

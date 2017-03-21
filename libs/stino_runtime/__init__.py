@@ -995,6 +995,12 @@ def get_hooks_cmds(cmds_info, pattern_key):
 
 def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
     """."""
+    cmds = []
+    msgs = []
+
+    if not all_src_paths:
+        return cmds, msgs
+
     is_full_build = bool(arduino_info['settings'].get('full_build'))
     last_build_path = os.path.join(prj_build_path,
                                    'last_build.stino-settings')
@@ -1079,9 +1085,7 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
         if os.path.isfile(core_a_path):
             os.remove(core_a_path)
 
-    cmds = []
-    msgs = []
-
+    #########################
     if build_src_paths:
         sketch_prebuild_cmds, _msgs = get_hooks_cmds(cmds_info,
                                                      'sketch.prebuild')
@@ -1275,17 +1279,20 @@ def run_upload_command(cmd):
 def run_build_commands(cmds, msgs):
     """."""
     is_ok = True
-    n = 0
+    if not cmds:
+        is_ok = False
+    else:
+        n = 0
 
-    non_blank_msgs = [m for m in msgs if m]
-    total = len(non_blank_msgs)
-    for cmd, msg in zip(cmds, msgs):
-        if msg:
-            n += 1
-            percent = n / total * 100
-        is_ok = run_build_command(percent, cmd, msg)
-        if not is_ok:
-            break
+        non_blank_msgs = [m for m in msgs if m]
+        total = len(non_blank_msgs)
+        for cmd, msg in zip(cmds, msgs):
+            if msg:
+                n += 1
+                percent = n / total * 100
+            is_ok = run_build_command(percent, cmd, msg)
+            if not is_ok:
+                break
     return is_ok
 
 
@@ -1476,6 +1483,7 @@ def build_sketch(build_info={}):
     message_queue.put(msg)
     is_ok = run_build_commands(cmds, msgs)
     if not is_ok:
+        message_queue.put('[Build] Error occurred.')
         return
 
     arduino_info['settings'].set('full_build', False)
