@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-pulseIn(${1:pin}, ${2:value}, ${3:timeout});
-]]></content>
-    <tabTrigger>pulseIn</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino pulseIn()</description>
-</snippet>

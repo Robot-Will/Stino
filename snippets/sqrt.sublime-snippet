@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-sqrt(${1:x});
-]]></content>
-    <tabTrigger>sqrt</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino sqrt()</description>
-</snippet>

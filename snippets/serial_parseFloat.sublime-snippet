@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-Serial.parseFloat();
-]]></content>
-    <tabTrigger>spfloat</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino Serial.parseFloat()</description>
-</snippet>

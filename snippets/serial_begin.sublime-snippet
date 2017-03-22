@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-Serial.begin(${1:9600});
-]]></content>
-    <tabTrigger>sbegin</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino Serial.begin()</description>
-</snippet>

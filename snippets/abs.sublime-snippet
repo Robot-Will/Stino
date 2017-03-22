@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-abs(${1:x});
-]]></content>
-    <tabTrigger>abs</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino abs()</description>
-</snippet>

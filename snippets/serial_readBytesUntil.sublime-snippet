@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-Serial.readBytesUntil(${1:character}, ${2:buffer}, ${2:length});
-]]></content>
-    <tabTrigger>sreadBytesUntil</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino Serial.readBytesUntil()</description>
-</snippet>

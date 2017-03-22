@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-Serial.println(${1:val}, ${2:format});
-]]></content>
-    <tabTrigger>sprint</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino Serial.println()</description>
-</snippet>

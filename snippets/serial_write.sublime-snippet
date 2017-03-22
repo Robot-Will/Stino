@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-Serial.write(${1:data});
-]]></content>
-    <tabTrigger>swrite</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino Serial.write()</description>
-</snippet>

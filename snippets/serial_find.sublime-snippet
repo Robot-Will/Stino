@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-Serial.find(${1:target});
-]]></content>
-    <tabTrigger>sfind</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino Serial.find()</description>
-</snippet>

@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-Serial.read();
-]]></content>
-    <tabTrigger>sread</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino Serial.read()</description>
-</snippet>

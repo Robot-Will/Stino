@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-delayMicroseconds(${1:us});
-]]></content>
-    <tabTrigger>delayMicroseconds</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino delayMicroseconds()</description>
-</snippet>

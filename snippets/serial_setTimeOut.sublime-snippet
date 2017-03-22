@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-Serial.setTimeout(${1:time});
-]]></content>
-    <tabTrigger>stimeout</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino Serial.setTimeout()</description>
-</snippet>

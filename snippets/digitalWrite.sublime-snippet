@@ -1,8 +1,0 @@
-<snippet>
-    <content><![CDATA[
-digitalWrite(${1:pin}, ${2:value});
-]]></content>
-    <tabTrigger>digitalWrite</tabTrigger>
-    <scope>source.arduino</scope>
-    <description>Arduino digitalWrite</description>
-</snippet>
