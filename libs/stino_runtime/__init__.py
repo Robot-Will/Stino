@@ -28,6 +28,7 @@ from base_utils import plain_params_file
 from base_utils import default_st_dirs
 from base_utils import default_arduino_dirs
 from base_utils import serial_port
+from base_utils import serial_monitor
 from base_utils import task_queue
 from base_utils import task_listener
 from base_utils import downloader
@@ -36,6 +37,7 @@ from . import const
 from . import st_menu
 from . import selected
 from . import st_panel
+from . import st_monitor_view
 
 plugin_name = const.PLUGIN_NAME
 _d_pattern_text = r"'-D[\S\s]*?'"
@@ -1224,8 +1226,16 @@ def run_command(cmd):
                             stderr=subprocess.PIPE, shell=True)
     result = proc.communicate()
     return_code = proc.returncode
-    stdout = result[0].decode(sys_info.get_sys_encoding())
-    stderr = result[1].decode(sys_info.get_sys_encoding())
+    try:
+        stdout = result[0].decode(sys_info.get_sys_encoding())
+    except UnicodeDecodeError:
+        stdout = result[0].decode('utf-8', 'replace')
+
+    try:
+        stderr = result[1].decode(sys_info.get_sys_encoding())
+    except UnicodeDecodeError:
+        stderr = result[1].decode('utf-8', 'replace')
+
     stdout = stdout.replace('\r', '')
     stderr = stderr.replace('\r', '')
     return return_code, stdout, stderr
@@ -1268,14 +1278,9 @@ def handle_build_error_messages(error_msg):
     for file_path in file_msg_info:
         is_opened_file = False
         for win in sublime.windows():
-            for view in win.views():
-                view_file_path = view.file_name()
-                if view_file_path:
-                    view_file_path = view_file_path.replace('\\', '/')
-                    if view_file_path == file_path:
-                        is_opened_file = True
-                        break
-            if is_opened_file:
+            view = win.find_open_file(file_path)
+            if view:
+                is_opened_file = True
                 break
 
         if not is_opened_file:
@@ -1638,6 +1643,49 @@ def burn_bootloader():
     run_bootloader_cmds(cmds)
 
 
+def start_serial_monitor(port):
+    """."""
+    win = sublime.active_window()
+    monitor_name = '%s - Serial Monitor' % port
+
+    has_view = False
+    for win in sublime.windows():
+        for view in win.views():
+            view_name = view.name()
+            if view_name == monitor_name:
+                win.focus_view(view)
+                has_view = True
+                break
+        if has_view:
+            break
+
+    has_monitor = False
+    if port in arduino_info['serial_monitors']:
+        monitor = arduino_info['serial_monitors'].get(port)
+        has_monitor = True
+        if not has_view:
+            arduino_info['serial_monitors'].pop(port)
+            has_monitor = False
+
+    if not has_monitor:
+        if has_view:
+            monitor_view = st_monitor_view.StMonitorView(win, port,
+                                                         arduino_info,
+                                                         view)
+        else:
+            monitor_view = st_monitor_view.StMonitorView(win, port,
+                                                         arduino_info)
+            view = monitor_view.get_view()
+
+        baudrate = int(arduino_info['selected'].get('baudrate'))
+        monitor = serial_monitor.SerialMonitor(port, baudrate,
+                                               monitor_view.write)
+        arduino_info['serial_monitors'][port] = monitor
+
+    monitor.start()
+    view.run_command('stino_send_to_serial', {'serial_port': port})
+
+
 def beautify_src(view, edit, file_path):
     """."""
     cur_file = c_file.CFile(file_path)
@@ -1762,6 +1810,7 @@ def init_config_settings():
     """."""
     global arduino_info
     arduino_info['phantoms'] = {}
+    arduino_info['serial_monitors'] = {}
     arduino_app_path = arduino_info['arduino_app_path']
     config_file_path = os.path.join(arduino_app_path, 'config.stino-settings')
     config_settings = file.SettingsFile(config_file_path)
@@ -1778,6 +1827,13 @@ def init_selected_settings():
     arduino_app_path = arduino_info['arduino_app_path']
     sel_file_path = os.path.join(arduino_app_path, 'selected.stino-settings')
     sel_settings = file.SettingsFile(sel_file_path)
+
+    if sel_settings.get('monitor_auto_scroll', None) is None:
+        sel_settings.set('monitor_auto_scroll', True)
+    if sel_settings.get('baudrate', None) is None:
+        sel_settings.set('baudrate', '9600')
+    if sel_settings.get('line_ending', None) is None:
+        sel_settings.set('line_ending', 'None')
     arduino_info['selected'] = sel_settings
 
 

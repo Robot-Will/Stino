@@ -919,7 +919,7 @@ def update_serial_menu(arduino_info):
     text += '\t' * 2 + '[\n'
     text += '\t' * 3 + '{\n'
     text += '\t' * 4 + '"caption": "Serial Port",\n'
-    text += '\t' * 4 + '"id": "serial_port",\n'
+    text += '\t' * 4 + '"id": "stino_serial_port",\n'
     text += '\t' * 4 + '"children":\n'
     text += '\t' * 4 + '[\n'
     text += '\t' * 5 + '{\n'

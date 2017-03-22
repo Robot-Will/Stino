@@ -45,6 +45,20 @@ def get_serials_info():
     return serials_info
 
 
+def is_available(serial_port):
+    """."""
+    is_avail = True
+    ser = serial.Serial()
+    ser.port = serial_port
+    try:
+        ser.open()
+    except (serial.SerialException, UnicodeDecodeError):
+        is_avail = False
+    else:
+        ser.close()
+    return is_avail
+
+
 @decos.singleton
 class SerialListener(object):
     """."""
