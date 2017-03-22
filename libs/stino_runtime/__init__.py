@@ -47,7 +47,7 @@ _win_path = r'([A-Za-z]:)'
 _error_pattern_text = _unix_path + r':([0-9]+?):([0-9]+?):(.*?)$'
 if sys_info.get_os_name() == 'windows':
     _error_pattern_text = _win_path + _error_pattern_text
-_error_pattern = re.compile(_error_pattern_text, re.M | re.S)
+error_pattern = re.compile(_error_pattern_text, re.M | re.S)
 
 EXCLUDES = ['examples', 'samples', 'test']
 
@@ -1253,7 +1253,7 @@ def handle_build_error_messages(error_msg):
     if st_version < 3118:
         return
 
-    records = _error_pattern.findall(error_msg)
+    records = error_pattern.findall(error_msg)
     file_msg_info = {}
     for record in records:
         if sys_info.get_os_name() == 'windows':
@@ -1378,20 +1378,17 @@ def run_upload_command(cmd):
 def run_build_commands(cmds, msgs):
     """."""
     is_ok = True
-    if not cmds:
-        is_ok = False
-    else:
-        n = 0
+    n = 0
 
-        non_blank_msgs = [m for m in msgs if m]
-        total = len(non_blank_msgs)
-        for cmd, msg in zip(cmds, msgs):
-            if msg:
-                n += 1
-                percent = n / total * 100
-            is_ok = run_build_command(percent, cmd, msg)
-            if not is_ok:
-                break
+    non_blank_msgs = [m for m in msgs if m]
+    total = len(non_blank_msgs)
+    for cmd, msg in zip(cmds, msgs):
+        if msg:
+            n += 1
+            percent = n / total * 100
+        is_ok = run_build_command(percent, cmd, msg)
+        if not is_ok:
+            break
     return is_ok
 
 

@@ -1,0 +1,22 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Stino Panel
+file_extensions: []
+scope: source.stino-panel
+
+contexts:
+  main:
+    - match: ''
+      push: Packages/C++/C++.sublime-syntax
+      with_prototype:
+        - match: \b(HIGH|LOW|INPUT|OUTPUT|INPUT_PULLUP|LED_BUILTIN)\b
+          scope: constant.language.stino-panel
+        - match: \b(boolean|word|String|string|array)\b
+          scope: storage.type.stino-panel
+        - match: PROGRAM
+          scope: storage.modifier.stino-panel
+        - match: \b(Serial|Stream|Keyboard|Mouse)\b
+          scope: entity.name.class.stino-panel
+        - match: \b(pinMode|digitalWrite|digitalRead|analogReference|analogRead|analogWrite|analogReadResolution|analogWriteResolution|tone|noTone|shiftOut|shiftIn|pulseIn|millis|micros|delay|delayMicroseconds|min|max|constrain|map|pow|sqrt|sin|cos|tan|isAlphaNumeric|isAlpha|isAscii|isWhitespace|isControl|isDigit|isGraph|isLowerCase|isPrintable|isPunct|isSpace|isUpperCase|isHexadecimalDigit|randomSeed|random|lowByte|highByte|bitRead|bitWrite|bitSet|bitClear|bit|attachInterrupt|detachInterrupt|interrupts|noInterrupts)\b
+          scope: entity.name.function.stino-panel

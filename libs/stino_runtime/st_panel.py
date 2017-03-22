@@ -8,6 +8,7 @@ from __future__ import print_function
 from __future__ import division
 from __future__ import unicode_literals
 
+import os
 import sublime
 
 from base_utils import sys_info
@@ -16,9 +17,10 @@ from base_utils import sys_info
 class StPanel:
     """."""
 
-    def __init__(self, name='stino_panel'):
+    def __init__(self, name='stino_panel', has_color=True):
         """."""
         self._name = name
+        self._has_color = has_color
         self._panel = None
         self._texts = []
         self._windows = []
@@ -37,13 +39,22 @@ class StPanel:
         if self._panel:
             vector = self._panel.layout_extent()
             panel.window_to_layout(vector)
-        else:
-            view = self._window.active_view()
-            color_scheme = view.settings().get('color_scheme', '')
-            if not color_scheme:
-                color_scheme = 'Packages/Color Scheme - Default/Eiffel.tmTheme'
-            panel.settings().set('color_scheme', color_scheme)
-            panel.settings().set('word_wrap', True)
+
+        view = self._window.active_view()
+        color_scheme = view.settings().get('color_scheme', '')
+        if not color_scheme:
+            color_scheme = 'Packages/Color Scheme - Default/Eiffel.tmTheme'
+        panel.settings().set('color_scheme', color_scheme)
+        panel.settings().set('word_wrap', True)
+
+        panel.set_syntax_file('Packages/Text/Plain text.tmLanguage')
+        if self._has_color:
+            dir_path = os.path.dirname(os.path.realpath(__file__))
+            syntax_file_path = os.path.join(dir_path, 'panel.sublime-syntax')
+            syntax_file_path = syntax_file_path.replace('\\', '/')
+            syntax_file_path = syntax_file_path.split('Packages')[-1]
+            syntax_file_path = 'Packages' + syntax_file_path
+            panel.set_syntax_file(syntax_file_path)
 
         self._panel = panel
         self._panel.set_name(self._name)

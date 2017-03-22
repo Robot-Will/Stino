@@ -54,6 +54,51 @@ class ViewMonitor(sublime_plugin.EventListener):
             if file_path in stino.arduino_info.get('phantoms', {}):
                 stino.arduino_info['phantoms'].pop(file_path)
 
+    def on_selection_modified(self, view):
+        """."""
+        panel_name = 'stino_panel'
+        view_name = view.name()
+        if view_name == panel_name:
+            view_selection = view.sel()
+            word_region = view_selection[0]
+            line_region = view.line(word_region)
+            line = view.substr(line_region)
+            if line.count(':') > 2:
+                records = stino.error_pattern.findall(line)
+                if records:
+                    record = records[0]
+                    if stino.sys_info.get_os_name() == 'windows':
+                        file_path = record[0] + '/' + record[1]
+                    else:
+                        file_path = record[0]
+                    line_no = int(record[-3]) - 1
+                    col_no = int(record[-2])
+
+                    has_view = False
+                    is_opened_file = False
+                    for win in sublime.windows():
+                        for view in win.views():
+                            view_file_path = view.file_name()
+                            if view_file_path:
+                                view_file_path = \
+                                    view_file_path.replace('\\', '/')
+                                if view_file_path == file_path:
+                                    is_opened_file = True
+                                    has_view = True
+                                    break
+                        if is_opened_file:
+                            break
+
+                    if not is_opened_file:
+                        if os.path.isfile(file_path):
+                            win = sublime.active_window()
+                            view = win.open_file(file_path)
+                            has_view = True
+
+                    if has_view:
+                        text_point = view.text_point(line_no, col_no)
+                        view.show(text_point)
+
 
 #############################################
 # Sketch Commands
