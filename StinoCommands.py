@@ -903,7 +903,7 @@ class StinoGetPortInfoCommand(sublime_plugin.TextCommand):
 
                     board_info = \
                         stino.selected.get_sel_board_info(stino.arduino_info)
-                    board_name = board_info.get('name')
+                    board_name = board_info.get('board.name', '')
                     vid = board_info.get('build.vid', 'None')
                     pid = board_info.get('build.pid', 'None')
                     stino.message_queue.put(board_name)
