@@ -1613,10 +1613,15 @@ def upload_sketch(upload_cmd=''):
     """."""
     if upload_cmd:
         message_queue.put('[Upload]...')
+        upload_port = arduino_info['selected'].get('serial_port', '')
         serial_listener.stop()
+
+        monitor = None
+        if upload_port in arduino_info['serial_monitors']:
+            monitor = arduino_info['serial_monitors'].get(upload_port)
+            monitor.stop()
         time.sleep(0.25)
 
-        upload_port = arduino_info['selected'].get('serial_port', '')
         serial_file = serial_port.get_serial_file(upload_port)
 
         board_info = selected.get_sel_board_info(arduino_info)
@@ -1635,6 +1640,8 @@ def upload_sketch(upload_cmd=''):
 
         time.sleep(0.25)
         serial_listener.start()
+        if monitor:
+            monitor.start()
 
 
 def burn_bootloader():
