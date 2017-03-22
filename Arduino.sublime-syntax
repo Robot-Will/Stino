@@ -1,0 +1,22 @@
+%YAML 1.2
+---
+# http://www.sublimetext.com/docs/3/syntax.html
+name: Arduino
+file_extensions: [ino, pde]
+scope: source.arduino
+
+contexts:
+  main:
+    - match: ''
+      push: Packages/C++/C++.sublime-syntax
+      with_prototype:
+        - match: \b(HIGH|LOW|INPUT|OUTPUT|INPUT_PULLUP|LED_BUILTIN)\b
+          scope: constant.language.arduino
+        - match: \b(boolean|word|String|string|array)\b
+          scope: storage.type.arduino
+        - match: PROGRAM
+          scope: storage.modifier.arduino
+        - match: \b(Serial|Stream|Keyboard|Mouse)\b
+          scope: entity.name.class.arduino
+        - match: \b(pinMode|digitalWrite|digitalRead|analogReference|analogRead|analogWrite|analogReadResolution|analogWriteResolution|tone|noTone|shiftOut|shiftIn|pulseIn|millis|micros|delay|delayMicroseconds|min|max|constrain|map|pow|sqrt|sin|cos|tan|isAlphaNumeric|isAlpha|isAscii|isWhitespace|isControl|isDigit|isGraph|isLowerCase|isPrintable|isPunct|isSpace|isUpperCase|isHexadecimalDigit|randomSeed|random|lowByte|highByte|bitRead|bitWrite|bitSet|bitClear|bit|attachInterrupt|detachInterrupt|interrupts|noInterrupts)\b
+          scope: entity.name.function.arduino

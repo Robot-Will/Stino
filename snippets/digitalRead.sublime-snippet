@@ -1,0 +1,8 @@
+<snippet>
+    <content><![CDATA[
+digitalRead(${1:pin});
+]]></content>
+    <tabTrigger>digitalRead</tabTrigger>
+    <scope>source.arduino</scope>
+    <description>Arduino digitalRead</description>
+</snippet>

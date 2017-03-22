@@ -1,0 +1,10 @@
+<snippet>
+    <content><![CDATA[
+if(${1}){
+    ${2}
+}
+]]></content>
+    <tabTrigger>if</tabTrigger>
+    <scope>source.arduino</scope>
+    <description>Arduino if</description>
+</snippet>
