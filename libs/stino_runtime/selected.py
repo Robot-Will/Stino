@@ -421,9 +421,15 @@ def get_base_info(arduino_info, project=None):
     """."""
     base_info = {}
     generic_info = get_generic_info()
-    project_info = get_project_info(arduino_info, project)
     base_info.update(generic_info)
-    base_info.update(project_info)
+    if project:
+        project_info = get_project_info(arduino_info, project)
+        base_info.update(project_info)
+
+    # For Ardunio IDE / hardware path
+    build_platform_path = get_build_platform_path(arduino_info)
+    ide_pkg_path = os.path.dirname(build_platform_path)
+    base_info['runtime.hardware.path'] = ide_pkg_path.replace('\\', '/')
     return base_info
 
 
@@ -459,10 +465,6 @@ def get_runtime_build_info(arduino_info):
     extra_build_flags = build_info.get('build.extra_flags', '')
     build_info['build.extra_flags'] = ' '.join((extra_build_flags,
                                                 user_build_flags))
-
-    # For Ardunio IDE / hardware path
-    ide_pkg_path = os.path.dirname(build_platform_path)
-    build_info['runtime.hardware.path'] = ide_pkg_path.replace('\\', '/')
 
     build_platform_info = get_build_platform_info(arduino_info)
     path_info = get_runtime_path_info(arduino_info, build_platform_info)
@@ -517,12 +519,20 @@ def get_tool_params_info(arduino_info, tool_platform_path, tool_name):
     return tool_params_info
 
 
-def get_upload_command(arduino_info, project=None, mode='upload'):
+def get_upload_command(arduino_info, project=None,
+                       bin_path='', mode='upload'):
     """."""
     all_info = {}
 
     base_info = get_base_info(arduino_info, project)
     all_info.update(base_info)
+
+    if not project and os.path.isfile(bin_path):
+        dir_path = os.path.dirname(bin_path)
+        file_name = os.path.basename(bin_path)
+        prj_name = os.path.splitext(file_name)[0]
+        all_info['build.path'] = dir_path
+        all_info['build.project_name'] = prj_name
 
     board_info = get_sel_board_info(arduino_info)
     programmer_info = get_sel_programmer_info(arduino_info)
@@ -586,12 +596,12 @@ def get_upload_command(arduino_info, project=None, mode='upload'):
 def get_bootloader_commands(arduino_info):
     """."""
     all_info = {}
-    generic_info = get_generic_info()
+    base_info = get_base_info(arduino_info)
     board_info = get_sel_board_info(arduino_info)
     programmer_info = get_sel_programmer_info(arduino_info)
     tool_name = board_info.get('bootloader.tool', '')
 
-    all_info.update(generic_info)
+    all_info.update(base_info)
 
     ser_port = arduino_info['selected'].get('serial_port', '')
     ser_port = str(ser_port)

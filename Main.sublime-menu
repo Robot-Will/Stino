@@ -503,6 +503,16 @@
             },
             {"caption": "-"},
             {
+                "caption": "Upload Binary File",
+                "id": "stino_upload_bin_file",
+                "command": "stino_upload_bin_file"
+            },
+            {
+                "caption": "Upload Binary File by Using Programmer",
+                "id": "stino_upload_bin_file_by_programmer",
+                "command": "stino_upload_bin_file_by_programmer"
+            },
+            {
                 "caption": "Burn Bootloader",
                 "id": "stino_burn_bootloader",
                 "command": "stino_burn_bootloader"
