@@ -638,3 +638,28 @@ def get_bootloader_commands(arduino_info):
             cmd = replace_variants_in_braces(cmd, all_info)
             cmds.append(cmd)
     return cmds
+
+
+def get_board_from_hwid(arduino_info, vid, pid):
+    """."""
+    name = ''
+    boards_info = arduino_info.get('boards', {})
+    board_names = boards_info.get('names', [])
+    for board_name in board_names:
+        board_info = boards_info.get(board_name)
+        generic_info = board_info.get('generic', {})
+        for key in generic_info:
+            if key.startswith('vid'):
+                value = generic_info.get(key)
+                if value == vid:
+                    suffix = ''
+                    if '.' in key:
+                        number = key.split('.')[-1]
+                        suffix = '.' + number
+                    pid_key = 'pid' + suffix
+                    if pid_key in generic_info:
+                        value = generic_info[pid_key]
+                        if value == pid:
+                            name = board_name
+                            break
+    return name

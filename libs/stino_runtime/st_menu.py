@@ -14,6 +14,7 @@ import codecs
 from base_utils import file
 from base_utils import default_st_dirs
 from base_utils import c_file
+from base_utils import serial_port
 from . import const
 from . import selected
 
@@ -886,8 +887,9 @@ def update_network_port_menu(arduino_info):
 
 def update_serial_menu(arduino_info):
     """."""
+    serials_info = serial_port.get_serials_info()
     serial_ports_info = arduino_info.get('serial_ports', {})
-    serial_ports = serial_ports_info.get('names', [])
+    ports = serial_ports_info.get('names', [])
 
     text = '\t' * 0 + '[\n'
     text += '\t' * 1 + '{\n'
@@ -908,14 +910,22 @@ def update_serial_menu(arduino_info):
     text += '\t' * 5 + '},\n'
     text += '\t' * 5 + '{"caption": "-"}'
 
-    for serial_port in serial_ports:
+    for port in ports:
+        caption = port
+        serial_info = serials_info.get(port, {})
+        vid = serial_info.get('vid')
+        pid = serial_info.get('pid')
+        board_name = selected.get_board_from_hwid(arduino_info, vid, pid)
+        if board_name:
+            caption += ' (%s)' % board_name
+
         text += ',\n'
         text += '\t' * 5 + '{\n'
-        text += '\t' * 6 + '"caption": "%s",\n' % serial_port
-        text += '\t' * 6 + '"id": "stino_serial_%s",\n' % serial_port
+        text += '\t' * 6 + '"caption": "%s",\n' % caption
+        text += '\t' * 6 + '"id": "stino_serial_%s",\n' % port
         text += '\t' * 6 + '"command": "stino_select_serial",\n'
         text += '\t' * 6
-        text += '"args": {"serial_port": "%s"},\n' % serial_port
+        text += '"args": {"serial_port": "%s"},\n' % port
         text += '\t' * 6 + '"checkbox": true\n'
         text += '\t' * 5 + '}'
 

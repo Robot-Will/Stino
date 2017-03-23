@@ -38,15 +38,39 @@ def get_serials_info():
         if port:
             serials_info['ports'].append(port)
             info = {'port': port, 'description': desc, 'hwid': hwid}
+
+            vid = ''
+            pid = ''
+            if hwid:
+                hwid_infos = hwid.split()
+                for hwid_info in hwid_infos:
+                    if hwid_info.startswith('VID') and '=' in hwid_info:
+                        vid_pid = hwid_info.split('=')[-1]
+                        if ':' in vid_pid:
+                            vid, pid = vid_pid.split(':')
+                            vid = '0x' + vid.strip()
+                            pid = '0x' + pid.strip()
+                        break
+            info['vid'] = vid
+            info['pid'] = pid
             serials_info[port] = info
 
     os_name = sys_info.get_os_name()
-    if not serials_info['ports'] and os_name == "osx":
-        for port in glob("/dev/tty.*"):
+    if not serials_info['ports'] and os_name == 'osx':
+        for port in glob('/dev/tty.*'):
             serials_info['ports'].append(port)
-            info = {"port": port, "description": "", "hwid": ""}
+            info = {'port': port, 'description': '', 'hwid': ''}
+            info['vid'] = ''
+            info['pid'] = ''
             serials_info[port] = info
     return serials_info
+
+
+def get_serial_info(port):
+    """."""
+    serials_info = get_serials_info()
+    info = serials_info.get(port, {})
+    return info
 
 
 def is_available(serial_port):
