@@ -645,6 +645,7 @@ def get_board_from_hwid(arduino_info, vid, pid):
     name = ''
     boards_info = arduino_info.get('boards', {})
     board_names = boards_info.get('names', [])
+    has_board = False
     for board_name in board_names:
         board_info = boards_info.get(board_name)
         generic_info = board_info.get('generic', {})
@@ -661,5 +662,8 @@ def get_board_from_hwid(arduino_info, vid, pid):
                         value = generic_info[pid_key]
                         if value == pid:
                             name = board_name
+                            has_board = True
                             break
+        if has_board:
+            break
     return name
