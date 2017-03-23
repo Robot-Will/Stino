@@ -315,8 +315,21 @@
                 "command": "stino_upload"
             },
             {
+                "caption": "Network Port",
+                "id": "stino_network_port",
+                "children":
+                [
+                    {
+                        "caption": "Refresh",
+                        "id": "stino_refresh_network_ports",
+                        "command": "stino_refresh_network_ports"
+                    },
+                    {"caption": "-"}
+                ]
+            },
+            {
                 "caption": "Serial Port",
-                "id": "serial_port",
+                "id": "stino_serial_port",
                 "children":
                 [
                     {
@@ -325,6 +338,139 @@
                         "command": "stino_refresh_serials"
                     },
                     {"caption": "-"}
+                ]
+            },
+            {
+                "caption": "Serial Monitor",
+                "id": "stino_serial_monitor",
+                "children":
+                [
+                    {
+                        "caption": "Start",
+                        "id": "stino_serial_monitor_start",
+                        "command": "stino_serial_monitor_start"
+                    },
+                    {
+                        "caption": "Stop",
+                        "id": "stino_serial_monitor_stop",
+                        "command": "stino_serial_monitor_stop"
+                    },
+                    {"caption": "-"},
+                    {
+                        "caption": "Auto Scroll",
+                        "id": "stino_serial_monitor_scroll",
+                        "command": "stino_serial_monitor_toggle_scroll"
+                    },
+                    {
+                        "caption": "Baudrate",
+                        "id": "stino_serial_baudrate",
+                        "children":
+                        [
+                            {
+                                "caption": "300",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "300"}
+                            },
+                            {
+                                "caption": "600",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "600"}
+                            },
+                            {
+                                "caption": "1200",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "1200"}
+                            },
+                            {
+                                "caption": "4800",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "4800"}
+                            },
+                            {
+                                "caption": "9600",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "9600"}
+                            },
+                            {
+                                "caption": "19200",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "19200"}
+                            },
+                            {
+                                "caption": "38400",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "38400"}
+                            },
+                            {
+                                "caption": "57600",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "57600"}
+                            },
+                            {
+                                "caption": "74880",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "74880"}
+                            },
+                            {
+                                "caption": "115200",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "115200"}
+                            },
+                            {
+                                "caption": "230400",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "230400"}
+                            },
+                            {
+                                "caption": "250000",
+                                "id": "stino_select_baudrate",
+                                "command": "stino_select_baudrate",
+                                "args": {"baudrate": "250000"}
+                            }
+                        ]
+                    },
+                    {
+                        "caption": "Line Ending",
+                        "id": "stino_serial_line_ending",
+                        "children":
+                        [
+                            {
+                                "caption": "No Line Ending",
+                                "id": "stino_select_line_ending",
+                                "command": "stino_select_line_ending",
+                                "args": {"line_ending": "None"}
+                            },
+                            {
+                                "caption": "New Line",
+                                "id": "stino_select_line_ending",
+                                "command": "stino_select_line_ending",
+                                "args": {"line_ending": "NL"}
+                            },
+                            {
+                                "caption": "Carriage Return",
+                                "id": "stino_select_line_ending",
+                                "command": "stino_select_line_ending",
+                                "args": {"line_ending": "CR"}
+                            },
+                            {
+                                "caption": "Both NL & CR",
+                                "id": "stino_select_line_ending",
+                                "command": "stino_select_line_ending",
+                                "args": {"line_ending": "NL_CR"}
+                            }
+                        ]
+                    }
                 ]
             },
             {

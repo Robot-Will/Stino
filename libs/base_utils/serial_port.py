@@ -13,7 +13,6 @@ import threading
 import glob
 import serial
 from serial.tools.list_ports import comports
-from . import decos
 from . import sys_info
 
 
@@ -25,6 +24,11 @@ def list_serial_ports():
         for port in glob("/dev/tty.*"):
             serial_ports.append(port)
     return serial_ports
+
+
+def list_network_ports():
+    """."""
+    return []
 
 
 def get_serials_info():
@@ -45,36 +49,50 @@ def get_serials_info():
     return serials_info
 
 
-@decos.singleton
-class SerialListener(object):
+def is_available(serial_port):
+    """."""
+    is_avail = True
+    ser = serial.Serial()
+    ser.port = serial_port
+    try:
+        ser.open()
+    except (serial.SerialException, UnicodeDecodeError):
+        is_avail = False
+    else:
+        ser.close()
+    return is_avail
+
+
+class PortListener(object):
     """."""
 
-    def __init__(self, call_back=None):
+    def __init__(self, list_func, call_back=None):
         """."""
-        self.is_alive = False
-        self.call_back = call_back
+        self._is_alive = False
+        self._list_func = list_func
+        self._call_back = call_back
 
     def start(self):
         """."""
-        if not self.is_alive:
-            self.is_alive = True
-            listener_thread = threading.Thread(target=self.update)
+        if not self._is_alive:
+            self._is_alive = True
+            listener_thread = threading.Thread(target=self._update)
             listener_thread.start()
 
-    def update(self):
+    def _update(self):
         """."""
         pre_serial_ports = []
-        while self.is_alive:
-            serial_ports = list_serial_ports()
+        while self._is_alive:
+            serial_ports = self._list_func()
             if serial_ports != pre_serial_ports:
                 pre_serial_ports = serial_ports
-                if callable(self.call_back):
-                    self.call_back(serial_ports)
+                if callable(self._call_back):
+                    self._call_back(serial_ports)
             time.sleep(1)
 
     def stop(self):
         """."""
-        self.is_alive = False
+        self._is_alive = False
 
 
 def flush_serial_buffer(serial_port):

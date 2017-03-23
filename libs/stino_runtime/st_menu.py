@@ -173,71 +173,6 @@ def update_sketchbook_menu(arduino_info):
     write_menu('sketchbook', text)
 
 
-# def update_sketchbook_menu(arduino_info):
-#     """."""
-#     none_sketches = ['libraries', 'examples']
-#     sketchbook_path = arduino_info.get('sketchbook_path')
-#     sketch_paths = glob.glob(sketchbook_path + '/*')
-#     sketch_paths = [p for p in sketch_paths if os.path.isdir(p)]
-
-#     text = '\t' * 0 + '[\n'
-#     text += '\t' * 1 + '{\n'
-#     text += '\t' * 2 + '"caption": "Arduino",\n'
-#     text += '\t' * 2 + '"mnemonic": "A",\n'
-#     text += '\t' * 2 + '"id": "arduino",\n'
-#     text += '\t' * 2 + '"children":\n'
-#     text += '\t' * 2 + '[\n'
-#     text += '\t' * 3 + '{\n'
-#     text += '\t' * 4 + '"caption": "Open Sketch",\n'
-#     text += '\t' * 4 + '"id": "stino_sketchbook",\n'
-#     text += '\t' * 4 + '"children":\n'
-#     text += '\t' * 4 + '[\n'
-#     text += '\t' * 5 + '{\n'
-#     text += '\t' * 6 + '"caption": "Refresh",\n'
-#     text += '\t' * 6 + '"id": "stino_refresh_sketchbook",\n'
-#     text += '\t' * 6 + '"command": "stino_refresh_sketchbook"\n'
-#     text += '\t' * 5 + '},\n'
-#     text += '\t' * 5 + '{\n'
-#     text += '\t' * 6 + '"caption": "Change Location...",\n'
-#     text += '\t' * 6 + '"id": "stino_change_sketchbook_location",\n'
-#     text += '\t' * 6 + '"command": "stino_change_sketchbook_location"\n'
-#     text += '\t' * 5 + '},\n'
-#     text += '\t' * 5 + '{\n'
-#     text += '\t' * 6 + '"caption": "In New Window",\n'
-#     text += '\t' * 6 + '"id": "stino_open_in_new_win",\n'
-#     text += '\t' * 6 + '"command": "stino_open_in_new_win",\n'
-#     text += '\t' * 6 + '"checkbox": true\n'
-#     text += '\t' * 5 + '},\n'
-#     text += '\t' * 5 + '{"caption": "-"},'
-#     text += '\t' * 5 + '{\n'
-#     text += '\t' * 6 + '"caption": "New Sketch...",\n'
-#     text += '\t' * 6 + '"id": "stino_new_sketch",\n'
-#     text += '\t' * 6 + '"command": "stino_new_sketch"\n'
-#     text += '\t' * 5 + '},\n'
-#     text += '\t' * 5 + '{"caption": "-"}'
-
-#     for sketch_path in sketch_paths:
-#         sketch_path = sketch_path.replace('\\', '/')
-#         sketch_name = os.path.basename(sketch_path)
-#         if sketch_name in none_sketches:
-#             continue
-#         text += ',\n'
-#         text += '\t' * 5 + '{\n'
-#         text += '\t' * 6 + '"caption": "%s",\n' % sketch_name
-#         text += '\t' * 6 + '"id": "stino_sketch_%s",\n' % sketch_name
-#         text += '\t' * 6 + '"command": "stino_open_sketch",\n'
-#         text += '\t' * 6 + '"args": {"sketch_path": "%s"}\n' % sketch_path
-#         text += '\t' * 5 + '}'
-
-#     text += '\n' + '\t' * 4 + ']\n'
-#     text += '\t' * 3 + '}\n'
-#     text += '\t' * 2 + ']\n'
-#     text += '\t' * 1 + '}\n'
-#     text += '\t' * 0 + ']\n'
-
-#     write_menu('sketchbook', text)
-
-
 def get_example_menu_text(level, paths):
     """."""
     text = ''
@@ -905,6 +840,50 @@ def update_programmer_menu(arduino_info):
     write_menu('programmer', text)
 
 
+def update_network_port_menu(arduino_info):
+    """."""
+    network_ports_info = arduino_info.get('network_ports', {})
+    network_ports = network_ports_info.get('names', [])
+
+    text = '\t' * 0 + '[\n'
+    text += '\t' * 1 + '{\n'
+    text += '\t' * 2 + '"caption": "Arduino",\n'
+    text += '\t' * 2 + '"mnemonic": "A",\n'
+    text += '\t' * 2 + '"id": "arduino",\n'
+    text += '\t' * 2 + '"children":\n'
+    text += '\t' * 2 + '[\n'
+    text += '\t' * 3 + '{\n'
+    text += '\t' * 4 + '"caption": "Network Port",\n'
+    text += '\t' * 4 + '"id": "stino_network_port",\n'
+    text += '\t' * 4 + '"children":\n'
+    text += '\t' * 4 + '[\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Refresh",\n'
+    text += '\t' * 6 + '"id": "stino_refresh_network_ports",\n'
+    text += '\t' * 6 + '"command": "stino_refresh_network_ports"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{"caption": "-"}'
+
+    for network_port in network_ports:
+        text += ',\n'
+        text += '\t' * 5 + '{\n'
+        text += '\t' * 6 + '"caption": "%s",\n' % network_port
+        text += '\t' * 6 + '"id": "stino_network_port_%s",\n' % network_port
+        text += '\t' * 6 + '"command": "stino_select_network_port",\n'
+        text += '\t' * 6
+        text += '"args": {"network_port": "%s"},\n' % network_port
+        text += '\t' * 6 + '"checkbox": true\n'
+        text += '\t' * 5 + '}'
+
+    text += '\n' + '\t' * 4 + ']\n'
+    text += '\t' * 3 + '}\n'
+    text += '\t' * 2 + ']\n'
+    text += '\t' * 1 + '}\n'
+    text += '\t' * 0 + ']\n'
+
+    write_menu('network_port', text)
+
+
 def update_serial_menu(arduino_info):
     """."""
     serial_ports_info = arduino_info.get('serial_ports', {})
@@ -919,7 +898,7 @@ def update_serial_menu(arduino_info):
     text += '\t' * 2 + '[\n'
     text += '\t' * 3 + '{\n'
     text += '\t' * 4 + '"caption": "Serial Port",\n'
-    text += '\t' * 4 + '"id": "serial_port",\n'
+    text += '\t' * 4 + '"id": "stino_serial_port",\n'
     text += '\t' * 4 + '"children":\n'
     text += '\t' * 4 + '[\n'
     text += '\t' * 5 + '{\n'

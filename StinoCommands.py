@@ -42,7 +42,7 @@ def plugin_loaded():
 
 
 #############################################
-# Sketch Commands
+# View Monitor
 #############################################
 class ViewMonitor(sublime_plugin.EventListener):
     """."""
@@ -54,10 +54,36 @@ class ViewMonitor(sublime_plugin.EventListener):
             if file_path in stino.arduino_info.get('phantoms', {}):
                 stino.arduino_info['phantoms'].pop(file_path)
 
+            view_name = view.name()
+            if view_name.endswith('- Serial Monitor'):
+                serial_port = view_name.split('-')[0].strip()
+                if serial_port in stino.arduino_info.get('serial_monitors',
+                                                         {}):
+                    serial_monitor = \
+                        stino.arduino_info['serial_monitors'].pop(serial_port)
+                    serial_monitor.stop()
+
+    def on_activated(self, view):
+        """."""
+        if stino.arduino_info['init_done']:
+            panel_name = 'stino_panel'
+            win = view.window()
+            panel = win.find_output_panel(panel_name)
+            if panel:
+                vector = panel.layout_extent()
+                stino.arduino_info['selected'].set('panel_size', vector)
+
+            view_name = view.name()
+            if view_name.endswith('- Serial Monitor'):
+                serial_port = view_name.split('-')[0].strip()
+                view.run_command('stino_send_to_serial',
+                                 {'serial_port': serial_port})
+
     def on_selection_modified(self, view):
         """."""
         panel_name = 'stino_panel'
         view_name = view.name()
+
         if view_name == panel_name:
             view_selection = view.sel()
             word_region = view_selection[0]
@@ -75,21 +101,13 @@ class ViewMonitor(sublime_plugin.EventListener):
                     col_no = int(record[-2])
 
                     has_view = False
-                    is_opened_file = False
                     for win in sublime.windows():
-                        for view in win.views():
-                            view_file_path = view.file_name()
-                            if view_file_path:
-                                view_file_path = \
-                                    view_file_path.replace('\\', '/')
-                                if view_file_path == file_path:
-                                    is_opened_file = True
-                                    has_view = True
-                                    break
-                        if is_opened_file:
+                        view = win.find_open_file(file_path)
+                        if view:
+                            has_view = True
                             break
 
-                    if not is_opened_file:
+                    if not has_view:
                         if os.path.isfile(file_path):
                             win = sublime.active_window()
                             view = win.open_file(file_path)
@@ -97,6 +115,7 @@ class ViewMonitor(sublime_plugin.EventListener):
 
                     if has_view:
                         text_point = view.text_point(line_no, col_no)
+                        win.focus_view(view)
                         view.show(text_point)
 
 
@@ -738,6 +757,34 @@ class StinoUploadCommand(sublime_plugin.TextCommand):
         return state
 
 
+class StinoRefreshNetworkPortsCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            stino.do_action.put(stino.st_menu.update_network_port_menu,
+                                stino.arduino_info)
+
+
+class StinoSelectNetworkPortCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self, network_port):
+        """."""
+        if stino.arduino_info['init_done']:
+            if not self.is_checked(network_port):
+                stino.on_network_port_select(network_port)
+
+    def is_checked(self, network_port):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            key = 'serial_port'
+            state = stino.arduino_info['selected'].get(key) == network_port
+        return state
+
+
 class StinoRefreshSerialsCommand(sublime_plugin.WindowCommand):
     """."""
 
@@ -766,6 +813,114 @@ class StinoSelectSerialCommand(sublime_plugin.WindowCommand):
         return state
 
 
+class StinoSerialMonitorStartCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            serial_port = stino.arduino_info['selected'].get('serial_port', '')
+            if serial_port:
+                stino.start_serial_monitor(serial_port)
+
+    def is_enabled(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            use_network_port = \
+                stino.arduino_info['selected'].get('use_network_port', False)
+            serial_port = stino.arduino_info['selected'].get('serial_port', '')
+            if not use_network_port and serial_port and \
+                    stino.serial_port.is_available(serial_port):
+                monitor = \
+                    stino.arduino_info['serial_monitors'].get(serial_port,
+                                                              None)
+                if not monitor or not monitor.is_running():
+                    state = True
+        return state
+
+
+class StinoSerialMonitorStopCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            serial_port = stino.arduino_info['selected'].get('serial_port', '')
+            if serial_port:
+                monitor = \
+                    stino.arduino_info['serial_monitors'].get(serial_port,
+                                                              None)
+                if monitor:
+                    monitor.stop()
+
+    def is_enabled(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            serial_port = stino.arduino_info['selected'].get('serial_port', '')
+            if serial_port:
+                monitor = \
+                    stino.arduino_info['serial_monitors'].get(serial_port,
+                                                              None)
+                if monitor and monitor.is_running():
+                    state = True
+        return state
+
+
+class StinoSerialMonitorToggleScrollCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            state = stino.arduino_info['selected'].get('monitor_auto_scroll')
+            stino.arduino_info['selected'].set('monitor_auto_scroll',
+                                               not state)
+
+    def is_checked(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            state = stino.arduino_info['selected'].get('monitor_auto_scroll')
+        return state
+
+
+class StinoSelectBaudrateCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self, baudrate):
+        """."""
+        if stino.arduino_info['init_done']:
+            stino.arduino_info['selected'].set('baudrate', baudrate)
+
+    def is_checked(self, baudrate):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            if baudrate == stino.arduino_info['selected'].get('baudrate'):
+                state = True
+        return state
+
+
+class StinoSelectLineEndingCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self, line_ending):
+        """."""
+        if stino.arduino_info['init_done']:
+            stino.arduino_info['selected'].set('line_ending', line_ending)
+
+    def is_checked(self, line_ending):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            if line_ending == \
+                    stino.arduino_info['selected'].get('line_ending'):
+                state = True
+        return state
+
+
 class StinoGetPortInfoCommand(sublime_plugin.TextCommand):
     """."""
 
@@ -786,7 +941,7 @@ class StinoGetPortInfoCommand(sublime_plugin.TextCommand):
 
                     board_info = \
                         stino.selected.get_sel_board_info(stino.arduino_info)
-                    board_name = board_info.get('name')
+                    board_name = board_info.get('board.name', '')
                     vid = board_info.get('build.vid', 'None')
                     pid = board_info.get('build.pid', 'None')
                     stino.message_queue.put(board_name)
@@ -1004,3 +1159,37 @@ class StinoPanelWriteCommand(sublime_plugin.TextCommand):
         if do_scroll:
             point = self.view.size()
             self.view.show(point)
+
+
+class StinoSendToSerial(sublime_plugin.TextCommand):
+    """."""
+
+    def run(self, edit, serial_port):
+        """."""
+        self.port = serial_port
+        caption = 'Send to %s: ' % serial_port
+        self.win = self.view.window()
+        self.win.show_input_panel(caption, '', self.on_done, None, None)
+
+    def on_done(self, text):
+        """."""
+        ending_text = ''
+        line_ending = stino.arduino_info['selected'].get('line_ending')
+        if line_ending == 'NL':
+            ending_text = '\n'
+        elif line_ending == 'CR':
+            ending_text = '\r'
+        elif line_ending == 'NL_CR':
+            ending_text = '\r\n'
+        text += ending_text
+
+        view = self.win.active_view()
+        view_name = view.name()
+        if view_name.endswith('- Serial Monitor'):
+            serial_port = view_name.split('-')[0].strip()
+            if serial_port in stino.arduino_info['serial_monitors']:
+                monitor = stino.arduino_info['serial_monitors'].get(self.port)
+                monitor.send(text)
+                caption = 'Send to %s: ' % serial_port
+                self.win.show_input_panel(caption, '', self.on_done,
+                                          None, None)

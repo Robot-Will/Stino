@@ -28,6 +28,7 @@ from base_utils import plain_params_file
 from base_utils import default_st_dirs
 from base_utils import default_arduino_dirs
 from base_utils import serial_port
+from base_utils import serial_monitor
 from base_utils import task_queue
 from base_utils import task_listener
 from base_utils import downloader
@@ -36,6 +37,7 @@ from . import const
 from . import st_menu
 from . import selected
 from . import st_panel
+from . import st_monitor_view
 
 plugin_name = const.PLUGIN_NAME
 _d_pattern_text = r"'-D[\S\s]*?'"
@@ -284,12 +286,20 @@ def get_all_programmers_info(arduino_info):
     return programmers_info
 
 
+def update_network_port_info(serial_ports):
+    """."""
+    global arduino_info
+    arduino_info['network_ports'] = {'names': network_ports}
+    st_menu.update_network_port_menu(arduino_info)
+    check_port_selected(arduino_info)
+
+
 def update_serial_info(serial_ports):
     """."""
     global arduino_info
     arduino_info['serial_ports'] = {'names': serial_ports}
     st_menu.update_serial_menu(arduino_info)
-    check_selected(arduino_info, 'serial_port')
+    check_port_selected(arduino_info)
 
 
 def check_platform_selected(arduino_info):
@@ -329,6 +339,44 @@ def check_platform_selected(arduino_info):
     else:
         sel_version = None
         sel_settings.set('version', sel_version)
+
+
+def check_port_selected(arduino_info):
+    """."""
+    if arduino_info['init_done']:
+        sel_settings = arduino_info.get('selected')
+        sel_item = sel_settings.get('serial_port', '')
+
+        ports_names = ['serial_ports', 'network_ports']
+
+        has_port = False
+        in_names = False
+        for ports_name in ports_names:
+            sel_item_info = arduino_info.get(ports_name, {})
+            names = sel_item_info.get('names', [])
+
+            if names and sel_item in names:
+                in_names = True
+                has_port = True
+                break
+
+        if not in_names:
+            for ports_name in ports_names:
+                sel_item_info = arduino_info.get(ports_name, {})
+                names = sel_item_info.get('names', [])
+
+                if names:
+                    sel_item = names[0]
+                    if ports_name == 'serial_ports':
+                        on_serial_select(sel_item)
+                    else:
+                        on_network_port_select(sel_item)
+                    has_port = True
+                    break
+
+        if not has_port:
+            sel_item = None
+            sel_settings.set('serial_port', sel_item)
 
 
 def check_selected(arduino_info, item_type):
@@ -417,6 +465,14 @@ def on_serial_select(serial_port):
     """."""
     global arduino_info
     arduino_info['selected'].set('serial_port', serial_port)
+    arduino_info['selected'].set('use_network_port', False)
+
+
+def on_network_port_select(network_port):
+    """."""
+    global arduino_info
+    arduino_info['selected'].set('serial_port', network_port)
+    arduino_info['selected'].set('use_network_port', True)
 
 
 def on_language_select(language_name):
@@ -1224,8 +1280,16 @@ def run_command(cmd):
                             stderr=subprocess.PIPE, shell=True)
     result = proc.communicate()
     return_code = proc.returncode
-    stdout = result[0].decode(sys_info.get_sys_encoding())
-    stderr = result[1].decode(sys_info.get_sys_encoding())
+    try:
+        stdout = result[0].decode(sys_info.get_sys_encoding())
+    except UnicodeDecodeError:
+        stdout = result[0].decode('utf-8', 'replace')
+
+    try:
+        stderr = result[1].decode(sys_info.get_sys_encoding())
+    except UnicodeDecodeError:
+        stderr = result[1].decode('utf-8', 'replace')
+
     stdout = stdout.replace('\r', '')
     stderr = stderr.replace('\r', '')
     return return_code, stdout, stderr
@@ -1268,14 +1332,9 @@ def handle_build_error_messages(error_msg):
     for file_path in file_msg_info:
         is_opened_file = False
         for win in sublime.windows():
-            for view in win.views():
-                view_file_path = view.file_name()
-                if view_file_path:
-                    view_file_path = view_file_path.replace('\\', '/')
-                    if view_file_path == file_path:
-                        is_opened_file = True
-                        break
-            if is_opened_file:
+            view = win.find_open_file(file_path)
+            if view:
+                is_opened_file = True
                 break
 
         if not is_opened_file:
@@ -1608,34 +1667,97 @@ def upload_sketch(upload_cmd=''):
     """."""
     if upload_cmd:
         message_queue.put('[Upload]...')
-        serial_listener.stop()
-        time.sleep(0.25)
-
         upload_port = arduino_info['selected'].get('serial_port', '')
-        serial_file = serial_port.get_serial_file(upload_port)
+        is_network_upload = arduino_info['selected'].get('use_network_port',
+                                                         False)
+        if is_network_upload:
+            network_port_listener.stop()
+            time.sleep(0.25)
+            pass
+            time.sleep(0.25)
+            network_port_listener.start()
+        else:
+            serial_listener.stop()
 
-        board_info = selected.get_sel_board_info(arduino_info)
-        do_touch = serial_port.check_do_touch(board_info)
-        do_reset = serial_port.checke_do_reset(board_info)
-        new_upload_port = serial_port.prepare_upload_port(upload_port,
-                                                          do_touch, do_reset)
-        if new_upload_port != upload_port:
-            new_serial_file = serial_port.get_serial_file(new_upload_port)
-            upload_cmd = upload_cmd.replace(upload_port, new_upload_port)
-            upload_cmd = upload_cmd.replace(serial_file, new_serial_file)
+            monitor = None
+            is_monitor_running = False
+            if upload_port in arduino_info['serial_monitors']:
+                monitor = arduino_info['serial_monitors'].get(upload_port)
+                is_monitor_running = monitor.is_running()
+                if is_monitor_running:
+                    monitor.stop()
+            time.sleep(0.25)
 
-        is_ok = run_upload_command(upload_cmd)
-        if is_ok and do_touch:
-            serial_port.restore_serial_port(upload_port, 9600)
+            serial_file = serial_port.get_serial_file(upload_port)
 
-        time.sleep(0.25)
-        serial_listener.start()
+            board_info = selected.get_sel_board_info(arduino_info)
+            do_touch = serial_port.check_do_touch(board_info)
+            do_reset = serial_port.checke_do_reset(board_info)
+            new_upload_port = serial_port.prepare_upload_port(upload_port,
+                                                              do_touch,
+                                                              do_reset)
+            if new_upload_port != upload_port:
+                new_serial_file = serial_port.get_serial_file(new_upload_port)
+                upload_cmd = upload_cmd.replace(upload_port, new_upload_port)
+                upload_cmd = upload_cmd.replace(serial_file, new_serial_file)
+
+            is_ok = run_upload_command(upload_cmd)
+            if is_ok and do_touch:
+                serial_port.restore_serial_port(upload_port, 9600)
+
+            time.sleep(0.25)
+            serial_listener.start()
+            if monitor and is_monitor_running:
+                monitor.start()
 
 
 def burn_bootloader():
     """."""
     cmds = selected.get_bootloader_commands(arduino_info)
     run_bootloader_cmds(cmds)
+
+
+def start_serial_monitor(port):
+    """."""
+    win = sublime.active_window()
+    monitor_name = '%s - Serial Monitor' % port
+
+    has_view = False
+    for win in sublime.windows():
+        for view in win.views():
+            view_name = view.name()
+            if view_name == monitor_name:
+                win.focus_view(view)
+                has_view = True
+                break
+        if has_view:
+            break
+
+    has_monitor = False
+    if port in arduino_info['serial_monitors']:
+        monitor = arduino_info['serial_monitors'].get(port)
+        has_monitor = True
+        if not has_view:
+            arduino_info['serial_monitors'].pop(port)
+            has_monitor = False
+
+    if not has_monitor:
+        if has_view:
+            monitor_view = st_monitor_view.StMonitorView(win, port,
+                                                         arduino_info,
+                                                         view)
+        else:
+            monitor_view = st_monitor_view.StMonitorView(win, port,
+                                                         arduino_info)
+            view = monitor_view.get_view()
+
+        baudrate = int(arduino_info['selected'].get('baudrate'))
+        monitor = serial_monitor.SerialMonitor(port, baudrate,
+                                               monitor_view.write)
+        arduino_info['serial_monitors'][port] = monitor
+
+    monitor.start()
+    view.run_command('stino_send_to_serial', {'serial_port': port})
 
 
 def beautify_src(view, edit, file_path):
@@ -1762,6 +1884,7 @@ def init_config_settings():
     """."""
     global arduino_info
     arduino_info['phantoms'] = {}
+    arduino_info['serial_monitors'] = {}
     arduino_app_path = arduino_info['arduino_app_path']
     config_file_path = os.path.join(arduino_app_path, 'config.stino-settings')
     config_settings = file.SettingsFile(config_file_path)
@@ -1778,6 +1901,13 @@ def init_selected_settings():
     arduino_app_path = arduino_info['arduino_app_path']
     sel_file_path = os.path.join(arduino_app_path, 'selected.stino-settings')
     sel_settings = file.SettingsFile(sel_file_path)
+
+    if sel_settings.get('monitor_auto_scroll', None) is None:
+        sel_settings.set('monitor_auto_scroll', True)
+    if sel_settings.get('baudrate', None) is None:
+        sel_settings.set('baudrate', '9600')
+    if sel_settings.get('line_ending', None) is None:
+        sel_settings.set('line_ending', 'None')
     arduino_info['selected'] = sel_settings
 
 
@@ -1866,6 +1996,7 @@ def init_menus():
 
 def _init():
     """."""
+    global message_queue
     # 0. init paths and settings
     init_app_dir_settings()
     init_ardunio_app_path()
@@ -1889,16 +2020,23 @@ def _init():
     init_menus()
 
     # 4. update index files
+    message_panel = st_panel.StPanel(info=arduino_info)
+    message_queue = task_queue.TaskQueue(message_panel.write)
+
     pkgs_checker.start()
     arduino_info['init_done'] = True
 
 
 arduino_info = {'init_done': False}
-message_queue = task_queue.TaskQueue(st_panel.StPanel().write)
-message_queue.put('Thanks for supporting Stino!')
-
-serial_listener = serial_port.SerialListener(update_serial_info)
+message_queue = None
+serial_listener = serial_port.PortListener(serial_port.list_serial_ports,
+                                           update_serial_info)
 serial_listener.start()
+
+network_port_listener = \
+    serial_port.PortListener(serial_port.list_network_ports,
+                             update_network_port_info)
+network_port_listener.start()
 
 pkgs_checker = task_listener.TaskListener(task=check_pkgs,
                                           delay=const.REMOTE_CHECK_PERIOD)

@@ -17,7 +17,7 @@ from base_utils import sys_info
 class StPanel:
     """."""
 
-    def __init__(self, name='stino_panel', has_color=True):
+    def __init__(self, name='stino_panel', info=None, has_color=True):
         """."""
         self._name = name
         self._has_color = has_color
@@ -25,6 +25,7 @@ class StPanel:
         self._texts = []
         self._windows = []
         self._panels = []
+        self._info = info
         self._creat_panel()
 
     def _creat_panel(self):
@@ -39,6 +40,10 @@ class StPanel:
         if self._panel:
             vector = self._panel.layout_extent()
             panel.window_to_layout(vector)
+        elif self._info:
+            vector = self._info['selected'].get('panel_size', None)
+            if vector:
+                panel.window_to_layout(vector)
 
         view = self._window.active_view()
         color_scheme = view.settings().get('color_scheme', '')
