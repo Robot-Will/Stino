@@ -727,7 +727,15 @@ class StinoSerialInfoCommand(sublime_plugin.WindowCommand):
         caption = '----'
         if stino.arduino_info['init_done']:
             key = 'serial_port'
-            caption = '--%s--' % stino.arduino_info['selected'].get(key)
+            port = stino.arduino_info['selected'].get(key)
+            serial_info = stino.serial_port.get_serial_info(port)
+            vid = serial_info.get('vid')
+            pid = serial_info.get('pid')
+            board_name = stino.selected.get_board_from_hwid(stino.arduino_info,
+                                                            vid, pid)
+            if board_name:
+                port += ' (%s)' % board_name
+            caption = '--%s--' % port
         return caption
 
 
@@ -927,25 +935,24 @@ class StinoGetPortInfoCommand(sublime_plugin.TextCommand):
     def run(self, edit):
         """."""
         if stino.arduino_info['init_done']:
-            serials_info = stino.serial_port.get_serials_info()
             sel_serial = stino.arduino_info['selected'].get('serial_port')
             if sel_serial:
-                info = serials_info.get(sel_serial, {})
+                info = stino.serial_port.get_serial_info(sel_serial)
                 if info:
                     port = info.get('port')
                     desc = info.get('description')
                     hwid = info.get('hwid')
+                    vid = info.get('vid')
+                    pid = info.get('pid')
                     stino.message_queue.put(port)
                     stino.message_queue.put(desc)
                     stino.message_queue.put(hwid)
 
-                    board_info = \
-                        stino.selected.get_sel_board_info(stino.arduino_info)
-                    board_name = board_info.get('board.name', '')
-                    vid = board_info.get('build.vid', 'None')
-                    pid = board_info.get('build.pid', 'None')
-                    stino.message_queue.put(board_name)
-                    stino.message_queue.put('VID:PID=%s:%s' % (vid, pid))
+                    board_name = \
+                        stino.selected.get_board_from_hwid(stino.arduino_info,
+                                                           vid, pid)
+                    if board_name:
+                        stino.message_queue.put(board_name)
 
     def is_enabled(self):
         """."""

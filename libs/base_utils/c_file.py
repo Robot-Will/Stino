@@ -383,15 +383,15 @@ def regular_chars(words):
             new_word += word
 
         elif word == '(':
-            if pre_word in ('if', 'for', 'while', 'switch'):
+            if pre_word in ('if', 'for', 'while', 'switch', ')'):
                 new_words.append(new_word)
                 new_word = word
             elif pre_word[-1] in '+-*/%<>!=&|^':
                 new_words.append(new_word)
                 new_word = word
-            elif words[0] == '#define' and index == 2:
-                new_words.append(new_word)
-                new_word = word
+            # elif words[0] == '#define' and index == 2:
+            #     new_words.append(new_word)
+            #     new_word = word
             else:
                 new_word += word
 
@@ -693,20 +693,22 @@ def indent_lines(lines):
                 new_line = ''
                 if line.startswith('#if'):
                     new_line += '\n'
-                if (4 * indent_level + len(line)) < MAX_LINE_LENGTH:
-                    new_line += '\t' * indent_level + line
-                else:
-                    new_line += break_long_line(line, indent_level)
+                # if (4 * indent_level + len(line)) < MAX_LINE_LENGTH:
+                #     new_line += '\t' * indent_level + line
+                # else:
+                #     new_line += break_long_line(line, indent_level)
+                new_line += '\t' * indent_level + line
                 if line.startswith('#endif'):
                     new_line += '\n'
             else:
                 indent_level = len(indent_flags) - indent_flags.count('#')
                 if no_indent_once:
                     indent_level -= 1
-                if (4 * indent_level + len(line)) < MAX_LINE_LENGTH:
-                    new_line = '\t' * indent_level + line
-                else:
-                    new_line = break_long_line(line, indent_level)
+                # if (4 * indent_level + len(line)) < MAX_LINE_LENGTH:
+                #     new_line = '\t' * indent_level + line
+                # else:
+                #     new_line = break_long_line(line, indent_level)
+                new_line = '\t' * indent_level + line
                 if line.startswith('}') and indent_flags.count('{') == 0:
                     new_line += '\n'
             new_lines.append(new_line)

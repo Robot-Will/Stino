@@ -2033,6 +2033,8 @@ def _init():
     message_queue = task_queue.TaskQueue(message_panel.write)
 
     pkgs_checker.start()
+    serial_listener.start()
+    network_port_listener.start()
     arduino_info['init_done'] = True
 
 
@@ -2040,12 +2042,9 @@ arduino_info = {'init_done': False}
 message_queue = None
 serial_listener = serial_port.PortListener(serial_port.list_serial_ports,
                                            update_serial_info)
-serial_listener.start()
-
 network_port_listener = \
     serial_port.PortListener(serial_port.list_network_ports,
                              update_network_port_info)
-network_port_listener.start()
 
 pkgs_checker = task_listener.TaskListener(task=check_pkgs,
                                           delay=const.REMOTE_CHECK_PERIOD)
