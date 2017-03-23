@@ -553,7 +553,8 @@ def get_upload_command(arduino_info, project=None, mode='upload'):
     tool_key = 'upload.pattern'
     key = 'None.pattern'
     if mode == 'upload':
-        is_network_upload = False
+        is_network_upload = arduino_info['selected'].get('use_network_port',
+                                                         False)
         if is_network_upload:
             key = 'upload.network_pattern'
     elif mode == 'program':

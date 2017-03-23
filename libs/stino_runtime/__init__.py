@@ -286,12 +286,20 @@ def get_all_programmers_info(arduino_info):
     return programmers_info
 
 
+def update_network_port_info(serial_ports):
+    """."""
+    global arduino_info
+    arduino_info['network_ports'] = {'names': network_ports}
+    st_menu.update_network_port_menu(arduino_info)
+    check_port_selected(arduino_info)
+
+
 def update_serial_info(serial_ports):
     """."""
     global arduino_info
     arduino_info['serial_ports'] = {'names': serial_ports}
     st_menu.update_serial_menu(arduino_info)
-    check_selected(arduino_info, 'serial_port')
+    check_port_selected(arduino_info)
 
 
 def check_platform_selected(arduino_info):
@@ -331,6 +339,44 @@ def check_platform_selected(arduino_info):
     else:
         sel_version = None
         sel_settings.set('version', sel_version)
+
+
+def check_port_selected(arduino_info):
+    """."""
+    if arduino_info['init_done']:
+        sel_settings = arduino_info.get('selected')
+        sel_item = sel_settings.get('serial_port', '')
+
+        ports_names = ['serial_ports', 'network_ports']
+
+        has_port = False
+        in_names = False
+        for ports_name in ports_names:
+            sel_item_info = arduino_info.get(ports_name, {})
+            names = sel_item_info.get('names', [])
+
+            if names and sel_item in names:
+                in_names = True
+                has_port = True
+                break
+
+        if not in_names:
+            for ports_name in ports_names:
+                sel_item_info = arduino_info.get(ports_name, {})
+                names = sel_item_info.get('names', [])
+
+                if names:
+                    sel_item = names[0]
+                    if ports_name == 'serial_ports':
+                        on_serial_select(sel_item)
+                    else:
+                        on_network_port_select(sel_item)
+                    has_port = True
+                    break
+
+        if not has_port:
+            sel_item = None
+            sel_settings.set('serial_port', sel_item)
 
 
 def check_selected(arduino_info, item_type):
@@ -419,6 +465,14 @@ def on_serial_select(serial_port):
     """."""
     global arduino_info
     arduino_info['selected'].set('serial_port', serial_port)
+    arduino_info['selected'].set('use_network_port', False)
+
+
+def on_network_port_select(network_port):
+    """."""
+    global arduino_info
+    arduino_info['selected'].set('serial_port', network_port)
+    arduino_info['selected'].set('use_network_port', True)
 
 
 def on_language_select(language_name):
@@ -1614,34 +1668,47 @@ def upload_sketch(upload_cmd=''):
     if upload_cmd:
         message_queue.put('[Upload]...')
         upload_port = arduino_info['selected'].get('serial_port', '')
-        serial_listener.stop()
+        is_network_upload = arduino_info['selected'].get('use_network_port',
+                                                         False)
+        if is_network_upload:
+            network_port_listener.stop()
+            time.sleep(0.25)
+            pass
+            time.sleep(0.25)
+            network_port_listener.start()
+        else:
+            serial_listener.stop()
 
-        monitor = None
-        if upload_port in arduino_info['serial_monitors']:
-            monitor = arduino_info['serial_monitors'].get(upload_port)
-            monitor.stop()
-        time.sleep(0.25)
+            monitor = None
+            is_monitor_running = False
+            if upload_port in arduino_info['serial_monitors']:
+                monitor = arduino_info['serial_monitors'].get(upload_port)
+                is_monitor_running = monitor.is_running()
+                if is_monitor_running:
+                    monitor.stop()
+            time.sleep(0.25)
 
-        serial_file = serial_port.get_serial_file(upload_port)
+            serial_file = serial_port.get_serial_file(upload_port)
 
-        board_info = selected.get_sel_board_info(arduino_info)
-        do_touch = serial_port.check_do_touch(board_info)
-        do_reset = serial_port.checke_do_reset(board_info)
-        new_upload_port = serial_port.prepare_upload_port(upload_port,
-                                                          do_touch, do_reset)
-        if new_upload_port != upload_port:
-            new_serial_file = serial_port.get_serial_file(new_upload_port)
-            upload_cmd = upload_cmd.replace(upload_port, new_upload_port)
-            upload_cmd = upload_cmd.replace(serial_file, new_serial_file)
+            board_info = selected.get_sel_board_info(arduino_info)
+            do_touch = serial_port.check_do_touch(board_info)
+            do_reset = serial_port.checke_do_reset(board_info)
+            new_upload_port = serial_port.prepare_upload_port(upload_port,
+                                                              do_touch,
+                                                              do_reset)
+            if new_upload_port != upload_port:
+                new_serial_file = serial_port.get_serial_file(new_upload_port)
+                upload_cmd = upload_cmd.replace(upload_port, new_upload_port)
+                upload_cmd = upload_cmd.replace(serial_file, new_serial_file)
 
-        is_ok = run_upload_command(upload_cmd)
-        if is_ok and do_touch:
-            serial_port.restore_serial_port(upload_port, 9600)
+            is_ok = run_upload_command(upload_cmd)
+            if is_ok and do_touch:
+                serial_port.restore_serial_port(upload_port, 9600)
 
-        time.sleep(0.25)
-        serial_listener.start()
-        if monitor:
-            monitor.start()
+            time.sleep(0.25)
+            serial_listener.start()
+            if monitor and is_monitor_running:
+                monitor.start()
 
 
 def burn_bootloader():
@@ -1960,8 +2027,14 @@ arduino_info = {'init_done': False}
 message_queue = task_queue.TaskQueue(st_panel.StPanel().write)
 message_queue.put('Thanks for supporting Stino!')
 
-serial_listener = serial_port.SerialListener(update_serial_info)
+serial_listener = serial_port.PortListener(serial_port.list_serial_ports,
+                                           update_serial_info)
 serial_listener.start()
+
+network_port_listener = \
+    serial_port.PortListener(serial_port.list_network_ports,
+                             update_network_port_info)
+network_port_listener.start()
 
 pkgs_checker = task_listener.TaskListener(task=check_pkgs,
                                           delay=const.REMOTE_CHECK_PERIOD)

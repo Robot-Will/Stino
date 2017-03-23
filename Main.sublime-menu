@@ -315,6 +315,19 @@
                 "command": "stino_upload"
             },
             {
+                "caption": "Network Port",
+                "id": "stino_network_port",
+                "children":
+                [
+                    {
+                        "caption": "Refresh",
+                        "id": "stino_refresh_network_ports",
+                        "command": "stino_refresh_network_ports"
+                    },
+                    {"caption": "-"}
+                ]
+            },
+            {
                 "caption": "Serial Port",
                 "id": "stino_serial_port",
                 "children":

@@ -750,6 +750,34 @@ class StinoUploadCommand(sublime_plugin.TextCommand):
         return state
 
 
+class StinoRefreshNetworkPortsCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            stino.do_action.put(stino.st_menu.update_network_port_menu,
+                                stino.arduino_info)
+
+
+class StinoSelectNetworkPortCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self, network_port):
+        """."""
+        if stino.arduino_info['init_done']:
+            if not self.is_checked(network_port):
+                stino.on_network_port_select(network_port)
+
+    def is_checked(self, network_port):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            key = 'serial_port'
+            state = stino.arduino_info['selected'].get(key) == network_port
+        return state
+
+
 class StinoRefreshSerialsCommand(sublime_plugin.WindowCommand):
     """."""
 
