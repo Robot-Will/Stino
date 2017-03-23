@@ -89,7 +89,7 @@ class ViewMonitor(sublime_plugin.EventListener):
             word_region = view_selection[0]
             line_region = view.line(word_region)
             line = view.substr(line_region)
-            if line.count(':') > 2:
+            if not line.startswith('"') and line.count(':') > 2:
                 records = stino.error_pattern.findall(line)
                 if records:
                     record = records[0]
@@ -1038,6 +1038,55 @@ class StinoSelectProgrammerCommand(sublime_plugin.WindowCommand):
 #############################################
 # Tools Commands
 #############################################
+class StinoUploadBinFileCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            caption = stino.translate('Binary File Path: ')
+            self.window.show_input_panel(caption, '', self.on_done, None, None)
+
+    def on_done(self, file_path):
+        """."""
+        stino.do_action.put(stino.upload_bin_file, file_path)
+
+    def is_enabled(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            sel_serial = stino.arduino_info['selected'].get('serial_port')
+            if sel_serial:
+                state = True
+        return state
+
+
+class StinoUploadBinFileByProgrammerCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            caption = stino.translate('Binary File Path: ')
+            self.window.show_input_panel(caption, '', self.on_done, None, None)
+
+    def on_done(self, file_path):
+        """."""
+        stino.do_action.put(stino.upload_bin_file, file_path, 'program')
+
+    def is_enabled(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            sel_prog = stino.arduino_info['selected'].get('programmer')
+            if sel_prog:
+                cmd = stino.selected.get_upload_command(stino.arduino_info,
+                                                        mode='program')
+                if cmd:
+                    state = True
+        return state
+
+
 class StinoBurnBootloaderCommand(sublime_plugin.WindowCommand):
     """."""
 
@@ -1157,8 +1206,12 @@ class StinoPanelWriteCommand(sublime_plugin.TextCommand):
             self.view.replace(edit, region, text)
 
         if do_scroll:
-            point = self.view.size()
-            self.view.show(point)
+            view_size = self.view.size()
+            if view_size > 0:
+                point = view_size - 1
+                line, col = self.view.rowcol(point)
+                point = self.view.text_point(line, 1)
+                self.view.show(point)
 
 
 class StinoSendToSerial(sublime_plugin.TextCommand):

@@ -1658,8 +1658,8 @@ def build_sketch(build_info={}):
     run_size_command(size_cmd, regex_info)
 
     if upload_mode:
-        upload_cmd = selected.get_upload_command(arduino_info, prj,
-                                                 upload_mode)
+        upload_cmd = selected.get_upload_command(arduino_info, project=prj,
+                                                 mode=upload_mode)
         sketch_uploader.put(upload_cmd)
 
 
@@ -1709,6 +1709,15 @@ def upload_sketch(upload_cmd=''):
             serial_listener.start()
             if monitor and is_monitor_running:
                 monitor.start()
+
+
+def upload_bin_file(file_path, mode='upload'):
+    """."""
+    if os.path.isfile(file_path):
+        upload_cmd = selected.get_upload_command(arduino_info,
+                                                 bin_path=file_path,
+                                                 mode=mode)
+        sketch_uploader.put(upload_cmd)
 
 
 def burn_bootloader():
