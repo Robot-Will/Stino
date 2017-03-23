@@ -1996,6 +1996,7 @@ def init_menus():
 
 def _init():
     """."""
+    global message_queue
     # 0. init paths and settings
     init_app_dir_settings()
     init_ardunio_app_path()
@@ -2019,14 +2020,15 @@ def _init():
     init_menus()
 
     # 4. update index files
+    message_panel = st_panel.StPanel(info=arduino_info)
+    message_queue = task_queue.TaskQueue(message_panel.write)
+
     pkgs_checker.start()
     arduino_info['init_done'] = True
 
 
 arduino_info = {'init_done': False}
-message_queue = task_queue.TaskQueue(st_panel.StPanel().write)
-message_queue.put('Thanks for supporting Stino!')
-
+message_queue = None
 serial_listener = serial_port.PortListener(serial_port.list_serial_ports,
                                            update_serial_info)
 serial_listener.start()

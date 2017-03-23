@@ -66,6 +66,13 @@ class ViewMonitor(sublime_plugin.EventListener):
     def on_activated(self, view):
         """."""
         if stino.arduino_info['init_done']:
+            panel_name = 'stino_panel'
+            win = view.window()
+            panel = win.find_output_panel(panel_name)
+            if panel:
+                vector = panel.layout_extent()
+                stino.arduino_info['selected'].set('panel_size', vector)
+
             view_name = view.name()
             if view_name.endswith('- Serial Monitor'):
                 serial_port = view_name.split('-')[0].strip()
@@ -820,8 +827,11 @@ class StinoSerialMonitorStartCommand(sublime_plugin.WindowCommand):
         """."""
         state = False
         if stino.arduino_info['init_done']:
+            use_network_port = \
+                stino.arduino_info['selected'].get('use_network_port', False)
             serial_port = stino.arduino_info['selected'].get('serial_port', '')
-            if serial_port and stino.serial_port.is_available(serial_port):
+            if not use_network_port and serial_port and \
+                    stino.serial_port.is_available(serial_port):
                 monitor = \
                     stino.arduino_info['serial_monitors'].get(serial_port,
                                                               None)
