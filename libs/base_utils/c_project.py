@@ -27,7 +27,7 @@ def list_files_of_extension(dir_path, ext='', mode='norecursion'):
     return paths
 
 
-def list_files_of_extensions(dir_path, exts, mode='norecursion'):
+def list_files_of_extensions(dir_path, exts=[], mode='norecursion'):
     """."""
     paths = []
     for ext in exts:
@@ -46,13 +46,13 @@ def get_file_info_of_extension(dir_path, ext='',
             dir_name = os.path.basename(sub_dir_path)
             if dir_name.lower() not in excludes:
                 sub_info = get_file_info_of_extension(sub_dir_path, ext,
-                                                      'recursion', excludes)
+                                                      mode, excludes)
                 info.update(sub_info)
 
     paths = glob.glob(dir_path + '/*' + ext)
     for path in paths:
         name = os.path.basename(path)
-        info[name] = dir_path
+        info[name] = dir_path.replace('\\', '/')
     return info
 
 
@@ -65,7 +65,32 @@ def get_file_info_of_extensions(dir_path, exts,
     return info
 
 
-def combine_ino_files(ino_file_paths, target_file_path):
+def remove_headers(text):
+    """."""
+    includes = c_file.list_includes(text)
+    for include in includes:
+        text = text.replace(include, '')
+    return text
+
+
+def simple_combine_ino_files(ino_file_paths, target_file_path,
+                             with_header=True):
+    """."""
+    with codecs.open(target_file_path, 'w', 'utf-8') as target_f:
+        if with_header:
+            text = '#include <Arduino.h>\n\n'
+            target_f.write(text)
+
+        for file_path in ino_file_paths:
+            with codecs.open(file_path, 'r', 'utf-8') as source_f:
+                text = source_f.read()
+                if not with_header:
+                    text = remove_headers(text)
+                target_f.write(text)
+    return target_file_path
+
+
+def combine_ino_files(ino_file_paths, target_file_path, minus_src_path=None):
     """."""
     need_combine = False
 
@@ -88,12 +113,19 @@ def combine_ino_files(ino_file_paths, target_file_path):
 
         if need_combine:
             func_prototypes = []
-            for ino_file_path in f_paths:
-                ino_file = c_file.CFile(ino_file_path)
-                prototypes = ino_file.get_undeclar_func_defs()
+            if minus_src_path:
+                src_file = c_file.CFile(minus_src_path)
+                prototypes = src_file.get_undeclar_func_defs()
                 for prototype in prototypes:
                     if prototype not in func_prototypes:
                         func_prototypes.append(prototype)
+            else:
+                for ino_file_path in f_paths:
+                    ino_file = c_file.CFile(ino_file_path)
+                    prototypes = ino_file.get_undeclar_func_defs()
+                    for prototype in prototypes:
+                        if prototype not in func_prototypes:
+                            func_prototypes.append(prototype)
 
             with codecs.open(f_paths[0], 'r', 'utf-8') as source_f:
                 src_text = source_f.read()
@@ -139,7 +171,7 @@ def check_main_file(file_paths, prj_type='arduino'):
         if is_main_file(file_path):
             has_main_file = True
             break
-    return has_main_file
+    return has_main_file, file_path
 
 
 class CProject(object):
@@ -151,6 +183,7 @@ class CProject(object):
         self._name = os.path.basename(project_path)
         self.set_build_path(build_dir_path)
 
+        self._main_file_path = ''
         self._ino_file_paths = list_files_of_extensions(self._path,
                                                         c_file.INO_EXTS)
         self._cpp_file_paths = list_files_of_extensions(self._path,
@@ -186,12 +219,22 @@ class CProject(object):
 
     def check_is_arduino_project(self):
         """."""
-        has_main_file = check_main_file(self._src_file_paths)
+        has_main_file, file_path = check_main_file(self._src_file_paths)
+        if has_main_file:
+            self._main_file_path = file_path
+            self._ino_file_paths.remove(file_path)
+            self._src_file_paths.remove(file_path)
+            self._ino_file_paths = [file_path] + self._ino_file_paths
+            self._src_file_paths = [file_path] + self._src_file_paths
         return has_main_file
 
     def check_is_c_project(self):
         """."""
-        has_main_file = check_main_file(self._src_file_paths, 'cpp')
+        has_main_file, file_path = check_main_file(self._src_file_paths, 'cpp')
+        if has_main_file:
+            self._main_file_path = file_path
+            self._src_file_paths.remove(file_path)
+            self._src_file_paths = [file_path] + self._src_file_paths
         return has_main_file
 
     def is_arduino_project(self):
@@ -202,8 +245,37 @@ class CProject(object):
         """."""
         return self._is_cpp_project
 
-    def gen_arduino_tmp_file(self):
+    def has_main_file(self):
+        """."""
+        return bool(self._main_file_path)
+
+    def get_main_file_path(self):
+        """."""
+        return self._main_file_path
+
+    def is_main_file_modified(self):
+        """."""
+        state = False
+        last_inos_path = os.path.join(self._build_path,
+                                      'last_inos.stino-settings')
+        last_inos_info = file.SettingsFile(last_inos_path)
+        mtime = os.path.getmtime(self._main_file_path)
+        last_mtime = last_inos_info.get(self._main_file_path)
+        if mtime and mtime != last_mtime:
+            state = True
+        return state
+
+    def get_simple_combine_path(self, with_header=True):
+        """."""
+        tmp_cpp_name = self._name + '.combine.cpp'
+        tmp_file_path = os.path.join(self._build_path, tmp_cpp_name)
+        simple_combine_ino_files(self._ino_file_paths, tmp_file_path,
+                                 with_header)
+        return tmp_file_path
+
+    def get_combine_path(self, minus_src_path=None):
         """."""
         tmp_cpp_name = self._name + '.ino.cpp'
         tmp_file_path = os.path.join(self._build_path, tmp_cpp_name)
-        combine_ino_files(self._ino_file_paths, tmp_file_path)
+        combine_ino_files(self._ino_file_paths, tmp_file_path, minus_src_path)
+        return tmp_file_path

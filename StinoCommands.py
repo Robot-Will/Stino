@@ -114,7 +114,7 @@ class ViewMonitor(sublime_plugin.EventListener):
                             has_view = True
 
                     if has_view:
-                        text_point = view.text_point(line_no, col_no)
+                        text_point = view.text_point(line_no - 1, col_no)
                         win.focus_view(view)
                         view.show(text_point)
 

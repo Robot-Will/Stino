@@ -33,6 +33,7 @@ multi_line_comment = r'/\*[^*]*(?:\*(?!/)[^*]*)*\*/'
 single_line_comment = r'//.*?$'
 double_quoted_string = r'"(?:[^"\\]|\\.)*"'
 include = r'#include\s*[<"](\S+)[">]'
+full_include = r'#include\s*[<"]\S+[">]'
 
 
 def is_cpp_file(file_name):
@@ -977,6 +978,32 @@ def get_index_of_first_statement(src_text):
     return index
 
 
+def list_includes(text):
+    """Doc."""
+    pattern_text = multi_line_comment
+    pattern_text += '|' + single_line_comment
+
+    pattern = re.compile(pattern_text, re.M | re.S)
+    text = pattern.sub('', text)
+
+    pattern = re.compile(full_include)
+    headers = pattern.findall(text)
+    return headers
+
+
+def list_include_headers(text):
+    """Doc."""
+    pattern_text = multi_line_comment
+    pattern_text += '|' + single_line_comment
+
+    pattern = re.compile(pattern_text, re.M | re.S)
+    text = pattern.sub('', text)
+
+    pattern = re.compile(include)
+    headers = pattern.findall(text)
+    return headers
+
+
 class CFile(file.File):
     """A c/c++ source file."""
 
@@ -1064,17 +1091,10 @@ class CFile(file.File):
                 function_definitions.append(line.split('{')[0].strip())
         return function_definitions
 
-    def list_inclde_headers(self):
+    def list_include_headers(self):
         """Doc."""
         self._check_modified()
-        pattern_text = multi_line_comment
-        pattern_text += '|' + single_line_comment
-
-        pattern = re.compile(pattern_text, re.M | re.S)
-        text = pattern.sub('', self._text)
-
-        pattern = re.compile(include)
-        headers = pattern.findall(text)
+        headers = list_include_headers(self._text)
         return headers
 
     def get_undeclar_func_defs(self):

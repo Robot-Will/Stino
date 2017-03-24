@@ -437,9 +437,9 @@ def get_runtime_build_info(arduino_info):
     """."""
     build_info = {}
     # Include Paths Info
-    include_paths = arduino_info.get('include_paths', [])
-    includes = ['"-I%s"' % p.replace('\\', '/') for p in include_paths]
-    build_info['includes'] = ' '.join(includes)
+    # include_paths = arduino_info.get('include_paths', [])
+    # includes = ['"-I%s"' % p.replace('\\', '/') for p in include_paths]
+    # build_info['includes'] = ' '.join(includes)
 
     # Arch Info
     sel_pkg = arduino_info['selected'].get('package', '')
@@ -495,6 +495,9 @@ def get_build_commands_info(arduino_info, project=None):
     all_info.update(runtime_build_info)
     all_info.update(build_params_info)
     all_info.update(board_info)
+
+    if 'compiler.cpp.flags' not in all_info:
+        all_info['compiler.cpp.flags'] = ''
 
     cmds_info = {}
     for key in build_params_info:
