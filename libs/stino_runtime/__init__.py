@@ -286,7 +286,7 @@ def get_all_programmers_info(arduino_info):
     return programmers_info
 
 
-def update_network_port_info(serial_ports):
+def update_network_port_info(network_ports):
     """."""
     global arduino_info
     arduino_info['network_ports'] = {'names': network_ports}
@@ -1591,7 +1591,7 @@ def build_sketch(build_info={}):
     if not is_ready:
         return
 
-    msg = '[Build] %s...' % project_path
+    msg = '[Build] %s...' % project_path.replace('\\', '/')
     message_queue.put(msg)
     msg = '[Step 1] Check Toolchain.'
     message_queue.put(msg)
@@ -1635,7 +1635,30 @@ def build_sketch(build_info={}):
     arduino_info['include_paths'] = include_dirs
 
     cmds_info = selected.get_build_commands_info(arduino_info, prj)
-    cmds, msgs = get_build_cmds(cmds_info, prj_build_path, all_src_paths)
+
+    source_file = all_src_paths[0]
+    cmd_preproc_includes = cmds_info['recipe.preproc.includes']
+    cmd_preproc_includes = cmd_preproc_includes.replace('{source_file}',
+                                                        source_file)
+    return_code, stdout, stderr = run_command(cmd_preproc_includes)
+
+    include_paths = []
+    include_paths.append(prj.get_path().replace('\\', '/'))
+    include_paths.append(prj.get_build_path().replace('\\', '/'))
+    lines = stdout.split('\n')
+    for line in lines:
+        if line.endswith(':'):
+            dir_path = os.path.dirname(line).replace('\\', '/')
+            if dir_path not in include_paths:
+                include_paths.append(dir_path)
+
+    src_paths = []
+    for src_path in all_src_paths:
+        src_dir_path = os.path.dirname(src_path)
+        if src_dir_path in include_paths:
+            src_paths.append(src_path)
+
+    cmds, msgs = get_build_cmds(cmds_info, prj_build_path, src_paths)
 
     msg = '[Step 3] Start building.'
     message_queue.put(msg)
