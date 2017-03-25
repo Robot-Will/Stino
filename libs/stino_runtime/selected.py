@@ -336,7 +336,7 @@ def get_project_info(arduino_info, project=None):
     project_info['build.path'] = prj_build_path.replace('\\', '/')
 
     # core.a Info
-    archive_file_name = 'core.a'
+    archive_file_name = 'core/core.a'
     archive_file_path = os.path.join(prj_build_path, archive_file_name)
     project_info['archive_file'] = archive_file_name
     project_info['archive_file_path'] = archive_file_path
@@ -498,6 +498,12 @@ def get_build_commands_info(arduino_info, project=None):
 
     if 'compiler.cpp.flags' not in all_info:
         all_info['compiler.cpp.flags'] = ''
+
+    if 'recipe.ar.pattern' in build_params_info:
+        value = build_params_info['recipe.ar.pattern']
+        if 'core/{archive_file}' in value:
+            value = value.replace('core/{archive_file}', '{archive_file}')
+            build_params_info['recipe.ar.pattern'] = value
 
     cmds_info = {}
     for key in build_params_info:

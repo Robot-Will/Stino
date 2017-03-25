@@ -89,34 +89,12 @@ class ViewMonitor(sublime_plugin.EventListener):
             word_region = view_selection[0]
             line_region = view.line(word_region)
             line = view.substr(line_region)
-            if not line.startswith('"') and line.count(':') > 2:
-                records = stino.error_pattern.findall(line)
-                if records:
-                    record = records[0]
-                    if stino.sys_info.get_os_name() == 'windows':
-                        file_path = record[0] + '/' + record[1]
-                    else:
-                        file_path = record[0]
-                    line_no = int(record[-3]) - 1
-                    col_no = int(record[-2])
-
-                    has_view = False
-                    for win in sublime.windows():
-                        view = win.find_open_file(file_path)
-                        if view:
-                            has_view = True
-                            break
-
-                    if not has_view:
-                        if os.path.isfile(file_path):
-                            win = sublime.active_window()
-                            view = win.open_file(file_path)
-                            has_view = True
-
-                    if has_view:
-                        text_point = view.text_point(line_no - 1, col_no)
-                        win.focus_view(view)
-                        view.show(text_point)
+            file_path, line_no, col_no, _ = stino.get_error_infos(line)
+            if os.path.isfile(file_path):
+                win, view = stino.open_file(file_path)
+                text_point = view.text_point(line_no - 1, col_no)
+                win.focus_view(view)
+                view.show(text_point)
 
 
 #############################################

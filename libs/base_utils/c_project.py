@@ -268,7 +268,10 @@ class CProject(object):
     def get_simple_combine_path(self, with_header=True):
         """."""
         tmp_cpp_name = self._name + '.combine.cpp'
-        tmp_file_path = os.path.join(self._build_path, tmp_cpp_name)
+        dir_path = os.path.join(self._build_path, 'sketch')
+        if not os.path.isdir(dir_path):
+            os.makedirs(dir_path)
+        tmp_file_path = os.path.join(dir_path, tmp_cpp_name)
         simple_combine_ino_files(self._ino_file_paths, tmp_file_path,
                                  with_header)
         return tmp_file_path
@@ -276,6 +279,9 @@ class CProject(object):
     def get_combine_path(self, minus_src_path=None):
         """."""
         tmp_cpp_name = self._name + '.ino.cpp'
-        tmp_file_path = os.path.join(self._build_path, tmp_cpp_name)
+        dir_path = os.path.join(self._build_path, 'sketch')
+        if not os.path.isdir(dir_path):
+            os.makedirs(dir_path)
+        tmp_file_path = os.path.join(dir_path, tmp_cpp_name)
         combine_ino_files(self._ino_file_paths, tmp_file_path, minus_src_path)
         return tmp_file_path
