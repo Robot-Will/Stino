@@ -1160,7 +1160,7 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
                                    'last_build.stino-settings')
     last_build_info = file.SettingsFile(last_build_path)
     prj_name = os.path.basename(prj_build_path)
-    core_a_path = os.path.join(prj_build_path, 'core.a')
+    core_a_path = os.path.join(prj_build_path, 'core/core.a')
 
     last_package = last_build_info.get('package', '')
     last_platform = last_build_info.get('platform', '')
@@ -1390,13 +1390,14 @@ def get_error_infos(line):
     col_no = 1
     error_msg = ''
 
-    if line.count(':') >= 2 or '/' in line:
+    if line.count(':') >= 2 and '/' in line:
         drive = ''
         if sys_info.get_os_name() == 'windows':
             if ':/' in line:
-                head, line = line.split(':/')
-                drive = head[-1] + ':'
-                line = '/' + line
+                index = line.index(':/')
+                head = line[:index + 1]
+                line = line[index + 1:]
+                drive = head[-2]
 
         index = line.index('/')
         line = line[index:]

@@ -19,6 +19,9 @@ from base_utils import plain_params_file
 in_braces_pattern_text = r'\{[^{}]*}'
 in_braces_pattern = re.compile(in_braces_pattern_text)
 
+runtime_tools_pattern_text = r'\{runtime.tools.(\S+?).path}'
+runtime_tools_pattern = re.compile(runtime_tools_pattern_text)
+
 
 def get_package_names(pkgs_info):
     """."""
@@ -436,10 +439,6 @@ def get_base_info(arduino_info, project=None):
 def get_runtime_build_info(arduino_info):
     """."""
     build_info = {}
-    # Include Paths Info
-    # include_paths = arduino_info.get('include_paths', [])
-    # includes = ['"-I%s"' % p.replace('\\', '/') for p in include_paths]
-    # build_info['includes'] = ' '.join(includes)
 
     # Arch Info
     sel_pkg = arduino_info['selected'].get('package', '')
@@ -506,11 +505,14 @@ def get_build_commands_info(arduino_info, project=None):
             build_params_info['recipe.ar.pattern'] = value
 
     cmds_info = {}
+    cmds = []
     for key in build_params_info:
         if key.startswith('recipe.'):
             cmd = build_params_info[key]
             cmd = replace_variants_in_braces(cmd, all_info)
             cmds_info[key] = cmd
+            cmds.append(cmd)
+    tools = get_tools_in_commands(cmds)
     return cmds_info
 
 
@@ -599,6 +601,8 @@ def get_upload_command(arduino_info, project=None,
 
     tool_cmd = all_info.get(tool_key, '')
     tool_cmd = replace_variants_in_braces(tool_cmd, all_info)
+    # cmds = complete_tools_in_commands([tool_cmd])
+    # tool_cmd = cmds[0]
     return tool_cmd
 
 
@@ -646,6 +650,7 @@ def get_bootloader_commands(arduino_info):
             cmd = all_info.get(cmd_key, '')
             cmd = replace_variants_in_braces(cmd, all_info)
             cmds.append(cmd)
+    # cmds = complete_tools_in_commands(cmds)
     return cmds
 
 
@@ -676,3 +681,14 @@ def get_board_from_hwid(arduino_info, vid, pid):
         if has_board:
             break
     return name
+
+
+def get_tools_in_commands(cmds):
+    """."""
+    runtime_tools = []
+    for cmd in cmds:
+        tools = runtime_tools_pattern.findall(cmd)
+        for tool in tools:
+            if tool not in runtime_tools:
+                runtime_tools.append(tool)
+    return runtime_tools
