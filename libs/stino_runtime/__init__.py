@@ -152,6 +152,7 @@ def get_lib_index_files_info(arduino_dir_path):
 
 def get_ext_app_pkg_info(ext_app_hardware_path):
     """."""
+    exclucds = ['examples', 'drivers', 'tools', 'libraries']
     pkg_info = {'platforms': {}}
     pkg_info['platforms']['names'] = []
     pkg_dir_paths = glob.glob(ext_app_hardware_path + '/*')
@@ -164,6 +165,8 @@ def get_ext_app_pkg_info(ext_app_hardware_path):
         arch_dir_paths = glob.glob(pkg_dir_path + '/*')
         arch_dir_paths = [p for p in arch_dir_paths
                           if os.path.isdir(p)]
+        arch_dir_paths = [p for p in arch_dir_paths
+                          if os.path.basename(p).lower() not in exclucds]
         arch_names = [os.path.basename(p) for p in arch_dir_paths]
         ptfm_info = {'versions': arch_names}
         for arch_name, arch_path in zip(arch_names, arch_dir_paths):
@@ -950,43 +953,9 @@ def get_all_sub_paths(path):
     return all_sub_paths
 
 
-# def get_all_lib_paths(project):
-#     """."""
-#     all_paths = []
-#     if project.is_arduino_project():
-#         core_src_path = selected.get_build_core_src_path(arduino_info)
-#         variant_path = selected.get_build_variant_path(arduino_info)
-#         all_paths.append(core_src_path)
-#         all_paths.append(variant_path)
-#     all_paths.append(project.get_path())
-
-#     sketchbook_path = arduino_info['sketchbook_path']
-#     ext_app_path = arduino_info['ext_app_path']
-#     platform_path = selected.get_sel_platform_path(arduino_info)
-
-#     platform_paths = [sketchbook_path, platform_path, ext_app_path]
-#     for path in platform_paths:
-#         libraries_path = os.path.join(path, 'libraries')
-#         lib_paths = glob.glob(libraries_path + '/*')
-#         lib_paths = [p for p in lib_paths if os.path.isdir(p)]
-#         lib_paths = [get_real_lib_path(p) for p in lib_paths]
-#         all_paths += lib_paths
-
-#     all_lib_paths = []
-#     for path in all_paths:
-#         sub_paths = get_all_sub_paths(path)
-#         all_lib_paths += sub_paths
-#     return all_lib_paths
-
-
 def get_all_lib_paths(project):
     """."""
     all_lib_paths = []
-    # if project.is_arduino_project():
-    #     core_src_path = selected.get_build_core_src_path(arduino_info)
-    #     variant_path = selected.get_build_variant_path(arduino_info)
-    #     all_lib_paths.append(core_src_path)
-    #     all_lib_paths.append(variant_path)
     all_lib_paths.append(project.get_path())
     all_lib_paths = [p.replace('\\', '/') for p in all_lib_paths]
     return all_lib_paths
@@ -1397,7 +1366,7 @@ def get_error_infos(line):
                 index = line.index(':/')
                 head = line[:index + 1]
                 line = line[index + 1:]
-                drive = head[-2]
+                drive = head[-2:]
 
         index = line.index('/')
         line = line[index:]
