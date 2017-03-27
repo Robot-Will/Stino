@@ -1474,7 +1474,7 @@ def get_error_infos(line):
                     col_no = int(info)
                     line = linecache.getline(file_path, line_no + 1)
                     if col_no >= len(line):
-                        col_no -= 1
+                        col_no = len(line) - 1
                     elif col_no < 1:
                         col_no = 1
 
@@ -1883,6 +1883,7 @@ def build_sketch(build_info={}):
     if main_file_path in prj_src_paths:
         prj_src_paths.remove(main_file_path)
     prj_src_paths = [main_file_path] + prj_src_paths
+    core_src_paths = get_src_paths(core_dir_paths, mode='recursion')
     src_paths = prj_src_paths + lib_src_paths + core_src_paths
 
     cmds, msgs = get_build_cmds(cmds_info, prj_build_path, inc_text,
