@@ -504,6 +504,19 @@ def get_build_commands_info(arduino_info, project=None):
             value = value.replace('core/{archive_file}', '{archive_file}')
             build_params_info['recipe.ar.pattern'] = value
 
+    if 'recipe.c.combine.pattern' in build_params_info:
+        value = build_params_info['recipe.c.combine.pattern']
+        if '{build.path}/syscalls_sam3.c.o' in value:
+            value = value.replace('{build.path}/syscalls_sam3.c.o',
+                                  '{build.path}/core/syscalls_sam3.c.o')
+        if '{build.path}/startup_NRF51822.s.o' in value:
+            value = value.replace('{build.path}/startup_NRF51822.s.o',
+                                  '{build.path}/core/startup_NRF51822.s.o')
+        if '{build.path}/system_nrf51.c.o' in value:
+            text = '{build.path}/core/mbed/targets/cmsis/TARGET_NORDIC/'
+            text += 'TARGET_MCU_NRF51822/system_nrf51.c.o'
+            value = value.replace('{build.path}/system_nrf51.c.o', text)
+
     cmds_info = {}
     cmds = []
     for key in build_params_info:

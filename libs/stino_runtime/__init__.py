@@ -18,7 +18,6 @@ import shutil
 import time
 import subprocess
 import linecache
-import codecs
 
 import sublime
 
@@ -45,13 +44,7 @@ plugin_name = const.PLUGIN_NAME
 _d_pattern_text = r"'-D[\S\s]*?'"
 _d_pattern = re.compile(_d_pattern_text)
 
-_unix_path = r'((/[\S ]+?)+?)'
-_win_path = r'([A-Za-z]:)'
-
-_error_pattern_text = _unix_path + r':([0-9]+?):([0-9]+?):(.*?)$'
-if sys_info.get_os_name() == 'windows':
-    _error_pattern_text = _win_path + _error_pattern_text
-error_pattern = re.compile(_error_pattern_text, re.M | re.S)
+header_pattern = re.compile(c_file.include)
 
 EXCLUDES = ['example', 'examples', 'sample', 'samples', 'test', 'tests']
 
@@ -998,8 +991,84 @@ def get_h_path_info(project):
     return h_path_info
 
 
-def get_dep_cpps(src_paths, h_path_info, used_cpps, used_headers, used_dirs):
+def find_lib_paths_by_compiler(cmd_pattern, src_path, lib_paths, h_path_info):
     """."""
+    src_path = src_path.replace('\\', '/')
+    lib_paths = [p.replace('\\', '/') for p in lib_paths]
+    all_includes = ['"-I%s"' % p for p in lib_paths]
+    all_inc_text = ' '.join(all_includes)
+    cmd = cmd_pattern.replace('{source_file}', src_path)
+    cmd = cmd.replace('{includes}', all_inc_text)
+    return_code, stdout, stderr = run_command(cmd)
+
+    headers = []
+    if return_code != 0 and stderr:
+        lines = stderr.split('\n')
+        for line in lines:
+            if '#' in line and 'include' in line:
+                headers += header_pattern.findall(line)
+    elif return_code == 0:
+        if not stdout:
+            pass
+        else:
+            lines = stdout.split('\n')
+            for line in lines:
+                line = line.strip()
+                if line.endswith(':'):
+                    h_file_path = line[:-1]
+                    if not os.path.isabs(h_file_path):
+                        headers.append(h_file_path)
+
+    has_new_lib = False
+    for header in headers:
+        dir_path = ''
+        if '/' in header:
+            header = header.split('/')[-1]
+            if header in h_path_info:
+                dir_path = h_path_info.get(header)
+                dir_path = os.path.dirname(dir_path)
+        else:
+            if header in h_path_info:
+                dir_path = h_path_info.get(header)
+
+        if dir_path:
+            dir_path = dir_path.replace('\\', '/')
+            if dir_path not in lib_paths:
+                has_new_lib = True
+                lib_paths.append(dir_path)
+
+    if has_new_lib:
+        lib_paths = find_lib_paths_by_compiler(cmd_pattern, src_path,
+                                               lib_paths, h_path_info)
+    return lib_paths
+
+
+def find_lib_paths(src_path, h_path_info):
+    """."""
+    lib_paths = []
+    f = c_file.CFile(src_path)
+    headers = f.list_include_headers()
+
+    for header in headers:
+        dir_path = ''
+        if '/' in header:
+            header = header.split('/')[-1]
+            if header in h_path_info:
+                dir_path = h_path_info.get(header)
+                dir_path = os.path.dirname(dir_path)
+        else:
+            if header in h_path_info:
+                dir_path = h_path_info.get(header)
+        if dir_path:
+            lib_paths.append(dir_path)
+    return lib_paths
+
+
+def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info,
+                      used_cpps, used_headers, used_dirs):
+    """."""
+    sub_src_paths = []
+    src_paths = [p.replace('\\', '/') for p in src_paths]
     for src_path in src_paths:
         h_paths = []
         cpp_paths = []
@@ -1008,10 +1077,11 @@ def get_dep_cpps(src_paths, h_path_info, used_cpps, used_headers, used_dirs):
             cpp_paths = [src_path]
         elif src_path not in used_dirs:
             used_dirs.append(src_path)
-            h_paths = \
-                c_project.list_files_of_extensions(src_path, c_file.H_EXTS)
             cpp_paths = \
                 c_project.list_files_of_extensions(src_path, c_file.CC_EXTS)
+            if not cmd_pattern:
+                h_paths = \
+                    c_project.list_files_of_extensions(src_path, c_file.H_EXTS)
 
         unused_src_paths = []
         for h_path in h_paths:
@@ -1020,33 +1090,30 @@ def get_dep_cpps(src_paths, h_path_info, used_cpps, used_headers, used_dirs):
                 used_headers.append(header)
                 unused_src_paths.append(h_path)
         for cpp_path in cpp_paths:
+            cpp_path = cpp_path.replace('\\', '/')
             if cpp_path not in used_cpps:
                 cpp_path = cpp_path
                 used_cpps.append(cpp_path)
                 unused_src_paths.append(cpp_path)
 
-        sub_dir_paths = []
+        lib_paths = []
         for src_path in unused_src_paths:
-            f = c_file.CFile(src_path)
-            headers = f.list_include_headers()
-            for header in headers:
-                dir_path = ''
-                if '/' in header:
-                    header = header.split('/')[-1]
-                    if header in h_path_info:
-                        dir_path = h_path_info.get(header)
-                        dir_path = os.path.dirname(dir_path)
-                else:
-                    if header in h_path_info:
-                        dir_path = h_path_info.get(header)
+            if cmd_pattern:
+                src_paths = [os.path.dirname(src_path)]
+                lib_paths += find_lib_paths_by_compiler(cmd_pattern, src_path,
+                                                        src_paths, h_path_info)
+            else:
+                lib_paths += find_lib_paths(src_path, h_path_info)
 
-                if (dir_path and dir_path not in sub_dir_paths and
-                        dir_path not in used_dirs):
-                    sub_dir_paths.append(dir_path)
+        lib_paths = [p.replace('\\', '/') for p in lib_paths]
+        for lib_path in lib_paths:
+            if (lib_path not in used_dirs and lib_path not in sub_src_paths):
+                    sub_src_paths.append(lib_path)
 
+    if sub_src_paths:
         used_cpps, used_headers, used_dirs = \
-            get_dep_cpps(sub_dir_paths, h_path_info, used_cpps,
-                         used_headers, used_dirs)
+            get_dep_lib_paths(cmd_pattern, sub_src_paths, h_path_info,
+                              used_cpps, used_headers, used_dirs)
     return used_cpps, used_headers, used_dirs
 
 
@@ -1333,6 +1400,14 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
 
 def run_command(cmd):
     """."""
+    texts = _d_pattern.findall(cmd)
+    for text in texts:
+        key, value = text[1:-1].split('=')
+        key = key.strip()
+        value = value.strip().replace('"', '\\"')
+        new_text = key + '="' + value + '"'
+        cmd = cmd.replace(text, new_text)
+
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
     result = proc.communicate()
@@ -1494,14 +1569,6 @@ def run_build_command(percent, cmd, msg):
     if cmd:
         cmd = cmd.replace('\\', '/')
 
-        texts = _d_pattern.findall(cmd)
-        for text in texts:
-            key, value = text[1:-1].split('=')
-            key = key.strip()
-            value = value.strip().replace('"', '\\"')
-            new_text = key + '="' + value + '"'
-            cmd = cmd.replace(text, new_text)
-
         if msg:
             msg = '[%.1f%%] %s' % (percent, msg)
             message_queue.put(msg)
@@ -1662,52 +1729,6 @@ def save_project_files(project_path):
                         view.run_command('save')
 
 
-def find_all_h_paths(cmd, file_path, lib_paths, h_path_info):
-    """."""
-    d_file_path = file_path + '.d'
-    print(file_path)
-    print(d_file_path)
-
-    h_file_paths = []
-    lib_paths = lib_paths[:]
-    all_includes = ['"-I%s"' % p for p in lib_paths]
-    all_inc_text = ' '.join(all_includes)
-    runtime_cmd = cmd.replace('{includes}', all_inc_text)
-    return_code, stdout, stderr = run_command(runtime_cmd)
-    if stderr:
-        print('error: ', stderr)
-    print(return_code)
-    print(os.path.isfile(d_file_path))
-    if return_code == 0 and os.path.isfile(d_file_path):
-        with codecs.open(file_path, 'r', 'utf-8') as f:
-            stdout = f.read()
-
-        has_new_lib = False
-        lines = stdout.split('\n')
-        for line in lines:
-            line = line.strip()
-            if line.endswith(':'):
-                h_file_path = line[:-1].replace('\\', '/')
-                if os.path.isabs(h_file_path):
-                    in_lib = False
-                    for lib_path in lib_paths:
-                        if h_file_path.startswith(lib_path):
-                            in_lib = True
-                            break
-                    if in_lib:
-                        h_file_paths.append(h_file_path)
-                else:
-                    if h_file_path in h_path_info:
-                        lib_path = h_path_info.get(h_file_path)
-                        if lib_path not in lib_paths:
-                            has_new_lib = True
-                            lib_paths.append(lib_path)
-
-        if has_new_lib:
-            h_file_paths = find_all_h_paths(cmd, lib_paths, h_path_info)
-    return h_file_paths
-
-
 def get_src_paths(paths, mode='norecursion'):
     """."""
     all_src_paths = []
@@ -1790,6 +1811,7 @@ def build_sketch(build_info={}):
         variant_dir_path = variant_dir_path.replace('\\', '/')
         core_dir_paths = [core_dir_path, variant_dir_path]
 
+    src_paths = []
     lib_paths = []
     used_headers = []
     prj_src_dir_paths = []
@@ -1797,30 +1819,15 @@ def build_sketch(build_info={}):
     if prj.is_arduino_project():
         prj_src_dir_paths.append(main_file_path)
 
-    src_paths = []
-    src_paths, used_headers, lib_paths = \
-        get_dep_cpps(prj_src_dir_paths, h_path_info, src_paths,
-                     used_headers, lib_paths)
-
-    # if cmd_preproc_includes:
-    #     cmd = cmd_preproc_includes.replace('{source_file}', main_file_path)
-    #     h_file_paths = find_all_h_paths(cmd, main_file_path,
-    #                                     lib_paths, h_path_info)
-
-    #     if h_file_paths:
-    #         lib_paths = []
-    #         for h_file_path in h_file_paths:
-    #             lib_path = os.path.dirname(h_file_path)
-    #             if lib_path not in lib_paths:
-    #                 lib_paths.append(lib_path)
-
-    paths = [p.replace('\\', '/') for p in lib_paths]
+    all_src_paths, used_headers, all_lib_paths = \
+        get_dep_lib_paths(cmd_preproc_includes, prj_src_dir_paths, h_path_info,
+                          src_paths, used_headers, lib_paths)
 
     prj_paths = []
     core_paths = []
     lib_paths = []
 
-    for path in paths:
+    for path in all_lib_paths:
         if path.startswith(prj_path):
             prj_paths.append(path)
         elif path.startswith(core_dir_paths[0]) or \
@@ -1837,10 +1844,6 @@ def build_sketch(build_info={}):
         if core_dir_path in core_paths:
             core_paths.remove(core_dir_path)
     core_paths = core_dir_paths + core_paths
-
-    print(prj_paths)
-    print(core_paths)
-    print(lib_paths)
 
     all_lib_paths = prj_paths + core_paths + lib_paths
     all_lib_paths = [p.replace('\\', '/') for p in all_lib_paths]
@@ -1862,14 +1865,24 @@ def build_sketch(build_info={}):
         else:
             main_file_path = prj.get_combine_path()
 
-    prj_src_paths = get_src_paths(prj_paths)
+    prj_src_paths = []
+    core_src_paths = []
+    lib_src_paths = []
+    for path in all_src_paths:
+        if path.startswith(prj_build_path):
+            continue
+        elif path.startswith(prj_path):
+            prj_src_paths.append(path)
+        elif path.startswith(core_dir_paths[0]) or \
+                path.startswith(core_dir_paths[1]):
+            core_src_paths.append(path)
+        else:
+            lib_src_paths.append(path)
+
     main_file_path = main_file_path.replace('\\', '/')
     if main_file_path in prj_src_paths:
         prj_src_paths.remove(main_file_path)
     prj_src_paths = [main_file_path] + prj_src_paths
-    lib_src_paths = get_src_paths(lib_paths)
-
-    core_src_paths = get_src_paths(core_paths)
     src_paths = prj_src_paths + lib_src_paths + core_src_paths
 
     cmds, msgs = get_build_cmds(cmds_info, prj_build_path, inc_text,
