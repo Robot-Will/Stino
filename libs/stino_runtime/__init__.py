@@ -17,6 +17,7 @@ import platform
 import shutil
 import time
 import subprocess
+import linecache
 
 import sublime
 
@@ -158,8 +159,9 @@ def get_ext_app_pkg_info(ext_app_hardware_path):
     pkg_dir_paths = glob.glob(ext_app_hardware_path + '/*')
     pkg_dir_paths = [p for p in pkg_dir_paths if os.path.isdir(p)]
     pkg_dir_paths = [p for p in pkg_dir_paths
-                     if os.path.basename(p) != 'tools']
+                     if os.path.basename(p).lower() not in exclucds]
     for pkg_dir_path in pkg_dir_paths:
+        pkg_info['path'] = pkg_dir_path
         sub_pkg_name = os.path.basename(pkg_dir_path)
         pkg_info['platforms']['names'].append(sub_pkg_name)
         arch_dir_paths = glob.glob(pkg_dir_path + '/*')
@@ -192,27 +194,28 @@ def get_installed_packages_info(arduino_info):
 
     pkg_name = 'Arduino IDE'
     if os.path.isdir(ext_app_hardware_path):
-        if pkg_name not in package_names:
-            package_names.append(pkg_name)
-
         pkg_info = get_ext_app_pkg_info(ext_app_hardware_path)
-        installed_packages_info['installed_packages'][pkg_name] = pkg_info
+        if pkg_info['platforms']['names']:
+            if pkg_name not in package_names:
+                package_names.append(pkg_name)
+            installed_packages_info['installed_packages'][pkg_name] = pkg_info
 
     pkg_name = 'Sketchbook'
-    if os.path.isdir(sketchbook_path):
-        if pkg_name not in package_names:
-            package_names.append(pkg_name)
+    if os.path.isdir(sketchbook_hardware_path):
         pkg_info = get_ext_app_pkg_info(sketchbook_hardware_path)
-        installed_packages_info['installed_packages'][pkg_name] = pkg_info
+        if pkg_info['platforms']['names']:
+            if pkg_name not in package_names:
+                package_names.append(pkg_name)
+            installed_packages_info['installed_packages'][pkg_name] = pkg_info
 
     packages_path = os.path.join(arduino_dir_path, 'packages')
     package_paths = glob.glob(packages_path + '/*')
-    package_names += [os.path.basename(p) for p in package_paths]
     installed_packages_info['installed_packages']['names'] = package_names
 
     for package_path in package_paths:
         pkg_name = os.path.basename(package_path)
         pkg_info = {'platforms': {}}
+        pkg_info['path'] = package_path
         hardware_path = os.path.join(package_path, 'hardware')
         platform_paths = glob.glob(hardware_path + '/*')
 
@@ -234,7 +237,10 @@ def get_installed_packages_info(arduino_info):
                 version_info['version'] = version
                 ptfm_info[version] = version_info
             pkg_info['platforms'][ptfm_name] = ptfm_info
-        installed_packages_info['installed_packages'][pkg_name] = pkg_info
+        if pkg_info['platforms']['names']:
+            if pkg_name not in package_names:
+                package_names.append(pkg_name)
+            installed_packages_info['installed_packages'][pkg_name] = pkg_info
     return installed_packages_info
 
 
@@ -956,6 +962,11 @@ def get_all_sub_paths(path):
 def get_all_lib_paths(project):
     """."""
     all_lib_paths = []
+    if project.is_arduino_project():
+        core_src_path = selected.get_build_core_src_path(arduino_info)
+        variant_path = selected.get_build_variant_path(arduino_info)
+        all_lib_paths.append(core_src_path)
+        all_lib_paths.append(variant_path)
     all_lib_paths.append(project.get_path())
     all_lib_paths = [p.replace('\\', '/') for p in all_lib_paths]
     return all_lib_paths
@@ -972,21 +983,16 @@ def get_h_path_info(project):
     ext_app_path = arduino_info['ext_app_path']
     platform_path = selected.get_sel_platform_path(arduino_info)
 
-    all_lib_paths = []
     platform_paths = [sketchbook_path, platform_path, ext_app_path]
     for path in platform_paths:
         libraries_path = os.path.join(path, 'libraries')
-        lib_paths = glob.glob(libraries_path + '/*')
-        lib_paths = [p for p in lib_paths if os.path.isdir(p)]
-        lib_paths = [get_real_lib_path(p) for p in lib_paths]
-        all_lib_paths += lib_paths
+        paths = glob.glob(libraries_path + '/*')
+        paths = [p for p in paths if os.path.isdir(p)]
+        paths = [get_real_lib_path(p) for p in paths]
+        lib_paths += paths
 
     for lib_path in lib_paths:
         info = get_h_info(lib_path, c_file.H_EXTS, 'recursion', EXCLUDES)
-        h_path_info.update(info)
-
-    for lib_path in all_lib_paths:
-        info = get_h_info(lib_path, c_file.H_EXTS, 'norecursion', EXCLUDES)
         h_path_info.update(info)
     return h_path_info
 
@@ -1023,13 +1029,19 @@ def get_dep_cpps(src_paths, h_path_info, used_cpps, used_headers, used_dirs):
             f = c_file.CFile(src_path)
             headers = f.list_include_headers()
             for header in headers:
+                dir_path = ''
                 if '/' in header:
                     header = header.split('/')[-1]
-                if header in h_path_info:
-                    dir_path = h_path_info.get(header)
-                    if (dir_path not in sub_dir_paths and
-                            dir_path not in used_dirs):
-                        sub_dir_paths.append(dir_path)
+                    if header in h_path_info:
+                        dir_path = h_path_info.get(header)
+                        dir_path = os.path.dirname(dir_path)
+                else:
+                    if header in h_path_info:
+                        dir_path = h_path_info.get(header)
+
+                if (dir_path and dir_path not in sub_dir_paths and
+                        dir_path not in used_dirs):
+                    sub_dir_paths.append(dir_path)
 
         used_cpps, used_headers, used_dirs = \
             get_dep_cpps(sub_dir_paths, h_path_info, used_cpps,
@@ -1377,13 +1389,19 @@ def get_error_infos(line):
             if line_no.isdigit():
                 file_path = drive + infos[0].strip()
                 line_no = int(line_no) - 1
+                if line_no < 0:
+                    line_no = 0
                 error_index = 3
 
                 info = infos[2].strip()
                 if info.isdigit():
                     col_no = int(info)
-                    if col_no == 0:
+                    line = linecache.getline(file_path, line_no + 1)
+                    if col_no >= len(line):
+                        col_no -= 1
+                    elif col_no < 1:
                         col_no = 1
+
                 else:
                     error_index = 2
 
@@ -1425,7 +1443,6 @@ def handle_build_error_messages(error_msg):
             if file_path not in file_errors_info:
                 file_errors_info[file_path] = []
             file_errors_info[file_path].append([line_no, col_no, error_msg])
-            print(file_path, line_no, col_no, error_msg)
 
     for file_path in file_errors_info:
         win, view = open_file(file_path)
@@ -1644,10 +1661,10 @@ def save_project_files(project_path):
                         view.run_command('save')
 
 
-def find_all_h_paths(cmd, all_lib_paths, h_path_info):
+def find_all_h_paths(cmd, lib_paths, h_path_info):
     """."""
     h_file_paths = []
-    lib_paths = all_lib_paths[:]
+    lib_paths = lib_paths[:]
     all_includes = ['"-I%s"' % p for p in lib_paths]
     all_inc_text = ' '.join(all_includes)
     runtime_cmd = cmd.replace('{includes}', all_inc_text)
@@ -1661,7 +1678,7 @@ def find_all_h_paths(cmd, all_lib_paths, h_path_info):
             h_file_path = line[:-1].replace('\\', '/')
             if os.path.isabs(h_file_path):
                 in_lib = False
-                for lib_path in all_lib_paths:
+                for lib_path in lib_paths:
                     if h_file_path.startswith(lib_path):
                         in_lib = True
                         break
@@ -1757,35 +1774,45 @@ def build_sketch(build_info={}):
         main_file_path = prj.get_simple_combine_path()
         core_dir_path = selected.get_build_core_src_path(arduino_info)
         variant_dir_path = selected.get_build_variant_path(arduino_info)
+        core_dir_path = core_dir_path.replace('\\', '/')
+        variant_dir_path = variant_dir_path.replace('\\', '/')
         core_dir_paths = [core_dir_path, variant_dir_path]
 
     lib_paths = []
-    if cmd_preproc_includes:
-        cmd = cmd_preproc_includes.replace('{source_file}', main_file_path)
-        h_file_paths = find_all_h_paths(cmd, all_lib_paths, h_path_info)
-        for h_file_path in h_file_paths:
-            lib_path = os.path.dirname(h_file_path)
-            if lib_path not in lib_paths:
-                lib_paths.append(lib_path)
-    else:
-        used_headers = []
-        prj_src_dir_paths = []
-        prj_src_dir_paths.append(prj_path)
-        if prj.is_arduino_project():
-            prj_src_dir_paths.append(main_file_path)
+    used_headers = []
+    prj_src_dir_paths = []
+    prj_src_dir_paths.append(prj_path)
+    if prj.is_arduino_project():
+        prj_src_dir_paths.append(main_file_path)
 
-        src_paths = []
-        src_paths, used_headers, lib_paths = \
-            get_dep_cpps(prj_src_dir_paths, h_path_info, src_paths,
-                         used_headers, lib_paths)
+    src_paths = []
+    src_paths, used_headers, lib_paths = \
+        get_dep_cpps(prj_src_dir_paths, h_path_info, src_paths,
+                     used_headers, lib_paths)
+
+    # if cmd_preproc_includes:
+    #     cmd = cmd_preproc_includes.replace('{source_file}', main_file_path)
+    #     h_file_paths = find_all_h_paths(cmd, lib_paths, h_path_info)
+
+    #     if h_file_paths:
+    #         lib_paths = []
+    #         for h_file_path in h_file_paths:
+    #             lib_path = os.path.dirname(h_file_path)
+    #             if lib_path not in lib_paths:
+    #                 lib_paths.append(lib_path)
 
     paths = [p.replace('\\', '/') for p in lib_paths]
 
     prj_paths = []
+    core_paths = []
     lib_paths = []
+
     for path in paths:
         if path.startswith(prj_path):
             prj_paths.append(path)
+        elif path.startswith(core_dir_paths[0]) or \
+                path.startswith(core_dir_paths[1]):
+            core_paths.append(path)
         else:
             lib_paths.append(path)
 
@@ -1793,7 +1820,12 @@ def build_sketch(build_info={}):
         prj_paths.remove(prj_path)
         prj_paths = [prj_path] + prj_paths
 
-    all_lib_paths = prj_paths + core_dir_paths + lib_paths
+    for core_dir_path in core_dir_paths:
+        if core_dir_path in core_paths:
+            core_paths.remove(core_dir_path)
+    core_paths = core_dir_paths + core_paths
+
+    all_lib_paths = prj_paths + core_paths + lib_paths
     all_lib_paths = [p.replace('\\', '/') for p in all_lib_paths]
     includes = ['"-I%s"' % p for p in all_lib_paths]
     inc_text = ' '.join(includes)
@@ -1819,7 +1851,8 @@ def build_sketch(build_info={}):
         prj_src_paths.remove(main_file_path)
     prj_src_paths = [main_file_path] + prj_src_paths
     lib_src_paths = get_src_paths(lib_paths)
-    core_src_paths = get_src_paths(core_dir_paths, 'recursion')
+
+    core_src_paths = get_src_paths(core_paths)
     src_paths = prj_src_paths + lib_src_paths + core_src_paths
 
     cmds, msgs = get_build_cmds(cmds_info, prj_build_path, inc_text,

@@ -274,7 +274,16 @@ class CProject(object):
         tmp_file_path = os.path.join(dir_path, tmp_cpp_name)
         simple_combine_ino_files(self._ino_file_paths, tmp_file_path,
                                  with_header)
+        tmp_file_path = tmp_file_path.replace('\\', '/')
         return tmp_file_path
+
+    def get_headers(self):
+        """."""
+        headers = set()
+        simple_combine_path = self.get_simple_combine_path()
+        scf = c_file.CFile(simple_combine_path)
+        headers.update(set(scf.list_include_headers()))
+        return headers
 
     def get_combine_path(self, minus_src_path=None):
         """."""
@@ -284,4 +293,5 @@ class CProject(object):
             os.makedirs(dir_path)
         tmp_file_path = os.path.join(dir_path, tmp_cpp_name)
         combine_ino_files(self._ino_file_paths, tmp_file_path, minus_src_path)
+        tmp_file_path = tmp_file_path.replace('\\', '/')
         return tmp_file_path
