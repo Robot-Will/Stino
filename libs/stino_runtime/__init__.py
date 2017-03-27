@@ -18,6 +18,7 @@ import shutil
 import time
 import subprocess
 import linecache
+import codecs
 
 import sublime
 
@@ -1661,38 +1662,49 @@ def save_project_files(project_path):
                         view.run_command('save')
 
 
-def find_all_h_paths(cmd, lib_paths, h_path_info):
+def find_all_h_paths(cmd, file_path, lib_paths, h_path_info):
     """."""
+    d_file_path = file_path + '.d'
+    print(file_path)
+    print(d_file_path)
+
     h_file_paths = []
     lib_paths = lib_paths[:]
     all_includes = ['"-I%s"' % p for p in lib_paths]
     all_inc_text = ' '.join(all_includes)
     runtime_cmd = cmd.replace('{includes}', all_inc_text)
     return_code, stdout, stderr = run_command(runtime_cmd)
+    if stderr:
+        print('error: ', stderr)
+    print(return_code)
+    print(os.path.isfile(d_file_path))
+    if return_code == 0 and os.path.isfile(d_file_path):
+        with codecs.open(file_path, 'r', 'utf-8') as f:
+            stdout = f.read()
 
-    has_new_lib = False
-    lines = stdout.split('\n')
-    for line in lines:
-        line = line.strip()
-        if line.endswith(':'):
-            h_file_path = line[:-1].replace('\\', '/')
-            if os.path.isabs(h_file_path):
-                in_lib = False
-                for lib_path in lib_paths:
-                    if h_file_path.startswith(lib_path):
-                        in_lib = True
-                        break
-                if in_lib:
-                    h_file_paths.append(h_file_path)
-            else:
-                if h_file_path in h_path_info:
-                    lib_path = h_path_info.get(h_file_path)
-                    if lib_path not in lib_paths:
-                        has_new_lib = True
-                        lib_paths.append(lib_path)
+        has_new_lib = False
+        lines = stdout.split('\n')
+        for line in lines:
+            line = line.strip()
+            if line.endswith(':'):
+                h_file_path = line[:-1].replace('\\', '/')
+                if os.path.isabs(h_file_path):
+                    in_lib = False
+                    for lib_path in lib_paths:
+                        if h_file_path.startswith(lib_path):
+                            in_lib = True
+                            break
+                    if in_lib:
+                        h_file_paths.append(h_file_path)
+                else:
+                    if h_file_path in h_path_info:
+                        lib_path = h_path_info.get(h_file_path)
+                        if lib_path not in lib_paths:
+                            has_new_lib = True
+                            lib_paths.append(lib_path)
 
-    if has_new_lib:
-        h_file_paths = find_all_h_paths(cmd, lib_paths, h_path_info)
+        if has_new_lib:
+            h_file_paths = find_all_h_paths(cmd, lib_paths, h_path_info)
     return h_file_paths
 
 
@@ -1792,7 +1804,8 @@ def build_sketch(build_info={}):
 
     # if cmd_preproc_includes:
     #     cmd = cmd_preproc_includes.replace('{source_file}', main_file_path)
-    #     h_file_paths = find_all_h_paths(cmd, lib_paths, h_path_info)
+    #     h_file_paths = find_all_h_paths(cmd, main_file_path,
+    #                                     lib_paths, h_path_info)
 
     #     if h_file_paths:
     #         lib_paths = []
@@ -1824,6 +1837,10 @@ def build_sketch(build_info={}):
         if core_dir_path in core_paths:
             core_paths.remove(core_dir_path)
     core_paths = core_dir_paths + core_paths
+
+    print(prj_paths)
+    print(core_paths)
+    print(lib_paths)
 
     all_lib_paths = prj_paths + core_paths + lib_paths
     all_lib_paths = [p.replace('\\', '/') for p in all_lib_paths]

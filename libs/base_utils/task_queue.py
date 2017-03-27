@@ -82,9 +82,10 @@ class TaskQueue(object):
         """."""
         while self._queue:
             args = self._queue.pop(0)
-            if isinstance(args, dict):
-                self._consumer(args)
-            else:
+            print(args)
+            if isinstance(args, tuple):
                 self._consumer(*args)
+            else:
+                self._consumer(args)
             time.sleep(self._delay)
         self._is_alive = False
