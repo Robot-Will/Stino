@@ -366,33 +366,85 @@ def update_install_library_menu(arduino_info):
 
         cat_info = libraries_info.get(lib_cat, {})
         names = cat_info.get('names', [])
-        for name in names:
-            text += ',\n'
-            text += '\t' * 7 + '{\n'
-            text += '\t' * 8 + '"caption": "%s",\n' % name
-            text += '\t' * 8 + '"id": "stino_lib_cat_name_%s",\n' % name
-            text += '\t' * 8 + '"children":\n'
-            text += '\t' * 8 + '['
-            text += '\t' * 9 + '{"caption": "-"}'
 
-            name_info = cat_info.get(name, {})
-            versions = name_info.get('versions', [])
-            for version in versions:
+        if len(names) < 31:
+            for name in names:
                 text += ',\n'
-                text += '\t' * 9 + '{'
-                text += '\t' * 10 + '"caption": "%s",\n' % version
-                text += '\t' * 10 + '"id": '
-                text += '"stino_lib_cat_name_ver_%s",\n' % version
-                text += '\t' * 10 + '"command": "stino_install_lib",\n'
+                text += '\t' * 7 + '{\n'
+                text += '\t' * 8 + '"caption": "%s",\n' % name
+                text += '\t' * 8 + '"id": "stino_lib_cat_name_%s",\n' % name
+                text += '\t' * 8 + '"children":\n'
+                text += '\t' * 8 + '['
+                text += '\t' * 9 + '{"caption": "-"}'
 
-                arg_text = '"args": {"category": "%s", ' % lib_cat
-                arg_text += '"name": "%s", ' % name
-                arg_text += '"version": "%s"}\n' % version
-                text += '\t' * 10 + arg_text
-                text += '\t' * 9 + '}'
+                name_info = cat_info.get(name, {})
+                versions = name_info.get('versions', [])
+                for version in versions:
+                    text += ',\n'
+                    text += '\t' * 9 + '{'
+                    text += '\t' * 10 + '"caption": "%s",\n' % version
+                    text += '\t' * 10 + '"id": '
+                    text += '"stino_lib_cat_name_ver_%s",\n' % version
+                    text += '\t' * 10 + '"command": "stino_install_lib",\n'
 
-            text += '\n' + '\t' * 8 + ']'
-            text += '\t' * 7 + '}'
+                    arg_text = '"args": {"category": "%s", ' % lib_cat
+                    arg_text += '"name": "%s", ' % name
+                    arg_text += '"version": "%s"}\n' % version
+                    text += '\t' * 10 + arg_text
+                    text += '\t' * 9 + '}'
+
+                text += '\n' + '\t' * 8 + ']'
+                text += '\t' * 7 + '}'
+        else:
+            initial_name_info = {}
+            initials = []
+            for name in names:
+                initial = name[0].upper()
+                if initial not in initials:
+                    initials.append(initial)
+                    initial_name_info[initial] = []
+                initial_name_info[initial].append(name)
+
+            for initial in initials:
+                text += ',\n'
+                text += '\t' * 7 + '{\n'
+                text += '\t' * 8 + '"caption": "%s",\n' % initial
+                text += '\t' * 8
+                text += '"id": "stino_lib_cat_initial_%s",\n' % initial
+                text += '\t' * 8 + '"children":\n'
+                text += '\t' * 8 + '['
+                text += '\t' * 9 + '{"caption": "-"}'
+
+                for name in initial_name_info[initial]:
+                    text += ',\n'
+                    text += '\t' * 9 + '{\n'
+                    text += '\t' * 9 + '"caption": "%s",\n' % name
+                    text += '\t' * 9
+                    text += '"id": "stino_lib_cat_name_%s",\n' % name
+                    text += '\t' * 9 + '"children":\n'
+                    text += '\t' * 9 + '['
+                    text += '\t' * 10 + '{"caption": "-"}'
+
+                    name_info = cat_info.get(name, {})
+                    versions = name_info.get('versions', [])
+                    for version in versions:
+                        text += ',\n'
+                        text += '\t' * 10 + '{'
+                        text += '\t' * 11 + '"caption": "%s",\n' % version
+                        text += '\t' * 11 + '"id": '
+                        text += '"stino_lib_cat_name_ver_%s",\n' % version
+                        text += '\t' * 11 + '"command": "stino_install_lib",\n'
+
+                        arg_text = '"args": {"category": "%s", ' % lib_cat
+                        arg_text += '"name": "%s", ' % name
+                        arg_text += '"version": "%s"}\n' % version
+                        text += '\t' * 11 + arg_text
+                        text += '\t' * 10 + '}'
+                    text += '\n' + '\t' * 9 + ']'
+                    text += '\t' * 8 + '}'
+
+                text += '\n' + '\t' * 8 + ']'
+                text += '\t' * 7 + '}'
 
         text += '\n' + '\t' * 6 + ']\n'
         text += '\t' * 5 + '}'
