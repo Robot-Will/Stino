@@ -749,19 +749,28 @@ def get_tools_info(arduino_info, cmds):
 
         if has_tool:
             has_bin = False
-            bin_path = os.path.join(tool_path, 'bin')
-            if os.path.isdir(bin_path):
-                has_bin = True
-            else:
-                sub_paths = glob.glob(tool_path + '/*')[::-1]
-                sub_paths = [p for p in sub_paths if os.path.isdir(p)]
+            sub_paths = glob.glob(tool_path + '/*')[::-1]
+
+            for sub_path in sub_paths:
+                if os.path.isfile(sub_path):
+                    has_bin = True
+                    break
+
+            if not has_bin:
                 for sub_path in sub_paths:
                     bin_path = os.path.join(sub_path, 'bin')
                     if os.path.isdir(bin_path):
                         has_bin = True
+                    else:
+                        s_sub_paths = glob.glob(sub_path + '/*')
+                        for s_sub_path in s_sub_paths:
+                            if os.path.isfile(s_sub_path):
+                                has_bin = True
+                                break
+                    if has_bin:
+                        tool_path = sub_path
                         break
             if has_bin:
-                tool_path = os.path.dirname(bin_path)
                 tool_path = tool_path.replace('\\', '/')
                 key = 'runtime.tools.%s.path' % tool
                 tools_info[key] = tool_path
