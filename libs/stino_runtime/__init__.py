@@ -2109,7 +2109,7 @@ def check_pkgs():
         remote_etag = downloader.get_remote_etag(url)
         if remote_etag:
             local_etag = arduino_info['etags'].get(key)
-            if remote_etag and remote_etag != local_etag:
+            if remote_etag != local_etag:
                 is_done = downloader.download(url, arduino_dir_path,
                                               message_queue.put,
                                               mode='replace')
