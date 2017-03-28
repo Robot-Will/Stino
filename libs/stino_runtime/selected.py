@@ -72,7 +72,7 @@ def get_platform_info(pkgs_info, pkg_name, ptfm_name, ptfm_ver):
 
 def get_platform_name_by_arch(arduino_info, pkg_name, ptfm_arch):
     """."""
-    ptfm_name = ''
+    ptfm_name = ptfm_arch
     pkgs_info = arduino_info.get('packages', {})
     ptfm_names = get_platform_names(pkgs_info, pkg_name)
     ptfm_arches = get_platform_arches(pkgs_info, pkg_name)
@@ -84,7 +84,7 @@ def get_platform_name_by_arch(arduino_info, pkg_name, ptfm_arch):
 
 def get_platform_arch_by_name(arduino_info, pkg_name, ptfm_name):
     """."""
-    ptfm_arch = ''
+    ptfm_arch = ptfm_name
     pkgs_info = arduino_info.get('packages', {})
     ptfm_names = get_platform_names(pkgs_info, pkg_name)
     ptfm_arches = get_platform_arches(pkgs_info, pkg_name)
