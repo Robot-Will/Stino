@@ -676,7 +676,7 @@ def get_bootloader_commands(arduino_info):
     cmds = []
     for cmd in t_cmds:
         cmd = replace_variants_in_braces(cmd, tools_info)
-        cmds.appendd(cmd)
+        cmds.append(cmd)
     return cmds
 
 
