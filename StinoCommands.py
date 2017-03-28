@@ -79,6 +79,25 @@ class ViewMonitor(sublime_plugin.EventListener):
                 view.run_command('stino_send_to_serial',
                                  {'serial_port': serial_port})
 
+            file_path = view.file_name()
+            if file_path and stino.c_file.is_cpp_file(file_path):
+                selected = stino.arduino_info['selected']
+                pkg = selected.get('package')
+                ptfm = selected.get('platform')
+                ver = selected.get('version')
+                board = selected.get('board')
+                text = '[%s, %s, %s, %s' % (pkg, ptfm, ver, board)
+
+                board_info = stino.arduino_info['boards'].get(board, {})
+                options = board_info.get('options', [])
+                for option in options:
+                    key = 'option_%s' % option
+                    sel_value_name = selected.get(key)
+                    text += ', %s' % sel_value_name
+
+                text += ']'
+                view.set_status('selected', text)
+
     def on_selection_modified(self, view):
         """."""
         panel_name = 'stino_panel'

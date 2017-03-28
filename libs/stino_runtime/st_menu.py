@@ -504,6 +504,7 @@ def update_install_platform_menu(arduino_info):
         package_info = packages_info.get(package_name, {})
         platforms_info = package_info.get('platforms', {})
         platform_names = platforms_info.get('names', [])
+
         for platform_name in platform_names:
             text += ',\n'
             text += '\t' * 7 + '{\n'
@@ -579,6 +580,7 @@ def update_platform_menu(arduino_info):
         package_info = packages_info.get(package_name, {})
         platforms_info = package_info.get('platforms', {})
         platform_names = platforms_info.get('names', [])
+
         for platform_name in platform_names:
             text += ',\n'
             text += '\t' * 7 + '{\n'

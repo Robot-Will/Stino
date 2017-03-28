@@ -34,6 +34,7 @@ from base_utils import task_queue
 from base_utils import task_listener
 from base_utils import downloader
 from base_utils import sys_info
+from base_utils import progress_bar
 from . import const
 from . import st_menu
 from . import selected
@@ -1746,6 +1747,7 @@ def build_sketch(build_info={}):
     """."""
     earse_all_phantoms()
     if not build_info:
+        message_queue.put('[Error] No build info.')
         return
 
     arduino_sel = arduino_info['selected']
@@ -1762,6 +1764,7 @@ def build_sketch(build_info={}):
         save_project_files(project_path)
 
     is_ready = True
+
     if not (sel_package and sel_platform and sel_version and sel_board):
         is_ready = False
     else:
@@ -1771,7 +1774,9 @@ def build_sketch(build_info={}):
             sel_option = arduino_sel.get(key, '')
             if not sel_option:
                 is_ready = False
+                break
     if not is_ready:
+        message_queue.put('[Error] No complete board info.')
         return
 
     msg = '[Build] %s...' % project_path.replace('\\', '/')
@@ -1781,6 +1786,9 @@ def build_sketch(build_info={}):
 
     is_ready = check_platform_dep()
     if not is_ready:
+        msg = '[Error] Toolchain is not ready. '
+        msg += 'Please build the sketch after the toolchain installation done.'
+        message_queue.put(msg)
         return
 
     msg = '[Step 2] Find all source files.'
@@ -1790,7 +1798,15 @@ def build_sketch(build_info={}):
 
     prj = c_project.CProject(project_path, build_dir_path)
     if not prj.has_main_file():
+        msg = '[Error] No main source file found. '
+        msg += 'Main source file should be a c/c++ file, which contains '
+        msg += 'main() function, or a Arduino file, which contains setup() '
+        msg += 'and loop() functions.'
+        message_queue.put(msg)
         return
+
+    prog_bar.start(sublime.active_window().status_message,
+                   'Finding source files')
 
     prj_name = prj.get_name()
     prj_path = prj.get_path().replace('\\', '/')
@@ -1886,12 +1902,17 @@ def build_sketch(build_info={}):
     core_src_paths = get_src_paths(core_dir_paths, mode='recursion')
     src_paths = prj_src_paths + lib_src_paths + core_src_paths
 
+    prog_bar.stop()
+
     cmds, msgs = get_build_cmds(cmds_info, prj_build_path, inc_text,
                                 prj_src_paths, lib_src_paths, core_src_paths)
 
     msg = '[Step 3] Start building.'
     message_queue.put(msg)
+    prog_bar.start(sublime.active_window().status_message,
+                   'Building sketch')
     is_ok = run_build_commands(cmds, msgs)
+    prog_bar.stop()
     if not is_ok:
         message_queue.put('[Build] Error occurred.')
         return
@@ -1924,6 +1945,9 @@ def build_sketch(build_info={}):
         mtime = os.path.getmtime(src_path)
         last_build_info.set(src_path, mtime)
 
+    msg = 'Build done.'
+    message_queue.put(msg)
+
     if upload_mode:
         upload_cmd = selected.get_upload_command(arduino_info, project=prj,
                                                  mode=upload_mode)
@@ -1934,6 +1958,8 @@ def upload_sketch(upload_cmd=''):
     """."""
     if upload_cmd:
         message_queue.put('[Upload]...')
+        prog_bar.start(sublime.active_window().status_message,
+                       'Building sketch')
         upload_port = arduino_info['selected'].get('serial_port', '')
         is_network_upload = arduino_info['selected'].get('use_network_port',
                                                          False)
@@ -1976,6 +2002,8 @@ def upload_sketch(upload_cmd=''):
             serial_listener.start()
             if monitor and is_monitor_running:
                 monitor.start()
+            prog_bar.stop()
+            message_queue.put('Upload done.')
 
 
 def upload_bin_file(file_path, mode='upload'):
@@ -2321,6 +2349,9 @@ ide_importer = task_queue.TaskQueue(import_avr_platform)
 sketch_builder = task_queue.TaskQueue(build_sketch)
 sketch_uploader = task_queue.TaskQueue(upload_sketch)
 bootloader = task_queue.TaskQueue(burn_bootloader)
+prog_bar = progress_bar.ProgressBar()
 
 do_action = task_queue.ActionQueue()
 do_action.put(_init)
+
+sublime.active_window().status_message('Thanks for supporting stino!')
