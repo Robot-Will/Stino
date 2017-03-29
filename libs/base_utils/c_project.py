@@ -77,9 +77,9 @@ def simple_combine_ino_files(ino_file_paths, target_file_path,
                              with_header=True):
     """."""
     with codecs.open(target_file_path, 'w', 'utf-8') as target_f:
-        if with_header:
-            text = '#include <Arduino.h>\n\n'
-            target_f.write(text)
+        # if with_header:
+        #     text = '#include <Arduino.h>\n\n'
+        #     target_f.write(text)
 
         for file_path in ino_file_paths:
             with codecs.open(file_path, 'r', 'utf-8') as source_f:
@@ -167,6 +167,7 @@ def check_main_file(file_paths, prj_type='arduino'):
     else:
         is_main_file = c_file.is_main_cpp_file
 
+    file_path = ''
     for file_path in file_paths:
         if is_main_file(file_path):
             has_main_file = True

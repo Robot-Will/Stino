@@ -957,11 +957,11 @@ def get_all_sub_paths(path):
 def get_all_lib_paths(project):
     """."""
     all_lib_paths = []
-    if project.is_arduino_project():
-        core_src_path = selected.get_build_core_src_path(arduino_info)
-        variant_path = selected.get_build_variant_path(arduino_info)
-        all_lib_paths.append(core_src_path)
-        all_lib_paths.append(variant_path)
+    # if project.is_arduino_project():
+    #     core_src_path = selected.get_build_core_src_path(arduino_info)
+    #     variant_path = selected.get_build_variant_path(arduino_info)
+    #     all_lib_paths.append(core_src_path)
+    #     all_lib_paths.append(variant_path)
     all_lib_paths.append(project.get_path())
     all_lib_paths = [p.replace('\\', '/') for p in all_lib_paths]
     return all_lib_paths
@@ -986,14 +986,41 @@ def get_h_path_info(project):
         paths = [get_real_lib_path(p) for p in paths]
         lib_paths += paths
 
-    for lib_path in lib_paths:
+    lib_paths = [p.replace('\\', '/') for p in lib_paths]
+    for lib_path in lib_paths[::-1]:
         info = get_h_info(lib_path, c_file.H_EXTS, 'recursion', EXCLUDES)
         h_path_info.update(info)
     return h_path_info
 
 
-def find_lib_paths_by_compiler(cmd_pattern, src_path, lib_paths, h_path_info):
+def get_path_from_header(h_path_info, header):
     """."""
+    dir_path = ''
+    if '/' in header:
+        header = header.split('/')[-1]
+        if header in h_path_info:
+            dir_path = h_path_info.get(header)
+            dir_path = os.path.dirname(dir_path)
+    else:
+        if header in h_path_info:
+            dir_path = h_path_info.get(header)
+    return dir_path
+
+
+def clean_path(dir_path):
+    """."""
+    if os.path.isdir(dir_path):
+        shutil.rmtree(dir_path)
+
+
+def find_lib_paths_by_compiler(cmd_pattern, src_path,
+                               lib_paths, h_path_info, build_path):
+    """."""
+    dummy_dir_path = os.path.join(build_path, 'dummy')
+    dummy_dir_path = dummy_dir_path.replace('\\', '/')
+    if dummy_dir_path not in lib_paths:
+        lib_paths.append(dummy_dir_path)
+
     src_path = src_path.replace('\\', '/')
     lib_paths = [p.replace('\\', '/') for p in lib_paths]
     all_includes = ['"-I%s"' % p for p in lib_paths]
@@ -1020,27 +1047,31 @@ def find_lib_paths_by_compiler(cmd_pattern, src_path, lib_paths, h_path_info):
                     if not os.path.isabs(h_file_path):
                         headers.append(h_file_path)
 
-    has_new_lib = False
     for header in headers:
-        dir_path = ''
-        if '/' in header:
-            header = header.split('/')[-1]
-            if header in h_path_info:
-                dir_path = h_path_info.get(header)
-                dir_path = os.path.dirname(dir_path)
-        else:
-            if header in h_path_info:
-                dir_path = h_path_info.get(header)
-
+        dir_path = get_path_from_header(h_path_info, header)
         if dir_path:
             dir_path = dir_path.replace('\\', '/')
             if dir_path not in lib_paths:
-                has_new_lib = True
+                if dummy_dir_path in lib_paths:
+                    lib_paths.remove(dummy_dir_path)
                 lib_paths.append(dir_path)
+        else:
+            if '/' in header:
+                header = header.split('/')[-1]
+            if not os.path.isdir(dummy_dir_path):
+                os.makedirs(dummy_dir_path)
+            dummy_file_path = os.path.join(dummy_dir_path, header)
+            if not os.path.isfile(dummy_file_path):
+                with open(dummy_file_path, 'w') as f:
+                    f.write('')
 
-    if has_new_lib:
+    if headers:
         lib_paths = find_lib_paths_by_compiler(cmd_pattern, src_path,
-                                               lib_paths, h_path_info)
+                                               lib_paths, h_path_info,
+                                               build_path)
+    if dummy_dir_path in lib_paths:
+        lib_paths.remove(dummy_dir_path)
+    clean_path(dummy_dir_path)
     return lib_paths
 
 
@@ -1051,41 +1082,45 @@ def find_lib_paths(src_path, h_path_info):
     headers = f.list_include_headers()
 
     for header in headers:
-        dir_path = ''
-        if '/' in header:
-            header = header.split('/')[-1]
-            if header in h_path_info:
-                dir_path = h_path_info.get(header)
-                dir_path = os.path.dirname(dir_path)
-        else:
-            if header in h_path_info:
-                dir_path = h_path_info.get(header)
+        dir_path = get_path_from_header(h_path_info, header)
         if dir_path:
             lib_paths.append(dir_path)
     return lib_paths
 
 
 def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info,
-                      used_cpps, used_headers, used_dirs):
+                      used_cpps, used_headers, used_dirs, arch, build_path):
     """."""
     sub_src_paths = []
     src_paths = [p.replace('\\', '/') for p in src_paths]
+
     for src_path in src_paths:
         h_paths = []
         cpp_paths = []
 
         if os.path.isfile(src_path):
+            dir_path = os.path.dirname(src_path)
+            used_dirs.append(dir_path)
             cpp_paths = [src_path]
         elif src_path not in used_dirs:
-            used_dirs.append(src_path)
-            cpp_paths = \
-                c_project.list_files_of_extensions(src_path, c_file.CC_EXTS)
-            if not cmd_pattern:
-                h_paths = \
-                    c_project.list_files_of_extensions(src_path, c_file.H_EXTS)
+            paths = [src_path]
+            arch_dir_path = src_path + '/' + arch
+            if os.path.isdir(arch_dir_path):
+                paths.append(arch_dir_path)
+
+            for src_path in paths:
+                used_dirs.append(src_path)
+                cpp_paths = \
+                    c_project.list_files_of_extensions(src_path,
+                                                       c_file.CC_EXTS)
+                if not cmd_pattern:
+                    h_paths = \
+                        c_project.list_files_of_extensions(src_path,
+                                                           c_file.H_EXTS)
 
         unused_src_paths = []
         for h_path in h_paths:
+            h_path = h_path.replace('\\', '/')
             header = os.path.basename(h_path)
             if header not in used_headers:
                 used_headers.append(header)
@@ -1102,11 +1137,13 @@ def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info,
             if cmd_pattern:
                 src_paths = [os.path.dirname(src_path)]
                 lib_paths += find_lib_paths_by_compiler(cmd_pattern, src_path,
-                                                        src_paths, h_path_info)
+                                                        src_paths, h_path_info,
+                                                        build_path)
             else:
                 lib_paths += find_lib_paths(src_path, h_path_info)
 
         lib_paths = [p.replace('\\', '/') for p in lib_paths]
+
         for lib_path in lib_paths:
             if (lib_path not in used_dirs and lib_path not in sub_src_paths):
                     sub_src_paths.append(lib_path)
@@ -1114,7 +1151,8 @@ def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info,
     if sub_src_paths:
         used_cpps, used_headers, used_dirs = \
             get_dep_lib_paths(cmd_pattern, sub_src_paths, h_path_info,
-                              used_cpps, used_headers, used_dirs)
+                              used_cpps, used_headers, used_dirs, arch,
+                              build_path)
     return used_cpps, used_headers, used_dirs
 
 
@@ -1755,6 +1793,8 @@ def build_sketch(build_info={}):
     sel_platform = arduino_sel.get('platform', '')
     sel_version = arduino_sel.get('version', '')
     sel_board = arduino_sel.get('board', '')
+    sel_arch = selected.get_platform_arch_by_name(arduino_info, sel_package,
+                                                  sel_platform).lower()
 
     project_path = build_info.get('path')
     upload_mode = build_info.get('upload_mode', '')
@@ -1811,7 +1851,6 @@ def build_sketch(build_info={}):
     prj_name = prj.get_name()
     prj_path = prj.get_path().replace('\\', '/')
     prj_build_path = prj.get_build_path().replace('\\', '/')
-    all_lib_paths = get_all_lib_paths(prj)
     h_path_info = get_h_path_info(prj)
 
     cmds_info = selected.get_build_commands_info(arduino_info, prj)
@@ -1837,18 +1876,15 @@ def build_sketch(build_info={}):
 
     all_src_paths, used_headers, all_lib_paths = \
         get_dep_lib_paths(cmd_preproc_includes, prj_src_dir_paths, h_path_info,
-                          src_paths, used_headers, lib_paths)
+                          src_paths, used_headers, lib_paths, sel_arch,
+                          prj_build_path)
 
     prj_paths = []
-    core_paths = []
     lib_paths = []
 
     for path in all_lib_paths:
         if path.startswith(prj_path):
             prj_paths.append(path)
-        elif path.startswith(core_dir_paths[0]) or \
-                path.startswith(core_dir_paths[1]):
-            core_paths.append(path)
         else:
             lib_paths.append(path)
 
@@ -1856,12 +1892,7 @@ def build_sketch(build_info={}):
         prj_paths.remove(prj_path)
         prj_paths = [prj_path] + prj_paths
 
-    for core_dir_path in core_dir_paths:
-        if core_dir_path in core_paths:
-            core_paths.remove(core_dir_path)
-    core_paths = core_dir_paths + core_paths
-
-    all_lib_paths = prj_paths + core_paths + lib_paths
+    all_lib_paths = prj_paths + core_dir_paths + lib_paths
     all_lib_paths = [p.replace('\\', '/') for p in all_lib_paths]
     includes = ['"-I%s"' % p for p in all_lib_paths]
     inc_text = ' '.join(includes)
@@ -1882,16 +1913,12 @@ def build_sketch(build_info={}):
             main_file_path = prj.get_combine_path()
 
     prj_src_paths = []
-    core_src_paths = []
     lib_src_paths = []
     for path in all_src_paths:
         if path.startswith(prj_build_path):
             continue
         elif path.startswith(prj_path):
             prj_src_paths.append(path)
-        elif path.startswith(core_dir_paths[0]) or \
-                path.startswith(core_dir_paths[1]):
-            core_src_paths.append(path)
         else:
             lib_src_paths.append(path)
 

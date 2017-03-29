@@ -97,6 +97,17 @@ def get_platform_arch_by_name(arduino_info, pkg_name, ptfm_name):
     if ptfm_name in ptfm_names:
         index = ptfm_names.index(ptfm_name)
         ptfm_arch = ptfm_arches[index]
+
+    if not ptfm_arch:
+        pkgs_info = arduino_info.get('installed_packages', {})
+        ptfm_names = get_platform_names(pkgs_info, pkg_name)
+        if ptfm_name in ptfm_names:
+            vers = get_platform_versions(pkgs_info, pkg_name, ptfm_name)
+            if vers:
+                ver = vers[-1]
+                ptfm_info = get_platform_info(pkgs_info, pkg_name,
+                                              ptfm_name, ver)
+                ptfm_arch = ptfm_info.get('architecture', '').upper()
     return ptfm_arch
 
 
