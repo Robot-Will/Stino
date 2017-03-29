@@ -1056,11 +1056,10 @@ def find_lib_paths_by_compiler(cmd_pattern, src_path,
                     lib_paths.remove(dummy_dir_path)
                 lib_paths.append(dir_path)
         else:
-            if '/' in header:
-                header = header.split('/')[-1]
-            if not os.path.isdir(dummy_dir_path):
-                os.makedirs(dummy_dir_path)
             dummy_file_path = os.path.join(dummy_dir_path, header)
+            dir_path = os.path.dirname(dummy_file_path)
+            if not os.path.isdir(dir_path):
+                os.makedirs(dir_path)
             if not os.path.isfile(dummy_file_path):
                 with open(dummy_file_path, 'w') as f:
                     f.write('')
