@@ -406,7 +406,7 @@ def check_board_options_selected(arduino_info):
     board_info = arduino_info['boards'].get(sel_board, {})
     options = board_info.get('options', [])
     for option in options:
-        key = 'option_%s' % option
+        key = 'option_%s@%s' % (option, sel_board)
         sel_value_name = arduino_info['selected'].get(key)
         values_info = board_info.get(option, {})
         value_names = values_info.get('names', [])
@@ -456,7 +456,9 @@ def on_board_select(board_name):
 def on_board_option_select(option, value):
     """."""
     global arduino_info
-    arduino_info['selected'].set('option_%s' % option, value)
+    board = stino.arduino_info['selected'].get('board', '')
+    key = 'option_%s@%s' % (option, board)
+    arduino_info['selected'].set(key, value)
 
 
 def on_programmer_select(programmer_name):
@@ -1316,7 +1318,7 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
             is_full_build = True
         else:
             for option in sel_board_options:
-                key = 'option_%s' % option
+                key = 'option_%s@%s' % (option, sel_board)
                 sel_option = arduino_sel.get(key, '')
                 last_option = last_build_info.get(key, '')
                 if sel_option != last_option:
@@ -1872,7 +1874,7 @@ def build_sketch(build_info={}):
     else:
         sel_board_options = selected.get_sel_board_options(arduino_info)
         for option in sel_board_options:
-            key = 'option_%s' % option
+            key = 'option_%s@%s' % (option, sel_board)
             sel_option = arduino_sel.get(key, '')
             if not sel_option:
                 is_ready = False
@@ -2030,7 +2032,7 @@ def build_sketch(build_info={}):
     last_build_info.set('version', sel_version)
     last_build_info.set('board', sel_board)
     for option in sel_board_options:
-        key = 'option_%s' % option
+        key = 'option_%s@%s' % (option, sel_board)
         sel_option = arduino_sel.get(key, '')
         last_build_info.set(key, sel_option)
     h_paths = list(h_cpp_info.keys())

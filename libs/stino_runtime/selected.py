@@ -157,7 +157,7 @@ def get_sel_board_info(arduino_info):
     sel_board_info = board_info.get('generic', {})
     options = board_info.get('options', [])
     for option in options:
-        key = 'option_%s' % option
+        key = 'option_%s@%s' % (option, sel_board)
         sel_value_name = arduino_info['selected'].get(key, '')
         values_info = board_info.get(option, {})
         value_info = values_info.get(sel_value_name, {})

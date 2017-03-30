@@ -91,7 +91,7 @@ class ViewMonitor(sublime_plugin.EventListener):
                 board_info = stino.arduino_info['boards'].get(board, {})
                 options = board_info.get('options', [])
                 for option in options:
-                    key = 'option_%s' % option
+                    key = 'option_%s@%s' % (option, board)
                     sel_value_name = selected.get(key)
                     text += ', %s' % sel_value_name
 
@@ -578,7 +578,8 @@ class StinoSelectBoardOptionCommand(sublime_plugin.WindowCommand):
         """."""
         state = False
         if stino.arduino_info['init_done']:
-            key = 'option_%s' % option
+            board = stino.arduino_info['selected'].get('board', '')
+            key = 'option_%s@%s' % (option, board)
             state = stino.arduino_info['selected'].get(key) == value
         return state
 
