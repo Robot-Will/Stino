@@ -1013,11 +1013,9 @@ def clean_path(dir_path):
         shutil.rmtree(dir_path)
 
 
-def find_lib_paths_by_compiler(cmd_pattern, src_path,
-                               lib_paths, h_path_info, build_path):
+def find_lib_paths_by_compiler(cmd_pattern, src_path, h_cpp_info,
+                               lib_paths, h_path_info, dummy_dir_path):
     """."""
-    dummy_dir_path = os.path.join(build_path, 'dummy')
-    dummy_dir_path = dummy_dir_path.replace('\\', '/')
     if dummy_dir_path not in lib_paths:
         lib_paths.append(dummy_dir_path)
 
@@ -1047,14 +1045,25 @@ def find_lib_paths_by_compiler(cmd_pattern, src_path,
                     if not os.path.isabs(h_file_path):
                         headers.append(h_file_path)
 
+    if dummy_dir_path in lib_paths:
+        lib_paths.remove(dummy_dir_path)
+
     for header in headers:
         dir_path = get_path_from_header(h_path_info, header)
         if dir_path:
             dir_path = dir_path.replace('\\', '/')
+            h_file_path = dir_path + '/' + header
             if dir_path not in lib_paths:
-                if dummy_dir_path in lib_paths:
-                    lib_paths.remove(dummy_dir_path)
                 lib_paths.append(dir_path)
+
+            if '.combine.cpp' in src_path:
+                src_path = src_path.replace('.combine.cpp', '.ino.cpp')
+
+            if h_file_path not in h_cpp_info:
+                h_cpp_info[h_file_path] = [src_path]
+            else:
+                if src_path not in h_cpp_info[h_file_path]:
+                    h_cpp_info[h_file_path].append(src_path)
         else:
             dummy_file_path = os.path.join(dummy_dir_path, header)
             dir_path = os.path.dirname(dummy_file_path)
@@ -1065,30 +1074,36 @@ def find_lib_paths_by_compiler(cmd_pattern, src_path,
                     f.write('')
 
     if headers:
-        lib_paths = find_lib_paths_by_compiler(cmd_pattern, src_path,
-                                               lib_paths, h_path_info,
-                                               build_path)
-    if dummy_dir_path in lib_paths:
-        lib_paths.remove(dummy_dir_path)
-    clean_path(dummy_dir_path)
-    return lib_paths
+        lib_paths, h_cpp_info = \
+            find_lib_paths_by_compiler(cmd_pattern, src_path, h_cpp_info,
+                                       lib_paths, h_path_info, dummy_dir_path)
+    return lib_paths, h_cpp_info
 
 
-def find_lib_paths(src_path, h_path_info):
+def find_lib_paths(src_path, h_path_info, h_cpp_info):
     """."""
     lib_paths = []
     f = c_file.CFile(src_path)
     headers = f.list_include_headers()
 
+    if '.combine.cpp' in src_path:
+        src_path = src_path.replace('.combine.cpp', '.ino.cpp')
+
     for header in headers:
         dir_path = get_path_from_header(h_path_info, header)
         if dir_path:
+            h_file_path = dir_path + '/' + header
             lib_paths.append(dir_path)
-    return lib_paths
+            if h_file_path not in h_cpp_info:
+                h_cpp_info[h_file_path] = [src_path]
+            else:
+                if src_path not in h_cpp_info[h_file_path]:
+                    h_cpp_info[h_file_path].append(src_path)
+    return lib_paths, h_cpp_info
 
 
-def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info,
-                      used_cpps, used_headers, used_dirs, arch, build_path):
+def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info, used_cpps,
+                      used_h_paths, h_cpp_info, used_dirs, arch, build_path):
     """."""
     sub_src_paths = []
     src_paths = [p.replace('\\', '/') for p in src_paths]
@@ -1120,9 +1135,8 @@ def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info,
         unused_src_paths = []
         for h_path in h_paths:
             h_path = h_path.replace('\\', '/')
-            header = os.path.basename(h_path)
-            if header not in used_headers:
-                used_headers.append(header)
+            if h_path not in used_h_paths:
+                used_h_paths.append(h_path)
                 unused_src_paths.append(h_path)
         for cpp_path in cpp_paths:
             cpp_path = cpp_path.replace('\\', '/')
@@ -1132,27 +1146,33 @@ def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info,
                 unused_src_paths.append(cpp_path)
 
         lib_paths = []
+        dummy_dir_path = os.path.join(build_path, 'dummy')
+        dummy_dir_path = dummy_dir_path.replace('\\', '/')
+
         for src_path in unused_src_paths:
             if cmd_pattern:
                 src_paths = [os.path.dirname(src_path)]
-                lib_paths += find_lib_paths_by_compiler(cmd_pattern, src_path,
-                                                        src_paths, h_path_info,
-                                                        build_path)
+                l_paths, h_cpp_info = \
+                    find_lib_paths_by_compiler(cmd_pattern, src_path,
+                                               h_cpp_info, src_paths,
+                                               h_path_info, dummy_dir_path)
+                clean_path(dummy_dir_path)
             else:
-                lib_paths += find_lib_paths(src_path, h_path_info)
+                l_paths, h_cpp_info = find_lib_paths(src_path, h_path_info,
+                                                     h_cpp_info)
+            lib_paths += l_paths
 
         lib_paths = [p.replace('\\', '/') for p in lib_paths]
-
         for lib_path in lib_paths:
             if (lib_path not in used_dirs and lib_path not in sub_src_paths):
                     sub_src_paths.append(lib_path)
 
     if sub_src_paths:
-        used_cpps, used_headers, used_dirs = \
+        used_cpps, used_h_paths, h_cpp_info, used_dirs = \
             get_dep_lib_paths(cmd_pattern, sub_src_paths, h_path_info,
-                              used_cpps, used_headers, used_dirs, arch,
-                              build_path)
-    return used_cpps, used_headers, used_dirs
+                              used_cpps, used_h_paths, h_cpp_info,
+                              used_dirs, arch, build_path)
+    return used_cpps, used_h_paths, h_cpp_info, used_dirs
 
 
 def is_modified(file_path, info):
@@ -1233,8 +1253,30 @@ def get_obj_paths(build_path, src_paths, mode):
     return obj_paths
 
 
+def get_changed_src_paths(h_path, h_cpp_info, last_build_info,
+                          changed_src_paths, used_h_paths):
+    """."""
+    if h_path in h_cpp_info:
+        if is_modified(h_path, last_build_info):
+            src_paths = h_cpp_info[h_path]
+            for src_path in src_paths:
+                src_ext = os.path.splitext(src_path)[-1]
+                if src_ext in c_file.CC_EXTS:
+                    if src_path not in changed_src_paths:
+                        changed_src_paths.append(src_path)
+                elif src_ext in c_file.H_EXTS:
+                    if src_ext not in used_h_paths:
+                        used_h_paths.append(used_h_paths)
+                        changed_src_paths, used_h_paths = \
+                            get_changed_src_paths(src_path, h_cpp_info,
+                                                  last_build_info,
+                                                  changed_src_paths,
+                                                  used_h_paths)
+    return changed_src_paths, used_h_paths
+
+
 def get_build_cmds(cmds_info, prj_build_path, inc_text,
-                   prj_src_paths, lib_src_paths, core_src_paths):
+                   prj_src_paths, lib_src_paths, core_src_paths, h_cpp_info):
     """."""
     cmds = []
     msgs = []
@@ -1297,8 +1339,18 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
         libs_changed = True
         need_gen_bins = True
     else:
+        changed_src_paths = []
+        used_h_paths = []
+        for h_path in h_cpp_info:
+            changed_src_paths, used_h_paths = \
+                get_changed_src_paths(h_path, h_cpp_info, last_build_info,
+                                      changed_src_paths, used_h_paths)
+
         need_compile = False
-        if is_modified(src_paths[0], last_build_info):
+        main_src_path = src_paths[0]
+        if main_src_path in changed_src_paths:
+            need_compile = True
+        elif is_modified(main_src_path, last_build_info):
             need_compile = True
         elif not os.path.isfile(obj_paths[0]):
             need_compile = True
@@ -1310,7 +1362,9 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
 
         for src_path, obj_path in zip(src_paths[1:], obj_paths[1:]):
             need_compile = False
-            if is_modified(src_path, last_build_info):
+            if src_path in changed_src_paths:
+                need_compile = True
+            elif is_modified(src_path, last_build_info):
                 need_compile = True
             elif not os.path.isfile(obj_path):
                 need_compile = True
@@ -1867,16 +1921,17 @@ def build_sketch(build_info={}):
 
     src_paths = []
     lib_paths = []
-    used_headers = []
+    used_h_paths = []
+    h_cpp_info = {}
     prj_src_dir_paths = []
     prj_src_dir_paths.append(prj_path)
     if prj.is_arduino_project():
         prj_src_dir_paths.append(main_file_path)
 
-    all_src_paths, used_headers, all_lib_paths = \
+    all_src_paths, used_h_paths, h_cpp_info, all_lib_paths = \
         get_dep_lib_paths(cmd_preproc_includes, prj_src_dir_paths, h_path_info,
-                          src_paths, used_headers, lib_paths, sel_arch,
-                          prj_build_path)
+                          src_paths, used_h_paths, h_cpp_info, lib_paths,
+                          sel_arch, prj_build_path)
 
     prj_paths = []
     lib_paths = []
@@ -1897,7 +1952,7 @@ def build_sketch(build_info={}):
     inc_text = ' '.join(includes)
 
     if prj.is_arduino_project():
-        if prj.is_main_file_modified():
+        if 'recipe.preproc.macros' in cmds_info:
             minus_src_name = '%s.gcc_minus.cpp' % prj_name
             dir_path = os.path.join(prj_build_path, 'sketch')
             minus_src_path = os.path.join(dir_path, minus_src_name)
@@ -1931,7 +1986,8 @@ def build_sketch(build_info={}):
     prog_bar.stop()
 
     cmds, msgs = get_build_cmds(cmds_info, prj_build_path, inc_text,
-                                prj_src_paths, lib_src_paths, core_src_paths)
+                                prj_src_paths, lib_src_paths, core_src_paths,
+                                h_cpp_info)
 
     msg = '[Step 3] Start building.'
     message_queue.put(msg)
@@ -1967,7 +2023,8 @@ def build_sketch(build_info={}):
         key = 'option_%s' % option
         sel_option = arduino_sel.get(key, '')
         last_build_info.set(key, sel_option)
-    for src_path in src_paths:
+    h_paths = list(h_cpp_info.keys())
+    for src_path in (src_paths + h_paths):
         mtime = os.path.getmtime(src_path)
         last_build_info.set(src_path, mtime)
 

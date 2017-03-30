@@ -129,7 +129,8 @@ def combine_ino_files(ino_file_paths, target_file_path, minus_src_path=None):
 
             with codecs.open(f_paths[0], 'r', 'utf-8') as source_f:
                 src_text = source_f.read()
-                index = c_file.get_index_of_first_statement(src_text)
+                # index = c_file.get_index_of_first_statement(src_text)
+                index = 0
                 header_text = src_text[:index]
                 footer_text = src_text[index:]
 
@@ -223,10 +224,12 @@ class CProject(object):
         has_main_file, file_path = check_main_file(self._src_file_paths)
         if has_main_file:
             self._main_file_path = file_path
-            self._ino_file_paths.remove(file_path)
-            self._src_file_paths.remove(file_path)
-            self._ino_file_paths = [file_path] + self._ino_file_paths
-            self._src_file_paths = [file_path] + self._src_file_paths
+            if file_path in self._ino_file_paths:
+                self._ino_file_paths.remove(file_path)
+                self._ino_file_paths = [file_path] + self._ino_file_paths
+            if file_path in self._src_file_paths:
+                self._src_file_paths.remove(file_path)
+                self._src_file_paths = [file_path] + self._src_file_paths
         return has_main_file
 
     def check_is_c_project(self):
