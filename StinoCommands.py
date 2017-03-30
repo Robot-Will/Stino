@@ -85,7 +85,7 @@ class ViewMonitor(sublime_plugin.EventListener):
                 pkg = selected.get('package')
                 ptfm = selected.get('platform')
                 ver = selected.get('version')
-                board = selected.get('board')
+                board = selected.get('board@%s' % ptfm)
                 text = '[%s, %s, %s, %s' % (pkg, ptfm, ver, board)
 
                 board_info = stino.arduino_info['boards'].get(board, {})
@@ -495,7 +495,10 @@ class StinoBoardInfoCommand(sublime_plugin.WindowCommand):
         """."""
         caption = '----'
         if stino.arduino_info['init_done']:
-            caption = '--%s--' % stino.arduino_info['selected'].get('board')
+            selected = stino.arduino_info['selected']
+            platform = selected.get('platform')
+            key = 'board@%s' % platform
+            caption = '--%s--' % selected.get(key)
         return caption
 
 
@@ -549,7 +552,13 @@ class StinoSelectBoardCommand(sublime_plugin.WindowCommand):
         """."""
         state = False
         if stino.arduino_info['init_done']:
-            state = stino.arduino_info['selected'].get('board') == board_name
+            selected = stino.arduino_info['selected']
+            platform = selected.get('platform')
+            key = 'board@%s' % platform
+            state = selected.get(key) == board_name
+            print(key)
+            print(selected.get(key))
+            print(board_name)
         return state
 
 
@@ -578,7 +587,9 @@ class StinoSelectBoardOptionCommand(sublime_plugin.WindowCommand):
         """."""
         state = False
         if stino.arduino_info['init_done']:
-            board = stino.arduino_info['selected'].get('board', '')
+            selected = stino.arduino_info['selected']
+            platform = selected.get('platform')
+            board = selected.get('board@%s' % platform, '')
             key = 'option_%s@%s' % (option, board)
             state = stino.arduino_info['selected'].get(key) == value
         return state

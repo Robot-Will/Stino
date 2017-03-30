@@ -90,7 +90,8 @@ def simple_combine_ino_files(ino_file_paths, target_file_path,
     return target_file_path
 
 
-def combine_ino_files(ino_file_paths, target_file_path, minus_src_path=None):
+def combine_ino_files(ino_file_paths, target_file_path,
+                      minus_src_path=None, is_arduino_project=True):
     """."""
     need_combine = False
 
@@ -139,10 +140,13 @@ def combine_ino_files(ino_file_paths, target_file_path, minus_src_path=None):
                 footer_start_line = len(header_text.split('\n'))
                 text = '#line 1 "%s"\n' % cur_path
                 text += header_text
-                text += '\n#include <Arduino.h>\n'
+                if is_arduino_project:
+                    text += '\n#include <Arduino.h>\n'
+
                 if func_prototypes:
                     text += ';\n'.join(func_prototypes)
                     text += ';\n\n'
+                    print(text)
                 text += '#line %d "%s"\n' % (footer_start_line, cur_path)
                 text += footer_text
                 target_f.write(text)
@@ -296,6 +300,7 @@ class CProject(object):
         if not os.path.isdir(dir_path):
             os.makedirs(dir_path)
         tmp_file_path = os.path.join(dir_path, tmp_cpp_name)
-        combine_ino_files(self._ino_file_paths, tmp_file_path, minus_src_path)
+        combine_ino_files(self._ino_file_paths, tmp_file_path,
+                          minus_src_path, self._is_arduino_project)
         tmp_file_path = tmp_file_path.replace('\\', '/')
         return tmp_file_path

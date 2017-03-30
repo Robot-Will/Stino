@@ -793,7 +793,9 @@ def update_board_menu(arduino_info):
 
 def update_board_options_menu(arduino_info):
     """."""
-    sel_board = arduino_info['selected'].get('board')
+    selected = arduino_info['selected']
+    platform = selected.get('platform')
+    sel_board = selected.get('board@%s' % platform)
     board_info = arduino_info['boards'].get(sel_board, {})
     options = board_info.get('options', [])
 

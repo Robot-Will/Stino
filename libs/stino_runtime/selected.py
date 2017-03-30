@@ -151,14 +151,16 @@ def get_sel_platform_info(arduino_info):
 
 def get_sel_board_info(arduino_info):
     """."""
-    sel_board = arduino_info['selected'].get('board')
+    selected = arduino_info['selected']
+    platform = selected.get('platform')
+    sel_board = selected.get('board@%s' % platform)
     board_info = arduino_info['boards'].get(sel_board, {})
 
     sel_board_info = board_info.get('generic', {})
     options = board_info.get('options', [])
     for option in options:
         key = 'option_%s@%s' % (option, sel_board)
-        sel_value_name = arduino_info['selected'].get(key, '')
+        sel_value_name = selected.get(key, '')
         values_info = board_info.get(option, {})
         value_info = values_info.get(sel_value_name, {})
         sel_board_info.update(value_info)
@@ -167,7 +169,9 @@ def get_sel_board_info(arduino_info):
 
 def get_sel_board_options(arduino_info):
     """."""
-    sel_board = arduino_info['selected'].get('board')
+    selected = arduino_info['selected']
+    platform = selected.get('platform')
+    sel_board = selected.get('board@%s' % platform)
     board_info = arduino_info['boards'].get(sel_board, {})
     options = board_info.get('options', [])
     return options

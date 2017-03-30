@@ -864,25 +864,30 @@ def simplify_to_one_line(lines):
     """Doc."""
     new_lines = []
     in_one_lines = []
-    is_line_end = False
+
     for line in lines:
+        line = line.strip()
+        is_line_end = False
         is_start_break = False
-        if line.startswith('void') or line.startswith('#'):
-            is_line_end = True
+        if line.startswith('void'):
             is_start_break = True
+        elif line.startswith('#'):
+            is_line_end = True
+
+        if is_start_break:
+            new_lines.append(' '.join(in_one_lines))
+            in_one_lines = [line]
+        elif line.endswith(';') or line.endswith('}'):
+            is_line_end = True
+
         if is_line_end:
+            in_one_lines.append(line)
             new_lines.append(' '.join(in_one_lines))
             in_one_lines = []
-            is_line_end = False
-        in_one_lines.append(line)
 
-        if not is_start_break:
-            if line.endswith(';') or line.endswith('}'):
-                is_line_end = True
-            if is_line_end:
-                new_lines.append(' '.join(in_one_lines))
-                in_one_lines = []
-                is_line_end = False
+        if not (is_start_break or is_line_end):
+            in_one_lines.append(line)
+
     if not is_line_end:
         new_lines.append(' '.join(in_one_lines))
     return new_lines
@@ -1088,7 +1093,8 @@ class CFile(file.File):
             self._simplified_lines = simplify_lines(self._lines)
         for line in self._simplified_lines:
             if line.endswith('}'):
-                function_definitions.append(line.split('{')[0].strip())
+                line = line.split('{')[0].strip()
+                function_definitions.append(line)
         return function_definitions
 
     def list_include_headers(self):
@@ -1104,6 +1110,9 @@ class CFile(file.File):
 
         undeclar_func_defs = []
         for func_def in func_defs:
+            func_name = func_def.split('(')[0]
+            if ' main' in func_name:
+                continue
             if func_def not in func_declars:
                 undeclar_func_defs.append(func_def)
         return undeclar_func_defs

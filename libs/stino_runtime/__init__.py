@@ -388,21 +388,28 @@ def check_selected(arduino_info, item_type):
     if item_type == 'serial_port'and not arduino_info['init_done']:
         return
     sel_settings = arduino_info.get('selected')
-    sel_item = sel_settings.get(item_type, '')
+    key = item_type
+    if item_type == 'board':
+        platform = sel_settings.get('platform')
+        key = 'board@%s' % platform
+
+    sel_item = sel_settings.get(key, '')
     sel_item_info = arduino_info.get('%ss' % item_type, {})
     names = sel_item_info.get('names', [])
     if names:
         if sel_item not in names:
             sel_item = names[0]
-            sel_settings.set(item_type, sel_item)
+            sel_settings.set(key, sel_item)
     else:
         sel_item = None
-        sel_settings.set(item_type, sel_item)
+        sel_settings.set(key, sel_item)
 
 
 def check_board_options_selected(arduino_info):
     """."""
-    sel_board = arduino_info['selected'].get('board')
+    selected = arduino_info['selected']
+    platform = selected.get('platform')
+    sel_board = selected.get('board@%s' % platform)
     board_info = arduino_info['boards'].get(sel_board, {})
     options = board_info.get('options', [])
     for option in options:
@@ -429,14 +436,17 @@ def on_platform_select(package_name, platform_name):
 def on_version_select(version):
     """."""
     global arduino_info
-    arduino_info['selected'].set('version', version)
+    selected = arduino_info['selected']
+    selected.set('version', version)
     boards_info = get_boards_info(arduino_info)
     arduino_info.update(boards_info)
     check_selected(arduino_info, 'board')
     programmers_info = get_all_programmers_info(arduino_info)
     arduino_info.update(programmers_info)
     check_selected(arduino_info, 'programmer')
-    sel_board = arduino_info['selected'].get('board')
+
+    platform = selected.get('platform')
+    sel_board = selected.get('board@%s' % platform)
     on_board_select(sel_board)
     st_menu.update_platform_example_menu(arduino_info)
     st_menu.update_platform_library_menu(arduino_info)
@@ -447,7 +457,10 @@ def on_version_select(version):
 def on_board_select(board_name):
     """."""
     global arduino_info
-    arduino_info['selected'].set('board', board_name)
+    selected = arduino_info['selected']
+    platform = selected.get('platform')
+    key = 'board@%s' % platform
+    selected.set(key, board_name)
     check_board_options_selected(arduino_info)
     st_menu.update_board_options_menu(arduino_info)
     check_platform_dep()
@@ -456,7 +469,10 @@ def on_board_select(board_name):
 def on_board_option_select(option, value):
     """."""
     global arduino_info
-    board = stino.arduino_info['selected'].get('board', '')
+    selected = arduino_info['selected']
+    platform = selected.get('platform')
+    key = 'board@%s' % platform
+    board = stino.arduino_info['selected'].get(key, '')
     key = 'option_%s@%s' % (option, board)
     arduino_info['selected'].set(key, value)
 
@@ -1298,13 +1314,13 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
     last_package = last_build_info.get('package', '')
     last_platform = last_build_info.get('platform', '')
     last_version = last_build_info.get('version', '')
-    last_board = last_build_info.get('board', '')
+    last_board = last_build_info.get('board@%s' % last_platform, '')
 
     arduino_sel = arduino_info['selected']
     sel_package = arduino_sel.get('package', '')
     sel_platform = arduino_sel.get('platform', '')
     sel_version = arduino_sel.get('version', '')
-    sel_board = arduino_sel.get('board', '')
+    sel_board = arduino_sel.get('board@%s' % sel_platform, '')
     sel_board_options = selected.get_sel_board_options(arduino_info)
 
     if not is_full_build:
@@ -1856,7 +1872,7 @@ def build_sketch(build_info={}):
     sel_package = arduino_sel.get('package', '')
     sel_platform = arduino_sel.get('platform', '')
     sel_version = arduino_sel.get('version', '')
-    sel_board = arduino_sel.get('board', '')
+    sel_board = arduino_sel.get('board@%s' % sel_platform, '')
     sel_arch = selected.get_platform_arch_by_name(arduino_info, sel_package,
                                                   sel_platform).lower()
 
@@ -1915,6 +1931,9 @@ def build_sketch(build_info={}):
     prj_name = prj.get_name()
     prj_path = prj.get_path().replace('\\', '/')
     prj_build_path = prj.get_build_path().replace('\\', '/')
+    build_sketch_path = prj_build_path + '/sketch'
+    if not os.path.isdir(build_sketch_path):
+        os.makedirs(build_sketch_path)
     h_path_info = get_h_path_info(prj)
 
     cmds_info = selected.get_build_commands_info(arduino_info, prj)
@@ -1963,11 +1982,12 @@ def build_sketch(build_info={}):
     includes = ['"-I%s"' % p for p in all_lib_paths]
     inc_text = ' '.join(includes)
 
-    if prj.is_arduino_project():
+    prj_main_file_path = prj.get_main_file_path()
+    prj_main_file_ext = os.path.splitext(prj_main_file_path)[-1]
+    if prj_main_file_ext in c_file.INO_EXTS:
         if 'recipe.preproc.macros' in cmds_info:
             minus_src_name = '%s.gcc_minus.cpp' % prj_name
-            dir_path = os.path.join(prj_build_path, 'sketch')
-            minus_src_path = os.path.join(dir_path, minus_src_name)
+            minus_src_path = os.path.join(build_sketch_path, minus_src_name)
             file_path = prj.get_simple_combine_path(with_header=False)
             cmd_preproc_macros = cmds_info.get('recipe.preproc.macros', '')
             cmd = cmd_preproc_macros.replace('{includes}', '')
@@ -2030,7 +2050,7 @@ def build_sketch(build_info={}):
     last_build_info.set('package', sel_package)
     last_build_info.set('platform', sel_platform)
     last_build_info.set('version', sel_version)
-    last_build_info.set('board', sel_board)
+    last_build_info.set('board@%s' % sel_platform, sel_board)
     for option in sel_board_options:
         key = 'option_%s@%s' % (option, sel_board)
         sel_option = arduino_sel.get(key, '')
