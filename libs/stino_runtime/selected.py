@@ -12,7 +12,7 @@ import os
 import re
 import time
 import glob
-import platform
+# import platform
 
 from base_utils import sys_info
 from base_utils import serial_port
@@ -366,6 +366,78 @@ def get_project_info(arduino_info, project=None):
 
 
 #################################################################
+def get_tools_in_commands(cmds):
+    """."""
+    runtime_tools = []
+    for cmd in cmds:
+        tools = runtime_tools_pattern.findall(cmd)
+        for tool in tools:
+            if tool not in runtime_tools:
+                runtime_tools.append(tool)
+    return runtime_tools
+
+
+def get_tool_info(arduino_info, tool_name):
+    """."""
+    tool_info = {}
+    has_tool = False
+    sel_pkg = arduino_info['selected'].get('package')
+    inst_pkgs_info = arduino_info.get('installed_packages', {})
+    inst_pkg_names = inst_pkgs_info.get('names', [])
+    pkg_info = get_package_info(inst_pkgs_info, sel_pkg)
+    pkg_path = pkg_info.get('path', '')
+    tools_path = os.path.join(pkg_path, 'tools')
+    tool_path = os.path.join(tools_path, tool_name)
+    if os.path.isdir(tool_path):
+        has_tool = True
+    else:
+        for pkg_name in inst_pkg_names:
+            pkg_info = get_package_info(inst_pkgs_info, pkg_name)
+            pkg_path = pkg_info.get('path', '')
+            tools_path = os.path.join(pkg_path, 'tools')
+            tool_path = os.path.join(tools_path, tool_name)
+            if os.path.isdir(tool_path):
+                has_tool = True
+                break
+
+    has_bin = False
+    if has_tool:
+        sub_paths = glob.glob(tool_path + '/*')[::-1]
+        for sub_path in sub_paths:
+            if os.path.isfile(sub_path):
+                has_bin = True
+                break
+
+        if not has_bin:
+            for sub_path in sub_paths:
+                bin_path = os.path.join(sub_path, 'bin')
+                if os.path.isdir(bin_path):
+                    has_bin = True
+                else:
+                    s_sub_paths = glob.glob(sub_path + '/*')
+                    for s_sub_path in s_sub_paths:
+                        if os.path.isfile(s_sub_path):
+                            has_bin = True
+                            break
+                if has_bin:
+                    tool_path = sub_path
+                    break
+    if not has_bin:
+        tool_path = ''
+        avial_pkgs_info = arduino_info.get('packages', {})
+        avail_pkg_names = avial_pkgs_info.get('names', [])
+        for pkg_name in avail_pkg_names:
+            pkg_info = get_package_info(avial_pkgs_info, pkg_name)
+            tools_info = pkg_info.get('tools', {})
+            tool_names = tools_info.get('names', [])
+            if tool_name in tool_names:
+                tool_info = tools_info.get(tool_name)
+                break
+    tool_info['name'] = tool_name
+    tool_info['path'] = tool_path
+    return tool_info
+
+
 def get_default_tools_deps(arduino_info):
     """."""
     pkgs_info = arduino_info.get('packages', {})
@@ -380,6 +452,40 @@ def get_default_tools_deps(arduino_info):
 
 def get_dep_tools_info(arduino_info, platform_info):
     """."""
+    board_info = get_sel_board_info(arduino_info)
+    programmer_info = get_sel_programmer_info(arduino_info)
+    upload_tool = board_info.get('upload.tool', '')
+    program_tool = programmer_info.get('program.tool', '')
+    bootloader_tool = board_info.get('bootloader.tool', '')
+    upload_ptfm_info = get_target_platform_info(arduino_info, upload_tool)
+    program_ptfm_info = get_target_platform_info(arduino_info, program_tool)
+    bootloader_ptfm_info = get_target_platform_info(arduino_info,
+                                                    bootloader_tool)
+    build_ptfm_path = get_build_platform_path(arduino_info)
+    upload_ptfm_path = upload_ptfm_info.get('path', '')
+    program_ptfm_path = program_ptfm_info.get('path', '')
+    bootloader_ptfm_path = bootloader_ptfm_info.get('path', '')
+
+    ptfm_paths = [build_ptfm_path, upload_ptfm_path, program_ptfm_path,
+                  bootloader_ptfm_path]
+    tools = ['compiler', upload_tool, program_tool, bootloader_tool]
+
+    cmds = []
+    for ptfm_path, tool in zip(ptfm_paths, tools):
+        if ':' in tool:
+            tool = tool.split(':')[-1]
+        path_word = '%s.path' % tool
+        cmd_file_path = os.path.join(ptfm_path, 'platform.txt')
+        cmd_file = plain_params_file.PlainParamsFile(cmd_file_path)
+        cmds_info = cmd_file.get_info()
+
+        for key in cmds_info:
+            if path_word in key:
+                cmds.append(cmds_info[key])
+                break
+    tool_names = get_tools_in_commands(cmds)
+
+    #########################################
     tools_info = {'names': []}
     arduino_app_path = arduino_info['arduino_app_path']
     packages_path = os.path.join(arduino_app_path, 'packages')
@@ -408,6 +514,13 @@ def get_dep_tools_info(arduino_info, platform_info):
         tool_info['path'] = path
         tools_info['names'].append(name)
         tools_info[name] = tool_info
+
+    for name in tool_names:
+        if name not in tools_info['names']:
+            tool_info = get_tool_info(arduino_info, name)
+            tools_info['names'].append(name)
+            tools_info[name] = tool_info
+    print(tools_info)
     return tools_info
 
 
@@ -537,17 +650,11 @@ def get_build_commands_info(arduino_info, project=None):
             value = value.replace('{build.path}/system_nrf51.c.o', text)
 
     cmds_info = {}
-    cmds = []
     for key in build_params_info:
         if key.startswith('recipe.'):
             cmd = build_params_info[key]
             cmd = replace_variants_in_braces(cmd, all_info)
             cmds_info[key] = cmd
-            cmds.append(cmd)
-
-    tools_info = get_tools_info(arduino_info, cmds)
-    for key in cmds_info:
-        cmds_info[key] = replace_variants_in_braces(cmds_info[key], tools_info)
     return cmds_info
 
 
@@ -636,9 +743,6 @@ def get_upload_command(arduino_info, project=None,
 
     tool_cmd = all_info.get(tool_key, '')
     tool_cmd = replace_variants_in_braces(tool_cmd, all_info)
-
-    tools_info = get_tools_info(arduino_info, [tool_cmd])
-    tool_cmd = replace_variants_in_braces(tool_cmd, tools_info)
     return tool_cmd
 
 
@@ -672,7 +776,7 @@ def get_bootloader_commands(arduino_info):
     erase_cmd = all_info.get('erase.pattern', '')
     bootloader_cmd = all_info.get('bootloader.pattern', '')
 
-    t_cmds = []
+    cmds = []
     is_verbose = bool(arduino_info['settings'].get('verbose_upload'))
     verbose_mode = 'verbose' if is_verbose else 'quiet'
     if erase_cmd and bootloader_cmd:
@@ -685,13 +789,7 @@ def get_bootloader_commands(arduino_info):
             cmd_key = '%s.pattern' % mode
             cmd = all_info.get(cmd_key, '')
             cmd = replace_variants_in_braces(cmd, all_info)
-            t_cmds.append(cmd)
-
-    tools_info = get_tools_info(arduino_info, t_cmds)
-    cmds = []
-    for cmd in t_cmds:
-        cmd = replace_variants_in_braces(cmd, tools_info)
-        cmds.append(cmd)
+            cmds.append(cmd)
     return cmds
 
 
@@ -722,100 +820,3 @@ def get_board_from_hwid(arduino_info, vid, pid):
         if has_board:
             break
     return name
-
-
-def get_tools_in_commands(cmds):
-    """."""
-    runtime_tools = []
-    for cmd in cmds:
-        tools = runtime_tools_pattern.findall(cmd)
-        for tool in tools:
-            if tool not in runtime_tools:
-                runtime_tools.append(tool)
-    return runtime_tools
-
-
-def get_tools_info(arduino_info, cmds):
-    """."""
-    tools_info = {}
-    tools = get_tools_in_commands(cmds)
-    sel_pkg = arduino_info['selected'].get('package')
-    avial_pkgs_info = arduino_info.get('packages', {})
-    inst_pkgs_info = arduino_info.get('installed_packages', {})
-    avail_pkg_names = avial_pkgs_info.get('names', [])
-    inst_pkg_names = inst_pkgs_info.get('names', [])
-    pkg_info = get_package_info(inst_pkgs_info, sel_pkg)
-    pkg_path = pkg_info.get('path', '')
-    tools_path = os.path.join(pkg_path, 'tools')
-    for tool in tools:
-        has_tool = False
-        tool_path = os.path.join(tools_path, tool)
-        if os.path.isdir(tool_path):
-            has_tool = True
-        else:
-            for pkg_name in inst_pkg_names:
-                pkg_info = get_package_info(inst_pkgs_info, pkg_name)
-                pkg_path = pkg_info.get('path', '')
-                tools_path = os.path.join(pkg_path, 'tools')
-                tool_path = os.path.join(tools_path, tool)
-                if os.path.isdir(tool_path):
-                    has_tool = True
-                    break
-
-        if has_tool:
-            has_bin = False
-            sub_paths = glob.glob(tool_path + '/*')[::-1]
-
-            for sub_path in sub_paths:
-                if os.path.isfile(sub_path):
-                    has_bin = True
-                    break
-
-            if not has_bin:
-                for sub_path in sub_paths:
-                    bin_path = os.path.join(sub_path, 'bin')
-                    if os.path.isdir(bin_path):
-                        has_bin = True
-                    else:
-                        s_sub_paths = glob.glob(sub_path + '/*')
-                        for s_sub_path in s_sub_paths:
-                            if os.path.isfile(s_sub_path):
-                                has_bin = True
-                                break
-                    if has_bin:
-                        tool_path = sub_path
-                        break
-            if has_bin:
-                tool_path = tool_path.replace('\\', '/')
-                key = 'runtime.tools.%s.path' % tool
-                tools_info[key] = tool_path
-        else:
-            has_url = False
-            for pkg_name in avail_pkg_names:
-                pkg_info = get_package_info(avial_pkgs_info, pkg_name)
-                tools_info = pkg_info.get('tools', {})
-                tool_names = tools_info.get('names', [])
-                if tool in tool_names:
-                    tool_info = tools_info.get(tool)
-                    vers = tool_info.get('versions', [])
-                    if vers:
-                        ver = vers[-1]
-                        tool_info = tool_info.get(ver, {})
-                        systems_info = tool_info.get('systems', [])
-                        for system_info in systems_info:
-                            host = system_info.get('host', '')
-                            if sys_info.get_os_name() == 'windows':
-                                id_text = '-mingw32'
-                            elif sys_info.get_os_name() == 'osx':
-                                id_text = '-apple'
-                            elif sys_info.get_os_name() == 'linux':
-                                id_text = '%s-' % platform.machine()
-                            if id_text in host:
-                                has_url = True
-                                url = system_info.get('url', '')
-                                break
-                        if has_url:
-                            break
-            if has_url:
-                print(url)
-    return tools_info

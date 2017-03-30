@@ -146,7 +146,6 @@ def combine_ino_files(ino_file_paths, target_file_path,
                 if func_prototypes:
                     text += ';\n'.join(func_prototypes)
                     text += ';\n\n'
-                    print(text)
                 text += '#line %d "%s"\n' % (footer_start_line, cur_path)
                 text += footer_text
                 target_f.write(text)
