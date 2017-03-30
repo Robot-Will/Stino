@@ -1012,18 +1012,23 @@ def get_h_path_info(project):
     return h_path_info
 
 
-def get_path_from_header(h_path_info, header):
+def get_paths_from_header(h_path_info, header):
     """."""
-    dir_path = ''
+    dir_paths = []
     if '/' in header:
         header = header.split('/')[-1]
         if header in h_path_info:
             dir_path = h_path_info.get(header)
+            dir_paths.append(dir_path)
+            dir_path = dir_path.replace('\\', '/')
             dir_path = os.path.dirname(dir_path)
+            dir_paths.append(dir_path)
     else:
         if header in h_path_info:
             dir_path = h_path_info.get(header)
-    return dir_path
+            dir_path = dir_path.replace('\\', '/')
+            dir_paths.append(dir_path)
+    return dir_paths
 
 
 def clean_path(dir_path):
@@ -1068,21 +1073,22 @@ def find_lib_paths_by_compiler(cmd_pattern, src_path, h_cpp_info,
         lib_paths.remove(dummy_dir_path)
 
     for header in headers:
-        dir_path = get_path_from_header(h_path_info, header)
-        if dir_path:
-            dir_path = dir_path.replace('\\', '/')
-            h_file_path = dir_path + '/' + header
-            if dir_path not in lib_paths:
-                lib_paths.append(dir_path)
+        dir_paths = get_paths_from_header(h_path_info, header)
+        if dir_paths:
+            h_file_path = dir_paths[-1] + '/' + header
+            if os.path.isfile(h_file_path):
+                if '.combine.cpp' in src_path:
+                    src_path = src_path.replace('.combine.cpp', '.ino.cpp')
 
-            if '.combine.cpp' in src_path:
-                src_path = src_path.replace('.combine.cpp', '.ino.cpp')
+                if h_file_path not in h_cpp_info:
+                    h_cpp_info[h_file_path] = [src_path]
+                else:
+                    if src_path not in h_cpp_info[h_file_path]:
+                        h_cpp_info[h_file_path].append(src_path)
 
-            if h_file_path not in h_cpp_info:
-                h_cpp_info[h_file_path] = [src_path]
-            else:
-                if src_path not in h_cpp_info[h_file_path]:
-                    h_cpp_info[h_file_path].append(src_path)
+                for dir_path in dir_paths:
+                    if dir_path not in lib_paths:
+                        lib_paths.append(dir_path)
         else:
             dummy_file_path = os.path.join(dummy_dir_path, header)
             dir_path = os.path.dirname(dummy_file_path)
@@ -1109,15 +1115,18 @@ def find_lib_paths(src_path, h_path_info, h_cpp_info):
         src_path = src_path.replace('.combine.cpp', '.ino.cpp')
 
     for header in headers:
-        dir_path = get_path_from_header(h_path_info, header)
-        if dir_path:
-            h_file_path = dir_path + '/' + header
-            lib_paths.append(dir_path)
-            if h_file_path not in h_cpp_info:
-                h_cpp_info[h_file_path] = [src_path]
-            else:
-                if src_path not in h_cpp_info[h_file_path]:
-                    h_cpp_info[h_file_path].append(src_path)
+        dir_paths = get_paths_from_header(h_path_info, header)
+        if dir_paths:
+            h_file_path = dir_paths[-1] + '/' + header
+            if os.path.isfile(h_file_path):
+                if h_file_path not in h_cpp_info:
+                    h_cpp_info[h_file_path] = [src_path]
+                else:
+                    if src_path not in h_cpp_info[h_file_path]:
+                        h_cpp_info[h_file_path].append(src_path)
+                for dir_path in dir_paths:
+                    if dir_path not in lib_paths:
+                        lib_paths.append(dir_path)
     return lib_paths, h_cpp_info
 
 
@@ -1169,19 +1178,30 @@ def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info, used_cpps,
         dummy_dir_path = dummy_dir_path.replace('\\', '/')
 
         for src_path in unused_src_paths:
+            l_paths, h_cpp_info = find_lib_paths(src_path, h_path_info,
+                                                 h_cpp_info)
             if cmd_pattern:
                 src_paths = [os.path.dirname(src_path)]
-                l_paths, h_cpp_info = \
+                cl_paths, h_cpp_info = \
                     find_lib_paths_by_compiler(cmd_pattern, src_path,
                                                h_cpp_info, src_paths,
                                                h_path_info, dummy_dir_path)
                 clean_path(dummy_dir_path)
-            else:
-                l_paths, h_cpp_info = find_lib_paths(src_path, h_path_info,
-                                                     h_cpp_info)
+
+                inc_l_paths = []
+                for l_path in l_paths:
+                    is_include = False
+                    for cl_path in cl_paths:
+                        if l_path.startswith(cl_path):
+                            is_include = True
+                            break
+                    if is_include:
+                        inc_l_paths.append(l_path)
+                l_paths = inc_l_paths
             lib_paths += l_paths
 
         lib_paths = [p.replace('\\', '/') for p in lib_paths]
+
         for lib_path in lib_paths:
             if (lib_path not in used_dirs and lib_path not in sub_src_paths):
                     sub_src_paths.append(lib_path)
@@ -1967,7 +1987,9 @@ def build_sketch(build_info={}):
     lib_paths = []
 
     for path in all_lib_paths:
-        if path.startswith(prj_path):
+        if path.startswith(prj_build_path):
+            continue
+        elif path.startswith(prj_path):
             prj_paths.append(path)
         else:
             lib_paths.append(path)
@@ -2008,10 +2030,13 @@ def build_sketch(build_info={}):
         else:
             lib_src_paths.append(path)
 
+    # lib_src_paths = get_src_paths(lib_paths, mode='recursion')
+    # prj_src_paths = get_src_paths([prj_path], mode='recursion')
     main_file_path = main_file_path.replace('\\', '/')
     if main_file_path in prj_src_paths:
         prj_src_paths.remove(main_file_path)
     prj_src_paths = [main_file_path] + prj_src_paths
+
     core_src_paths = get_src_paths(core_dir_paths, mode='recursion')
     src_paths = prj_src_paths + lib_src_paths + core_src_paths
 
