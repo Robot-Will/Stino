@@ -556,9 +556,6 @@ class StinoSelectBoardCommand(sublime_plugin.WindowCommand):
             platform = selected.get('platform')
             key = 'board@%s' % platform
             state = selected.get(key) == board_name
-            print(key)
-            print(selected.get(key))
-            print(board_name)
         return state
 
 
