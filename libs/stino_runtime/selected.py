@@ -12,7 +12,6 @@ import os
 import re
 import time
 import glob
-# import platform
 
 from base_utils import sys_info
 from base_utils import serial_port

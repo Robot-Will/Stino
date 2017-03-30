@@ -272,6 +272,11 @@ class CProject(object):
             state = True
         return state
 
+    def is_main_file_ino(self):
+        """."""
+        main_file_ext = os.path.splitext(self._main_file_path)[-1]
+        return main_file_ext in c_file.INO_EXTS
+
     def get_simple_combine_path(self, with_header=True):
         """."""
         tmp_cpp_name = self._name + '.combine.cpp'

@@ -1961,8 +1961,8 @@ def build_sketch(build_info={}):
 
     main_file_path = prj.get_main_file_path()
     core_dir_paths = []
+
     if prj.is_arduino_project():
-        main_file_path = prj.get_simple_combine_path()
         core_dir_path = selected.get_build_core_src_path(arduino_info)
         variant_dir_path = selected.get_build_variant_path(arduino_info)
         core_dir_path = core_dir_path.replace('\\', '/')
@@ -1975,7 +1975,9 @@ def build_sketch(build_info={}):
     h_cpp_info = {}
     prj_src_dir_paths = []
     prj_src_dir_paths.append(prj_path)
-    if prj.is_arduino_project():
+
+    if prj.is_main_file_ino():
+        main_file_path = prj.get_simple_combine_path()
         prj_src_dir_paths.append(main_file_path)
 
     all_src_paths, used_h_paths, h_cpp_info, all_lib_paths = \
@@ -2004,9 +2006,7 @@ def build_sketch(build_info={}):
     includes = ['"-I%s"' % p for p in all_lib_paths]
     inc_text = ' '.join(includes)
 
-    prj_main_file_path = prj.get_main_file_path()
-    prj_main_file_ext = os.path.splitext(prj_main_file_path)[-1]
-    if prj_main_file_ext in c_file.INO_EXTS:
+    if prj.is_main_file_ino():
         if 'recipe.preproc.macros' in cmds_info:
             minus_src_name = '%s.gcc_minus.cpp' % prj_name
             minus_src_path = os.path.join(build_sketch_path, minus_src_name)
