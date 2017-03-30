@@ -929,7 +929,7 @@ def find_dirs(path, dir_name):
 
 def get_tool_dirs(dir_name):
     """Find include dirs."""
-    tool_include_dirs = []
+    tool_dirs = []
     platform_info = selected.get_sel_platform_info(arduino_info)
     tools_info = selected.get_dep_tools_info(arduino_info, platform_info)
     tool_names = tools_info.get('names', [])
@@ -937,8 +937,9 @@ def get_tool_dirs(dir_name):
         tool_info = tools_info.get(name, {})
         path = tool_info.get('path', '')
         if path:
-            tool_include_dirs += find_dirs(path, dir_name)
-    return tool_include_dirs
+            tool_dirs += find_dirs(path, dir_name)
+    tool_dirs = [p.replace('\\', '/') for p in tool_dirs]
+    return tool_dirs
 
 
 def get_all_sub_paths(path):
@@ -1290,6 +1291,7 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
     last_build_info = file.SettingsFile(last_build_path)
     prj_name = os.path.basename(prj_build_path)
     core_a_path = os.path.join(prj_build_path, 'core/core.a')
+    core_a_path = core_a_path.replace('\\', '/')
 
     last_package = last_build_info.get('package', '')
     last_platform = last_build_info.get('platform', '')
@@ -1457,6 +1459,13 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
 
         cmd_pattern = cmds_info.get('recipe.c.combine.pattern', '')
         cmd = cmd_pattern.replace('{object_files}', '"%s"' % obj_paths[0])
+
+        if not src_paths[1:]:
+            # lib_paths = get_tool_dirs('lib')
+            # libs = ['"-L%s"' % p for p in lib_paths]
+            # lib_text = ' '.join(libs)
+            lib_text = ''
+            cmd = cmd.replace('"%s"' % core_a_path, lib_text)
 
         cmds.append(cmd)
         msgs.append('')
@@ -1947,6 +1956,7 @@ def build_sketch(build_info={}):
         prj_paths = [prj_path] + prj_paths
 
     all_lib_paths = prj_paths + core_dir_paths + lib_paths
+    # all_lib_paths += get_tool_dirs('include')
     all_lib_paths = [p.replace('\\', '/') for p in all_lib_paths]
     includes = ['"-I%s"' % p for p in all_lib_paths]
     inc_text = ' '.join(includes)
@@ -1958,7 +1968,7 @@ def build_sketch(build_info={}):
             minus_src_path = os.path.join(dir_path, minus_src_name)
             file_path = prj.get_simple_combine_path(with_header=False)
             cmd_preproc_macros = cmds_info.get('recipe.preproc.macros', '')
-            cmd = cmd_preproc_macros.replace('{includes}', inc_text)
+            cmd = cmd_preproc_macros.replace('{includes}', '')
             cmd = cmd.replace('{source_file}', file_path)
             cmd = cmd.replace('{preprocessed_file_path}', minus_src_path)
             run_command(cmd)
