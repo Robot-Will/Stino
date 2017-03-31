@@ -1102,6 +1102,14 @@ def find_lib_paths_by_compiler(cmd_pattern, src_path, h_cpp_info,
         lib_paths, h_cpp_info = \
             find_lib_paths_by_compiler(cmd_pattern, src_path, h_cpp_info,
                                        lib_paths, h_path_info, dummy_dir_path)
+
+    exts = ['.d', '.o']
+    paths = [src_path, os.path.splitext(src_path)[0]]
+    for ext in exts:
+        for path in paths:
+            tmp_file_path = path + ext
+            if os.path.isfile(tmp_file_path):
+                os.remove(tmp_file_path)
     return lib_paths, h_cpp_info
 
 
@@ -1966,6 +1974,8 @@ def build_sketch(build_info={}):
     build_sketch_path = prj_build_path + '/sketch'
     if not os.path.isdir(build_sketch_path):
         os.makedirs(build_sketch_path)
+    os.chdir(build_sketch_path)
+
     h_path_info = get_h_path_info(prj)
 
     cmds_info = selected.get_build_commands_info(arduino_info, prj)

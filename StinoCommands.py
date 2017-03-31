@@ -50,7 +50,7 @@ class ViewMonitor(sublime_plugin.EventListener):
 
     def __init__(self):
         """."""
-        self.pre_view_path = ''
+        self.pre_dir_path = ''
 
     def on_close(self, view):
         """."""
@@ -112,7 +112,7 @@ class ViewMonitor(sublime_plugin.EventListener):
                 conf_file_name = 'config.stino-settings'
                 conf_file_path = os.path.join(dir_path, conf_file_name)
                 if os.path.isfile(conf_file_path):
-                    if file_path != self.pre_view_path:
+                    if dir_path != self.pre_dir_path:
                         settings = stino.file.SettingsFile(conf_file_path)
                         pkg = settings.get('package', '')
                         ptfm = settings.get('platform', '')
@@ -125,7 +125,7 @@ class ViewMonitor(sublime_plugin.EventListener):
                                                              pkg, ptfm,
                                                              ver)
                         if ptfm_info:
-                            self.pre_view_path = file_path
+                            self.pre_dir_path = dir_path
                             stino.do_action.put(stino.on_platform_select,
                                                 pkg, ptfm)
                             stino.do_action.put(stino.on_version_select,
