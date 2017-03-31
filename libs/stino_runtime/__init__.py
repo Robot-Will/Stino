@@ -1379,6 +1379,7 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
                 last_option = last_build_info.get(key, '')
                 if sel_option != last_option:
                     is_full_build = True
+                    break
 
     prj_obj_paths = get_obj_paths(prj_build_path, prj_src_paths, 'sketch')
     lib_obj_paths = get_obj_paths(prj_build_path, lib_src_paths, 'libs')

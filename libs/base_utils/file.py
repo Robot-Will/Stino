@@ -132,8 +132,8 @@ class File(AbstractFile):
         try:
             with codecs.open(self._path, 'r', self._encoding) as f:
                 text = f.read()
-        except (IOError, UnicodeError) as e:
-            print(e)
+        except (IOError, UnicodeError):
+            pass
         return text
 
     def write(self, text, append=False):
@@ -149,8 +149,7 @@ class File(AbstractFile):
             os.makedirs(self._dir)
         try:
             with codecs.open(self._path, mode, self._encoding) as f:
-                pass
-                # f.write(text)
+                f.write(text)
         except (IOError, UnicodeError):
             pass
 

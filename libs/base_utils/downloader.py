@@ -141,9 +141,15 @@ def download(url, target_dir,
                 if is_done:
                     if os.path.isfile(target_file_path):
                         os.remove(target_file_path)
-                    os.rename(tmp_file_path, target_file_path)
-                    message_consumer('[%s] Download completed.\n' % url,
-                                     is_msg_quiet)
+                    try:
+                        os.rename(tmp_file_path, target_file_path)
+                    except IOError:
+                        msg = 'Can not rename %s to %s.' % (tmp_file_path,
+                                                            target_file_path)
+                        message_consumer(msg, is_msg_quiet)
+                    else:
+                        message_consumer('[%s] Download completed.\n' % url,
+                                         is_msg_quiet)
                 else:
                     message_consumer('[%s] Download failed.\n' % url,
                                      is_msg_quiet)
