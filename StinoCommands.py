@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 
 import os
 import sys
+import shutil
 
 import sublime
 import sublime_plugin
@@ -690,11 +691,78 @@ class StinoVerifyCodeCommand(sublime_plugin.WindowCommand):
         return state
 
 
-class StinoShowBuildDirCommand(sublime_plugin.TextCommand):
-    """Show Sketch Folder."""
+class StinoExportBinaryCommand(sublime_plugin.TextCommand):
+    """."""
 
     def run(self, edit):
-        """Show Sketch Folder."""
+        """."""
+        if stino.arduino_info['init_done']:
+            caption = stino.translate('Target Directory: ')
+            win = self.view.window()
+            win.show_input_panel(caption, '', self.on_done, None, None)
+
+    def on_done(self, target_dir_path):
+        """."""
+        if os.path.isdir(target_dir_path):
+            file_path = self.view.file_name()
+            dir_path = os.path.dirname(file_path)
+            dir_name = os.path.basename(dir_path)
+            ptfm_path = \
+                stino.selected.get_build_platform_path(stino.arduino_info)
+            cmd_file_path = os.path.join(ptfm_path, 'platform.txt')
+            cmd_file = \
+                stino.plain_params_file.PlainParamsFile(cmd_file_path)
+            cmds_info = cmd_file.get_info()
+            bin_file_pattern = cmds_info.get('recipe.output.save_file', '')
+            if bin_file_pattern:
+                bin_file_ext = os.path.splitext(bin_file_pattern)[-1]
+                board_info = \
+                    stino.selected.get_sel_board_info(stino.arduino_info)
+                build_board = board_info.get('build.board', '')
+                build_mcu = board_info.get('build.mcu', '')
+                bin_file_name = '%s_%s_%s%s' % (dir_name, build_board,
+                                                build_mcu, bin_file_ext)
+                bin_file_path = os.path.join(dir_path, bin_file_name)
+                if os.path.isfile(bin_file_path):
+                    target_path = os.path.join(target_dir_path, bin_file_name)
+                    if os.path.isfile(target_path):
+                        os.remove(target_path)
+                    shutil.copy(bin_file_path, target_path)
+
+    def is_enabled(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            file_path = self.view.file_name()
+            if file_path:
+                dir_path = os.path.dirname(file_path)
+                dir_name = os.path.basename(dir_path)
+                ptfm_path = \
+                    stino.selected.get_build_platform_path(stino.arduino_info)
+                cmd_file_path = os.path.join(ptfm_path, 'platform.txt')
+                cmd_file = \
+                    stino.plain_params_file.PlainParamsFile(cmd_file_path)
+                cmds_info = cmd_file.get_info()
+                bin_file_pattern = cmds_info.get('recipe.output.save_file', '')
+                if bin_file_pattern:
+                    bin_file_ext = os.path.splitext(bin_file_pattern)[-1]
+                    board_info = \
+                        stino.selected.get_sel_board_info(stino.arduino_info)
+                    build_board = board_info.get('build.board', '')
+                    build_mcu = board_info.get('build.mcu', '')
+                    bin_file_name = '%s_%s_%s%s' % (dir_name, build_board,
+                                                    build_mcu, bin_file_ext)
+                    bin_file_path = os.path.join(dir_path, bin_file_name)
+                    if os.path.isfile(bin_file_path):
+                        state = True
+        return state
+
+
+class StinoShowBuildDirCommand(sublime_plugin.TextCommand):
+    """."""
+
+    def run(self, edit):
+        """."""
         if stino.arduino_info['init_done']:
             file_path = self.view.file_name()
             if file_path:
@@ -1223,7 +1291,7 @@ class StinoPanelWriteCommand(sublime_plugin.TextCommand):
             if view_size > 0:
                 point = view_size - 1
                 line, col = self.view.rowcol(point)
-                point = self.view.text_point(line, 1)
+                point = self.view.text_point(line - 1, 1)
                 self.view.show(point)
 
 

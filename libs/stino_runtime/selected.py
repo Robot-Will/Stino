@@ -456,18 +456,18 @@ def get_dep_tools_info(arduino_info, platform_info):
     upload_tool = board_info.get('upload.tool', '')
     program_tool = programmer_info.get('program.tool', '')
     bootloader_tool = board_info.get('bootloader.tool', '')
-    upload_ptfm_info = get_target_platform_info(arduino_info, upload_tool)
-    program_ptfm_info = get_target_platform_info(arduino_info, program_tool)
-    bootloader_ptfm_info = get_target_platform_info(arduino_info,
-                                                    bootloader_tool)
     build_ptfm_path = get_build_platform_path(arduino_info)
-    upload_ptfm_path = upload_ptfm_info.get('path', '')
-    program_ptfm_path = program_ptfm_info.get('path', '')
-    bootloader_ptfm_path = bootloader_ptfm_info.get('path', '')
 
-    ptfm_paths = [build_ptfm_path, upload_ptfm_path, program_ptfm_path,
-                  bootloader_ptfm_path]
-    tools = ['compiler', upload_tool, program_tool, bootloader_tool]
+    tools = [upload_tool, program_tool, bootloader_tool]
+    ptfm_paths = []
+    for tool in tools:
+        if tool:
+            ptfm_info = get_target_platform_info(arduino_info, tool)
+            ptfm_path = ptfm_info.get('path', '')
+            ptfm_paths.append(ptfm_path)
+
+    tools = ['compiler'] + tools
+    ptfm_paths = [build_ptfm_path] + ptfm_paths
 
     cmds = []
     for ptfm_path, tool in zip(ptfm_paths, tools):
@@ -519,7 +519,6 @@ def get_dep_tools_info(arduino_info, platform_info):
             tool_info = get_tool_info(arduino_info, name)
             tools_info['names'].append(name)
             tools_info[name] = tool_info
-    print(tools_info)
     return tools_info
 
 

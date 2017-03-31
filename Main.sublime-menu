@@ -300,6 +300,11 @@
                 ]
             },
             {
+                "caption": "Export Compiled Binary",
+                "id": "stino_export_binary",
+                "command": "stino_export_binary"
+            },
+            {
                 "caption": "Show Build Folder",
                 "id": "stino_show_build_dir",
                 "command": "stino_show_build_dir"

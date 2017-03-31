@@ -1202,6 +1202,18 @@ def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info, used_cpps,
 
         lib_paths = [p.replace('\\', '/') for p in lib_paths]
 
+        non_inc_h_paths = []
+        for h_path in h_cpp_info:
+            is_inc_h = False
+            for lib_path in lib_paths:
+                if h_path.startswith(lib_path):
+                    is_inc_h = True
+                    break
+            if not is_inc_h and h_path not in non_inc_h_paths:
+                non_inc_h_paths.append(h_path)
+        for h_path in non_inc_h_paths:
+            h_cpp_info.pop(h_path)
+
         for lib_path in lib_paths:
             if (lib_path not in used_dirs and lib_path not in sub_src_paths):
                     sub_src_paths.append(lib_path)
@@ -1474,7 +1486,7 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
 
     out_file_name = cmds_info.get('recipe.output.save_file', '')
     if out_file_name:
-        bin_ext = out_file_name[-4:]
+        bin_ext = os.path.splitext(out_file_name)[-1]
     else:
         bin_ext = '.bin'
 
@@ -2055,6 +2067,22 @@ def build_sketch(build_info={}):
     if not is_ok:
         message_queue.put('[Build] Error occurred.')
         return
+
+    bin_file_pattern = cmds_info.get('recipe.output.save_file', '')
+    if bin_file_pattern:
+        bin_file_ext = os.path.splitext(bin_file_pattern)[-1]
+        binary_file_name = prj_name + bin_file_ext
+        bin_file_path = os.path.join(prj_build_path, binary_file_name)
+
+        board_info = selected.get_sel_board_info(arduino_info)
+        build_board = board_info.get('build.board', '')
+        build_mcu = board_info.get('build.mcu', '')
+        out_binary_file_name = '%s_%s_%s%s' % (prj_name, build_board,
+                                               build_mcu, bin_file_ext)
+        out_binary_file_path = os.path.join(prj_path, out_binary_file_name)
+        if os.path.isfile(out_binary_file_path):
+            os.remove(out_binary_file_path)
+        shutil.copy(bin_file_path, out_binary_file_path)
 
     arduino_info['settings'].set('full_build', False)
     size_cmd = cmds_info.get('recipe.size.pattern', '')
