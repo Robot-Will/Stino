@@ -1658,7 +1658,7 @@ def open_file(file_path):
     if not is_opened_file:
         win = sublime.active_window()
         view = win.open_file(file_path)
-        time.sleep(0.5)
+        time.sleep(0.25)
     return win, view
 
 
@@ -1719,6 +1719,13 @@ def handle_build_error_messages(error_msg):
                                       sublime.LAYOUT_BELOW,
                                       on_navigate=handle_phantoms)
             phantoms.append(phantom)
+
+            if col_no > 0:
+                text_point = view.text_point(line_no, col_no - 1)
+            view.sel().clear()
+            view.sel().add(sublime.Region(text_point))
+
+            text_point = view.text_point(line_no - 1, col_no)
             view.show(text_point)
         phantom_set.update(phantoms)
 
@@ -2512,6 +2519,18 @@ def _init():
     arduino_info['init_done'] = True
 
 
+def focus_view(view, line_no, col_no):
+    """."""
+    text_point = view.text_point(line_no, col_no)
+    if col_no > 0:
+        text_point = view.text_point(line_no, col_no - 1)
+    view.sel().clear()
+    view.sel().add(sublime.Region(text_point))
+
+    text_point = view.text_point(line_no - 1, col_no)
+    view.show(text_point)
+
+
 arduino_info = {'init_done': False}
 message_queue = None
 serial_listener = serial_port.PortListener(serial_port.list_serial_ports,
@@ -2528,6 +2547,7 @@ ide_importer = task_queue.TaskQueue(import_avr_platform)
 sketch_builder = task_queue.TaskQueue(build_sketch)
 sketch_uploader = task_queue.TaskQueue(upload_sketch)
 bootloader = task_queue.TaskQueue(burn_bootloader)
+view_selector = task_queue.TaskQueue(focus_view)
 prog_bar = progress_bar.ProgressBar()
 
 do_action = task_queue.ActionQueue()

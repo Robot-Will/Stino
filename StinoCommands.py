@@ -52,7 +52,7 @@ class ViewMonitor(sublime_plugin.EventListener):
         """."""
         self.pre_dir_path = ''
 
-    def on_close(self, view):
+    def on_close_async(self, view):
         """."""
         if stino.arduino_info['init_done']:
             file_path = view.file_name()
@@ -68,7 +68,7 @@ class ViewMonitor(sublime_plugin.EventListener):
                         stino.arduino_info['serial_monitors'].pop(serial_port)
                     serial_monitor.stop()
 
-    def on_activated(self, view):
+    def on_activated_async(self, view):
         """."""
         if stino.arduino_info['init_done']:
             panel_name = 'stino_panel'
@@ -86,28 +86,6 @@ class ViewMonitor(sublime_plugin.EventListener):
 
             file_path = view.file_name()
             if file_path and stino.c_file.is_cpp_file(file_path):
-                selected = stino.arduino_info['selected']
-                pkg = selected.get('package')
-                ptfm = selected.get('platform')
-                ver = selected.get('version')
-                board = selected.get('board@%s' % ptfm)
-                text = '[%s, %s, %s, %s' % (pkg, ptfm, ver, board)
-
-                board_info = stino.arduino_info['boards'].get(board, {})
-                options = board_info.get('options', [])
-                for option in options:
-                    key = 'option_%s@%s' % (option, board)
-                    sel_value_name = selected.get(key)
-                    text += ', %s' % sel_value_name
-
-                serial_port = selected.get('serial_port')
-                if serial_port:
-                    text += ', %s' % serial_port
-
-                text += ']'
-                view.set_status('selected', text)
-
-                ########################################
                 dir_path = os.path.dirname(file_path)
                 conf_file_name = 'config.stino-settings'
                 conf_file_path = os.path.join(dir_path, conf_file_name)
@@ -143,7 +121,29 @@ class ViewMonitor(sublime_plugin.EventListener):
                             programmer = settings.get('programmer', '')
                             stino.on_programmer_select(programmer)
 
-    def on_selection_modified(self, view):
+                ########################################
+                selected = stino.arduino_info['selected']
+                pkg = selected.get('package')
+                ptfm = selected.get('platform')
+                ver = selected.get('version')
+                board = selected.get('board@%s' % ptfm)
+                text = '[%s, %s, %s, %s' % (pkg, ptfm, ver, board)
+
+                board_info = stino.arduino_info['boards'].get(board, {})
+                options = board_info.get('options', [])
+                for option in options:
+                    key = 'option_%s@%s' % (option, board)
+                    sel_value_name = selected.get(key)
+                    text += ', %s' % sel_value_name
+
+                serial_port = selected.get('serial_port')
+                if serial_port:
+                    text += ', %s' % serial_port
+
+                text += ']'
+                view.set_status('selected', text)
+
+    def on_selection_modified_async(self, view):
         """."""
         panel_name = 'stino_panel'
         view_name = view.name()
@@ -155,10 +155,13 @@ class ViewMonitor(sublime_plugin.EventListener):
             line = view.substr(line_region)
             file_path, line_no, col_no, _ = stino.get_error_infos(line)
             if os.path.isfile(file_path):
+                # win = view.window()
+                # panel_name = 'output.' + panel_name
+                # win.run_command("show_panel", {"panel": panel_name,
+                #                 'toggle': True})
+
                 win, view = stino.open_file(file_path)
-                text_point = view.text_point(line_no - 1, col_no)
-                win.focus_view(view)
-                view.show(text_point)
+                stino.view_selector.put(view, line_no, col_no)
 
 
 #############################################
