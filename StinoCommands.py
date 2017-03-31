@@ -725,9 +725,16 @@ class StinoExportBinaryCommand(sublime_plugin.TextCommand):
                 bin_file_path = os.path.join(dir_path, bin_file_name)
                 if os.path.isfile(bin_file_path):
                     target_path = os.path.join(target_dir_path, bin_file_name)
+                    do_copy = True
                     if os.path.isfile(target_path):
-                        os.remove(target_path)
-                    shutil.copy(bin_file_path, target_path)
+                        msg = '%s exists. Continue?' % target_path
+                        result = sublime.yes_no_cancel_dialog(msg)
+                        if result == sublime.DIALOG_YES:
+                            os.remove(target_path)
+                        else:
+                            do_copy = False
+                    if do_copy:
+                        shutil.copy(bin_file_path, target_path)
 
     def is_enabled(self):
         """."""
