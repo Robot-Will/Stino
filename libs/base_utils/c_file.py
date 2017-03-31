@@ -631,7 +631,10 @@ def indent_lines(lines):
             line_slices = split_line_by_str(line)
             last_slice = line_slices[-1]
             if last_slice.startswith('//'):
-                last_slice = line_slices[-2]
+                if len(line_slices) > 1:
+                    last_slice = line_slices[-2]
+                else:
+                    last_slice = ''
 
             if line.startswith('{'):
                 indent_flags.append('{')
