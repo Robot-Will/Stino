@@ -201,12 +201,6 @@ class StinoChangeSketchbookLocationCommand(sublime_plugin.WindowCommand):
             caption = stino.translate('Sketchbook Path:')
             self.window.show_input_panel(caption, sketchbook_path,
                                          self.on_done, None, None)
-            stino.do_action.put(stino.st_menu.update_sketchbook_menu,
-                                stino.arduino_info)
-            stino.do_action.put(stino.st_menu.update_example_menu,
-                                stino.arduino_info)
-            stino.do_action.put(stino.st_menu.update_library_menu,
-                                stino.arduino_info)
 
     def on_done(self, sketchbook_path):
         """New Sketch."""
@@ -214,6 +208,15 @@ class StinoChangeSketchbookLocationCommand(sublime_plugin.WindowCommand):
         stino.arduino_info['sketchbook_path'] = sketchbook_path
         stino.arduino_info['app_dir_settings'].set('sketchbook_path',
                                                    sketchbook_path)
+        stino.do_action.put(stino.init_inst_pkgs_info)
+        stino.do_action.put(stino.st_menu.update_sketchbook_menu,
+                            stino.arduino_info)
+        stino.do_action.put(stino.st_menu.update_example_menu,
+                            stino.arduino_info)
+        stino.do_action.put(stino.st_menu.update_library_menu,
+                            stino.arduino_info)
+        stino.do_action.put(stino.st_menu.update_platform_menu,
+                            stino.arduino_info)
 
 
 class StinoOpenInNewWinCommand(sublime_plugin.WindowCommand):
@@ -386,13 +389,6 @@ class StinoAddIdeCommand(sublime_plugin.WindowCommand):
             caption = stino.translate('Arduino IDE Path:')
             self.window.show_input_panel(caption, ide_path, self.on_done,
                                          None, None)
-            stino.do_action.put(stino.init_inst_pkgs_info)
-            stino.do_action.put(stino.st_menu.update_install_platform_menu,
-                                stino.arduino_info)
-            stino.do_action.put(stino.st_menu.update_example_menu,
-                                stino.arduino_info)
-            stino.do_action.put(stino.st_menu.update_library_menu,
-                                stino.arduino_info)
 
     def on_done(self, ide_path):
         """New Sketch."""
@@ -400,6 +396,13 @@ class StinoAddIdeCommand(sublime_plugin.WindowCommand):
         stino.arduino_info['ext_app_path'] = ide_path
         stino.arduino_info['app_dir_settings'].set('additional_app_path',
                                                    ide_path)
+        stino.do_action.put(stino.init_inst_pkgs_info)
+        stino.do_action.put(stino.st_menu.update_platform_menu,
+                            stino.arduino_info)
+        stino.do_action.put(stino.st_menu.update_example_menu,
+                            stino.arduino_info)
+        stino.do_action.put(stino.st_menu.update_library_menu,
+                            stino.arduino_info)
 
 
 class StinoImportAvrPlatformCommand(sublime_plugin.WindowCommand):
