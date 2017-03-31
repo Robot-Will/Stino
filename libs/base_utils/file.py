@@ -149,7 +149,8 @@ class File(AbstractFile):
             os.makedirs(self._dir)
         try:
             with codecs.open(self._path, mode, self._encoding) as f:
-                f.write(text)
+                pass
+                # f.write(text)
         except (IOError, UnicodeError):
             pass
 

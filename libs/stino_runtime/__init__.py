@@ -320,7 +320,7 @@ def check_platform_selected(arduino_info):
             sel_package = package_names[0]
             sel_settings.set('package', sel_package)
     else:
-        sel_package = None
+        sel_package = ''
         sel_settings.set('package', sel_package)
 
     package_info = packages_info.get(sel_package, {})
@@ -331,7 +331,7 @@ def check_platform_selected(arduino_info):
             sel_platform = platform_names[0]
             sel_settings.set('platform', sel_platform)
     else:
-        sel_platform = None
+        sel_platform = ''
         sel_settings.set('platform', sel_platform)
 
     platform_vers_info = platforms_info.get(sel_platform, {})
@@ -341,7 +341,7 @@ def check_platform_selected(arduino_info):
             sel_version = versions[-1]
             sel_settings.set('version', sel_version)
     else:
-        sel_version = None
+        sel_version = ''
         sel_settings.set('version', sel_version)
 
 
@@ -379,7 +379,7 @@ def check_port_selected(arduino_info):
                     break
 
         if not has_port:
-            sel_item = None
+            sel_item = ''
             sel_settings.set('serial_port', sel_item)
 
 
@@ -401,7 +401,7 @@ def check_selected(arduino_info, item_type):
             sel_item = names[0]
             sel_settings.set(key, sel_item)
     else:
-        sel_item = None
+        sel_item = ''
         sel_settings.set(key, sel_item)
 
 
@@ -2167,7 +2167,7 @@ def upload_sketch(upload_cmd=''):
             new_upload_port = serial_port.prepare_upload_port(upload_port,
                                                               do_touch,
                                                               do_reset)
-            if new_upload_port != upload_port:
+            if new_upload_port and new_upload_port != upload_port:
                 new_serial_file = serial_port.get_serial_file(new_upload_port)
                 upload_cmd = upload_cmd.replace(upload_port, new_upload_port)
                 upload_cmd = upload_cmd.replace(serial_file, new_serial_file)

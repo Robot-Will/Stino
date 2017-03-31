@@ -177,7 +177,7 @@ def auto_reset(serial_port):
 
 def wait_for_new_port(upload_port, before_ports):
     """."""
-    new_port = None
+    new_port = ''
     elapsed = 0
     os_name = sys_info.get_os_name()
     while elapsed < 10:
