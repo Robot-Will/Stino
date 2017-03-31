@@ -770,6 +770,11 @@ def update_board_menu(arduino_info):
     text += '\t' * 6 + '"id": "stino_refresh_boards",\n'
     text += '\t' * 6 + '"command": "stino_refresh_boards"\n'
     text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Save for Current Sketch",\n'
+    text += '\t' * 6 + '"id": "stino_save_for_sketch",\n'
+    text += '\t' * 6 + '"command": "stino_save_for_sketch"\n'
+    text += '\t' * 5 + '},\n'
     text += '\t' * 5 + '{"caption": "-"}'
 
     for board_name in board_names:

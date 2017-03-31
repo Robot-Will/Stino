@@ -241,6 +241,11 @@
                         "id": "stino_refresh_boards",
                         "command": "stino_refresh_boards"
                     },
+                    {
+                        "caption": "Save for Current Sketch",
+                        "id": "stino_save_for_sketch",
+                        "command": "stino_save_for_sketch"
+                    },
                     {"caption": "-"}
                 ]
             },

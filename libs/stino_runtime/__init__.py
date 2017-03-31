@@ -472,7 +472,7 @@ def on_board_option_select(option, value):
     selected = arduino_info['selected']
     platform = selected.get('platform')
     key = 'board@%s' % platform
-    board = stino.arduino_info['selected'].get(key, '')
+    board = arduino_info['selected'].get(key, '')
     key = 'option_%s@%s' % (option, board)
     arduino_info['selected'].set(key, value)
 

@@ -17,7 +17,11 @@ def get_key_value(line):
     if '=' in line:
         index = line.index('=')
         key = line[:index].strip()
-        value = line[index + 1:].strip()
+        value = line[index + 1:]
+        if '#' in value:
+            index = value.index('#')
+            value = value[:index]
+        value = value.strip()
     else:
         key = line.strip()
         value = ''
