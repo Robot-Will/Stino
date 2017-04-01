@@ -132,9 +132,9 @@ def break_lines(lines):
                 elif char == '"':
                     in_double_quoted_string = True
                     text += char
-                elif char == '#':
-                    text += '\n'
-                    text += char
+                # elif char == '#':
+                #     text += '\n'
+                #     text += char
                 elif char not in none_operator_chars:
                     if char == '{' or char == '}':
                         delimeter = '\n'
@@ -380,7 +380,7 @@ def regular_chars(words):
         if index - 1 >= 0:
             pre_word = words[index - 1]
 
-        if pre_word in '([!~^:' or word[0] in '[]]);,:?.^':
+        if pre_word in '#([!~^:' or word[0] in '[]]);,:?.^':
             new_word += word
 
         elif word == '(':
@@ -390,9 +390,17 @@ def regular_chars(words):
             elif pre_word[-1] in '+-*/%<>!=&|^':
                 new_words.append(new_word)
                 new_word = word
-            # elif words[0] == '#define' and index == 2:
-            #     new_words.append(new_word)
-            #     new_word = word
+            elif len(words) > 1 and words[0] + words[1] == '#define':
+                is_define_func = False
+                if ')' in words:
+                    index = words.index(')')
+                    if words[index + 1:]:
+                        is_define_func = True
+                if is_define_func:
+                    new_word += word
+                else:
+                    new_words.append(new_word)
+                    new_word = word
             else:
                 new_word += word
 
