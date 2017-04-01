@@ -73,6 +73,9 @@ class ViewMonitor(sublime_plugin.EventListener):
         if stino.arduino_info['init_done']:
             panel_name = 'stino_panel'
             win = view.window()
+            if not win:
+                return
+
             panel = win.find_output_panel(panel_name)
             if panel:
                 vector = panel.layout_extent()
