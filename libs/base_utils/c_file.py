@@ -875,6 +875,7 @@ def simplify_to_one_line(lines):
     """Doc."""
     new_lines = []
     in_one_lines = []
+    is_line_end = False
 
     for line in lines:
         line = line.strip()
@@ -910,7 +911,7 @@ def remove_none_func_lines(lines):
     for line in lines:
         if line.startswith('#') and '.h' in line:
             new_lines.append(line)
-        elif line.endswith(');') or line.endswith('}'):
+        elif line.endswith(');') or line.endswith('{') or line.endswith('}'):
             if '(' in line and ')' in line and '::' not in line:
                 new_lines.append(line)
     return new_lines
@@ -1103,7 +1104,7 @@ class CFile(file.File):
         if not self._simplified_lines:
             self._simplified_lines = simplify_lines(self._lines)
         for line in self._simplified_lines:
-            if line.endswith('}'):
+            if line.endswith('{') or line.endswith('}'):
                 line = line.split('{')[0].strip()
                 function_definitions.append(line)
         return function_definitions
