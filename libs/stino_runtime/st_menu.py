@@ -19,6 +19,8 @@ from . import const
 from . import selected
 
 plugin_name = const.PLUGIN_NAME
+none_sketches = ['libraries', 'library', 'examples', 'example', 'hardware',
+                 'extras', 'utility', 'config']
 
 
 def write_menu(menu_type, menu_text):
@@ -32,20 +34,19 @@ def write_menu(menu_type, menu_text):
         f.write(menu_text)
 
 
-def get_sketch_menu_text(level, paths):
+def get_sketch_paths_text(level, paths):
     """."""
     text = ''
-    none_sketches = ['libraries', 'examples', 'hardware']
     for path in paths:
         path = path.replace('\\', '/')
         name = os.path.basename(path)
-        if name in none_sketches:
-            continue
-
         has_sketch = False
         next_paths = glob.glob(path + '/*')
+        next_paths = [p.replace('\\', '/') for p in next_paths]
         next_file_paths = [p for p in next_paths if os.path.isfile(p)]
         next_dir_paths = [p for p in next_paths if os.path.isdir(p)]
+        next_dir_paths = [p for p in next_dir_paths
+                          if os.path.basename(p) not in none_sketches]
 
         for file_path in next_file_paths:
             ext = os.path.splitext(file_path)[-1]
@@ -121,6 +122,58 @@ def get_sketch_menu_text(level, paths):
     return text
 
 
+def get_sketch_menu_text(level, paths):
+    """."""
+    text = ''
+    sketch_paths = []
+    for path in paths:
+        path = path.replace('\\', '/')
+        name = os.path.basename(path)
+        if name.lower() not in none_sketches:
+            sketch_paths.append(path)
+
+    if len(sketch_paths) < 36:
+        text += get_sketch_paths_text(level, sketch_paths)
+    else:
+        index = 0
+        index_letters = []
+        while len(index_letters) < 2:
+            index_letters = []
+            letter_path_info = {}
+            for path in sketch_paths:
+                name = os.path.basename(path)
+                if index < len(name):
+                    index_letter = name[index].upper()
+                else:
+                    index_letter = '->'
+                if index_letter not in index_letters:
+                    index_letters.append(index_letter)
+                    letter_path_info[index_letter] = []
+                letter_path_info[index_letter].append(path)
+            index += 1
+
+        for index_letter in index_letters:
+            sketch_paths = letter_path_info[index_letter]
+            text += ',\n'
+            text += '\t' * level + '{\n'
+            text += '\t' * (level + 1)
+            text += '"caption": "%s",\n' % index_letter
+            text += '\t' * (level + 1)
+            text += '"id": "stino_sketch_cat_%s_%s",\n' % (level, index_letter)
+            text += '\t' * (level + 1)
+            text += '"children":\n'
+            text += '\t' * (level + 1)
+            text += '[\n'
+            text += '\t' * (level + 2)
+            text += '{"caption": "-"}'
+            text += get_sketch_paths_text(level + 2, sketch_paths)
+            text += '\t' * (level + 1)
+            text += ']\n'
+            text += '\t' * level
+            text += '}'
+    return text
+
+
 def update_sketchbook_menu(arduino_info):
     """."""
     sketchbook_path = arduino_info.get('sketchbook_path')
@@ -174,7 +227,7 @@ def update_sketchbook_menu(arduino_info):
     write_menu('sketchbook', text)
 
 
-def get_example_menu_text(level, paths):
+def get_example_paths_text(level, paths):
     """."""
     text = ''
     for path in paths:
@@ -209,6 +262,52 @@ def get_example_menu_text(level, paths):
 
         text += '\t' * level
         text += '}'
+    return text
+
+
+def get_example_menu_text(level, paths):
+    """."""
+    text = ''
+    if len(paths) < 21:
+        text += get_example_paths_text(level, paths)
+    else:
+        index = 0
+        index_letters = []
+        while len(index_letters) < 2:
+            index_letters = []
+            letter_path_info = {}
+            for path in paths:
+                name = os.path.basename(path)
+                if index < len(name):
+                    index_letter = name[index].upper()
+                else:
+                    index_letter = '->'
+                if index_letter not in index_letters:
+                    index_letters.append(index_letter)
+                    letter_path_info[index_letter] = []
+                letter_path_info[index_letter].append(path)
+            index += 1
+
+        for index_letter in index_letters:
+            paths = letter_path_info[index_letter]
+            text += ',\n'
+            text += '\t' * level + '{\n'
+            text += '\t' * (level + 1)
+            text += '"caption": "%s",\n' % index_letter
+            text += '\t' * (level + 1)
+            text += '"id": "stino_example_cat_%s_%s",\n' % (level,
+                                                            index_letter)
+            text += '\t' * (level + 1)
+            text += '"children":\n'
+            text += '\t' * (level + 1)
+            text += '[\n'
+            text += '\t' * (level + 2)
+            text += '{"caption": "-"}'
+            text += get_example_paths_text(level + 2, paths)
+            text += '\t' * (level + 1)
+            text += ']\n'
+            text += '\t' * level
+            text += '}'
     return text
 
 
@@ -308,17 +407,65 @@ def update_library_menu(arduino_info):
     sub_texts = []
     for paths in all_paths:
         sub_text = ''
-        for library_path in paths:
-            library_path = library_path.replace('\\', '/')
-            library_name = os.path.basename(library_path)
-            sub_text += ',\n'
-            sub_text += '\t' * 5 + '{\n'
-            sub_text += '\t' * 6 + '"caption": "%s",\n' % library_name
-            sub_text += '\t' * 6 + '"id": "stino_library_%s",\n' % library_name
-            sub_text += '\t' * 6 + '"command": "stino_import_library",\n'
-            sub_text += '\t' * 6 + '"args": {"library_path": '
-            sub_text += '"%s"}\n' % library_path
-            sub_text += '\t' * 5 + '}'
+
+        if len(paths) < 21:
+            for library_path in paths:
+                library_path = library_path.replace('\\', '/')
+                library_name = os.path.basename(library_path)
+                sub_text += ',\n'
+                sub_text += '\t' * 5 + '{\n'
+                sub_text += '\t' * 6 + '"caption": "%s",\n' % library_name
+                sub_text += '\t' * 6
+                sub_text += '"id": "stino_library_%s",\n' % library_name
+                sub_text += '\t' * 6 + '"command": "stino_import_library",\n'
+                sub_text += '\t' * 6 + '"args": {"library_path": '
+                sub_text += '"%s"}\n' % library_path
+                sub_text += '\t' * 5 + '}'
+        else:
+            index = 0
+            index_letters = []
+            while len(index_letters) < 2:
+                index_letters = []
+                letter_path_info = {}
+                for path in paths:
+                    name = os.path.basename(path)
+                    if index < len(name):
+                        index_letter = name[index].upper()
+                    else:
+                        index_letter = '->'
+                    if index_letter not in index_letters:
+                        index_letters.append(index_letter)
+                        letter_path_info[index_letter] = []
+                    letter_path_info[index_letter].append(path)
+                index += 1
+
+            for index_letter in index_letters:
+                paths = letter_path_info[index_letter]
+                sub_text += ',\n'
+                sub_text += '\t' * 5 + '{\n'
+                sub_text += '\t' * 6 + '"caption": "%s",\n' % index_letter
+                sub_text += '\t' * 6
+                sub_text += '"id": "stino_library_cat_%s",\n' % index_letter
+                sub_text += '\t' * 6 + '"children":\n'
+                sub_text += '\t' * 6 + '[\n'
+                sub_text += '\t' * 7 + '{"caption": "-"}'
+
+                for library_path in paths:
+                    library_path = library_path.replace('\\', '/')
+                    library_name = os.path.basename(library_path)
+                    sub_text += ',\n'
+                    sub_text += '\t' * 7 + '{\n'
+                    sub_text += '\t' * 8 + '"caption": "%s",\n' % library_name
+                    sub_text += '\t' * 8
+                    sub_text += '"id": "stino_library_%s",\n' % library_name
+                    sub_text += '\t' * 8
+                    sub_text += '"command": "stino_import_library",\n'
+                    sub_text += '\t' * 8 + '"args": {"library_path": '
+                    sub_text += '"%s"}\n' % library_path
+                    sub_text += '\t' * 7 + '}'
+
+                sub_text += '\t' * 6 + ']\n'
+                sub_text += '\t' * 5 + '}'
         sub_texts.append(sub_text)
     text += sep_text.join(sub_texts)
 
@@ -396,26 +543,33 @@ def update_install_library_menu(arduino_info):
                 text += '\n' + '\t' * 8 + ']'
                 text += '\t' * 7 + '}'
         else:
-            initial_name_info = {}
-            initials = []
-            for name in names:
-                initial = name[0].upper()
-                if initial not in initials:
-                    initials.append(initial)
-                    initial_name_info[initial] = []
-                initial_name_info[initial].append(name)
+            index = 0
+            index_letters = []
+            while len(index_letters) < 2:
+                index_letters = []
+                letter_name_info = {}
+                for name in names:
+                    if index < len(name):
+                        index_letter = name[index].upper()
+                    else:
+                        index_letter = '->'
+                    if index_letter not in index_letters:
+                        index_letters.append(index_letter)
+                        letter_name_info[index_letter] = []
+                    letter_name_info[index_letter].append(name)
+                index += 1
 
-            for initial in initials:
+            for index_letter in index_letters:
                 text += ',\n'
                 text += '\t' * 7 + '{\n'
-                text += '\t' * 8 + '"caption": "%s",\n' % initial
+                text += '\t' * 8 + '"caption": "%s",\n' % index_letter
                 text += '\t' * 8
-                text += '"id": "stino_lib_cat_initial_%s",\n' % initial
+                text += '"id": "stino_lib_cat_initial_%s",\n' % index_letter
                 text += '\t' * 8 + '"children":\n'
                 text += '\t' * 8 + '['
                 text += '\t' * 9 + '{"caption": "-"}'
 
-                for name in initial_name_info[initial]:
+                for name in letter_name_info[index_letter]:
                     text += ',\n'
                     text += '\t' * 9 + '{\n'
                     text += '\t' * 9 + '"caption": "%s",\n' % name
