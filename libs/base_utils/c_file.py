@@ -218,6 +218,10 @@ def insert_semicolon_break(words_list):
     """Doc."""
     new_words_list = []
     for words in words_list:
+        if words[0].startswith('#'):
+            new_words_list.append(words)
+            continue
+
         new_words = []
         in_for = False
         semicolon_counter = 0
