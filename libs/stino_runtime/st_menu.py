@@ -40,7 +40,7 @@ def get_sketch_paths_text(level, paths):
     for path in paths:
         path = path.replace('\\', '/')
         name = os.path.basename(path)
-        has_sketch = False
+
         next_paths = glob.glob(path + '/*')
         next_paths = [p.replace('\\', '/') for p in next_paths]
         next_file_paths = [p for p in next_paths if os.path.isfile(p)]
@@ -48,6 +48,7 @@ def get_sketch_paths_text(level, paths):
         next_dir_paths = [p for p in next_dir_paths
                           if os.path.basename(p) not in none_sketches]
 
+        has_sketch = False
         for file_path in next_file_paths:
             ext = os.path.splitext(file_path)[-1]
             if ext in c_file.INOC_EXTS:
@@ -82,7 +83,7 @@ def get_sketch_paths_text(level, paths):
             text += '[\n'
             text += '\t' * (level + 2)
             text += '{"caption": "-"}'
-            text += get_sketch_menu_text(level + 2, next_paths)
+            text += get_sketch_menu_text(level + 2, next_dir_paths)
             text += '\t' * (level + 1)
             text += ']\n'
             text += '\t' * level
@@ -113,7 +114,7 @@ def get_sketch_paths_text(level, paths):
 
             text += '\t' * (level + 2)
             text += '{"caption": "-"}'
-            text += get_sketch_menu_text(level + 2, next_paths)
+            text += get_sketch_menu_text(level + 2, next_dir_paths)
             text += '\t' * (level + 1)
             text += ']\n'
 
