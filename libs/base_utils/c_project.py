@@ -130,8 +130,8 @@ def combine_ino_files(ino_file_paths, target_file_path,
 
             with codecs.open(f_paths[0], 'r', 'utf-8') as source_f:
                 src_text = source_f.read()
-                # index = c_file.get_index_of_first_statement(src_text)
-                index = 0
+                index = c_file.get_index_of_first_statement(src_text)
+
                 header_text = src_text[:index]
                 footer_text = src_text[index:]
 

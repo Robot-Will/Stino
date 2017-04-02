@@ -993,7 +993,10 @@ def get_index_of_first_statement(src_text):
 
     index = 0
     for match in match_iter:
-        if match.start() != index:
+        text = match.group().strip()
+        if text.startswith('#if'):
+            break
+        elif match.start() != index:
             break
         index = match.end()
     return index
