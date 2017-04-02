@@ -95,7 +95,11 @@ def get_platform_arch_by_name(arduino_info, pkg_name, ptfm_name):
     ptfm_arches = get_platform_arches(pkgs_info, pkg_name)
     if ptfm_name in ptfm_names:
         index = ptfm_names.index(ptfm_name)
+<<<<<<< HEAD
         ptfm_arch = ptfm_arches[index]
+=======
+        ptfm_arch = ptfm_arches[index].upper()
+>>>>>>> refs/remotes/origin/Stino-Dev
 
     if not ptfm_arch:
         pkgs_info = arduino_info.get('installed_packages', {})
