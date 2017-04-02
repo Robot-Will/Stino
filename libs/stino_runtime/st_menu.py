@@ -15,6 +15,7 @@ from base_utils import file
 from base_utils import default_st_dirs
 from base_utils import c_file
 from base_utils import serial_port
+from base_utils import plain_params_file
 from . import const
 from . import selected
 
@@ -233,7 +234,7 @@ def get_example_paths_text(level, paths):
     text = ''
     for path in paths:
         path = path.replace('\\', '/')
-        name = os.path.basename(path)
+        name = get_lib_name_in_path(path)
         file_path = os.path.join(path, name + '.ino')
 
         text += ',\n'
@@ -368,6 +369,19 @@ def update_example_menu(arduino_info):
     write_menu('examples', text)
 
 
+def get_lib_name_in_path(lib_path):
+    """."""
+    lib_name = os.path.basename(lib_path)
+    properties_file_name = 'library.properties'
+    p_path = os.path.join(lib_path, properties_file_name)
+    if os.path.isfile(p_path):
+        p_file = plain_params_file.PlainParamsFile(p_path)
+        info = p_file.get_info()
+        if 'name' in info:
+            lib_name = info['name']
+    return lib_name
+
+
 def update_library_menu(arduino_info):
     """."""
     ext_app_path = arduino_info.get('ext_app_path')
@@ -412,7 +426,7 @@ def update_library_menu(arduino_info):
         if len(paths) < 21:
             for library_path in paths:
                 library_path = library_path.replace('\\', '/')
-                library_name = os.path.basename(library_path)
+                library_name = get_lib_name_in_path(library_path)
                 sub_text += ',\n'
                 sub_text += '\t' * 5 + '{\n'
                 sub_text += '\t' * 6 + '"caption": "%s",\n' % library_name
@@ -453,7 +467,7 @@ def update_library_menu(arduino_info):
 
                 for library_path in paths:
                     library_path = library_path.replace('\\', '/')
-                    library_name = os.path.basename(library_path)
+                    library_name = get_lib_name_in_path(library_path)
                     sub_text += ',\n'
                     sub_text += '\t' * 7 + '{\n'
                     sub_text += '\t' * 8 + '"caption": "%s",\n' % library_name
@@ -886,7 +900,7 @@ def update_platform_library_menu(arduino_info):
 
     for library_path in library_paths:
         library_path = library_path.replace('\\', '/')
-        library_name = os.path.basename(library_path)
+        library_name = get_lib_name_in_path(library_path)
         text += ',\n'
         text += '\t' * 5 + '{\n'
         text += '\t' * 6 + '"caption": "%s",\n' % library_name
