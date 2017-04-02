@@ -241,6 +241,11 @@
                         "id": "stino_refresh_boards",
                         "command": "stino_refresh_boards"
                     },
+                    {
+                        "caption": "Save for Current Sketch",
+                        "id": "stino_save_for_sketch",
+                        "command": "stino_save_for_sketch"
+                    },
                     {"caption": "-"}
                 ]
             },
@@ -298,6 +303,11 @@
                         "checkbox": true
                     }
                 ]
+            },
+            {
+                "caption": "Export Compiled Binary",
+                "id": "stino_export_binary",
+                "command": "stino_export_binary"
             },
             {
                 "caption": "Show Build Folder",

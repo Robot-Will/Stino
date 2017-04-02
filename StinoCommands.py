@@ -9,6 +9,7 @@ from __future__ import unicode_literals
 
 import os
 import sys
+import shutil
 
 import sublime
 import sublime_plugin
@@ -47,7 +48,11 @@ def plugin_loaded():
 class ViewMonitor(sublime_plugin.EventListener):
     """."""
 
-    def on_close(self, view):
+    def __init__(self):
+        """."""
+        self.pre_dir_path = ''
+
+    def on_close_async(self, view):
         """."""
         if stino.arduino_info['init_done']:
             file_path = view.file_name()
@@ -63,11 +68,14 @@ class ViewMonitor(sublime_plugin.EventListener):
                         stino.arduino_info['serial_monitors'].pop(serial_port)
                     serial_monitor.stop()
 
-    def on_activated(self, view):
+    def on_activated_async(self, view):
         """."""
         if stino.arduino_info['init_done']:
             panel_name = 'stino_panel'
             win = view.window()
+            if not win:
+                return
+
             panel = win.find_output_panel(panel_name)
             if panel:
                 vector = panel.layout_extent()
@@ -79,7 +87,66 @@ class ViewMonitor(sublime_plugin.EventListener):
                 view.run_command('stino_send_to_serial',
                                  {'serial_port': serial_port})
 
-    def on_selection_modified(self, view):
+            file_path = view.file_name()
+            if file_path and stino.c_file.is_cpp_file(file_path):
+                dir_path = os.path.dirname(file_path)
+                conf_file_name = 'config.stino-settings'
+                conf_file_path = os.path.join(dir_path, conf_file_name)
+                if os.path.isfile(conf_file_path):
+                    if dir_path != self.pre_dir_path:
+                        settings = stino.file.SettingsFile(conf_file_path)
+                        pkg = settings.get('package', '')
+                        ptfm = settings.get('platform', '')
+                        ver = settings.get('version', '')
+                        pkgs_info = \
+                            stino.arduino_info.get('installed_packages',
+                                                   {})
+                        ptfm_info = \
+                            stino.selected.get_platform_info(pkgs_info,
+                                                             pkg, ptfm,
+                                                             ver)
+                        if ptfm_info:
+                            self.pre_dir_path = dir_path
+                            stino.do_action.put(stino.on_platform_select,
+                                                pkg, ptfm)
+                            stino.do_action.put(stino.on_version_select,
+                                                ver)
+
+                            keys = settings.get_keys()
+                            for key in keys:
+                                if key.startswith('option_'):
+                                    value = settings.get(key)
+                                    stino.on_board_option_select(key, value)
+
+                            board = settings.get('board@%s' % ptfm, '')
+                            stino.do_action.put(stino.on_board_select,
+                                                board)
+                            programmer = settings.get('programmer', '')
+                            stino.on_programmer_select(programmer)
+
+                ########################################
+                selected = stino.arduino_info['selected']
+                pkg = selected.get('package')
+                ptfm = selected.get('platform')
+                ver = selected.get('version')
+                board = selected.get('board@%s' % ptfm)
+                text = '[%s, %s, %s, %s' % (pkg, ptfm, ver, board)
+
+                board_info = stino.arduino_info['boards'].get(board, {})
+                options = board_info.get('options', [])
+                for option in options:
+                    key = 'option_%s@%s' % (option, board)
+                    sel_value_name = selected.get(key)
+                    text += ', %s' % sel_value_name
+
+                serial_port = selected.get('serial_port')
+                if serial_port:
+                    text += ', %s' % serial_port
+
+                text += ']'
+                view.set_status('selected', text)
+
+    def on_selection_modified_async(self, view):
         """."""
         panel_name = 'stino_panel'
         view_name = view.name()
@@ -91,10 +158,13 @@ class ViewMonitor(sublime_plugin.EventListener):
             line = view.substr(line_region)
             file_path, line_no, col_no, _ = stino.get_error_infos(line)
             if os.path.isfile(file_path):
+                # win = view.window()
+                # panel_name = 'output.' + panel_name
+                # win.run_command("show_panel", {"panel": panel_name,
+                #                 'toggle': True})
+
                 win, view = stino.open_file(file_path)
-                text_point = view.text_point(line_no - 1, col_no)
-                win.focus_view(view)
-                view.show(text_point)
+                stino.view_selector.put(view, line_no, col_no)
 
 
 #############################################
@@ -134,12 +204,6 @@ class StinoChangeSketchbookLocationCommand(sublime_plugin.WindowCommand):
             caption = stino.translate('Sketchbook Path:')
             self.window.show_input_panel(caption, sketchbook_path,
                                          self.on_done, None, None)
-            stino.do_action.put(stino.st_menu.update_sketchbook_menu,
-                                stino.arduino_info)
-            stino.do_action.put(stino.st_menu.update_example_menu,
-                                stino.arduino_info)
-            stino.do_action.put(stino.st_menu.update_library_menu,
-                                stino.arduino_info)
 
     def on_done(self, sketchbook_path):
         """New Sketch."""
@@ -147,6 +211,15 @@ class StinoChangeSketchbookLocationCommand(sublime_plugin.WindowCommand):
         stino.arduino_info['sketchbook_path'] = sketchbook_path
         stino.arduino_info['app_dir_settings'].set('sketchbook_path',
                                                    sketchbook_path)
+        stino.do_action.put(stino.init_inst_pkgs_info)
+        stino.do_action.put(stino.st_menu.update_sketchbook_menu,
+                            stino.arduino_info)
+        stino.do_action.put(stino.st_menu.update_example_menu,
+                            stino.arduino_info)
+        stino.do_action.put(stino.st_menu.update_library_menu,
+                            stino.arduino_info)
+        stino.do_action.put(stino.st_menu.update_platform_menu,
+                            stino.arduino_info)
 
 
 class StinoOpenInNewWinCommand(sublime_plugin.WindowCommand):
@@ -319,13 +392,6 @@ class StinoAddIdeCommand(sublime_plugin.WindowCommand):
             caption = stino.translate('Arduino IDE Path:')
             self.window.show_input_panel(caption, ide_path, self.on_done,
                                          None, None)
-            stino.do_action.put(stino.init_inst_pkgs_info)
-            stino.do_action.put(stino.st_menu.update_install_platform_menu,
-                                stino.arduino_info)
-            stino.do_action.put(stino.st_menu.update_example_menu,
-                                stino.arduino_info)
-            stino.do_action.put(stino.st_menu.update_library_menu,
-                                stino.arduino_info)
 
     def on_done(self, ide_path):
         """New Sketch."""
@@ -333,6 +399,13 @@ class StinoAddIdeCommand(sublime_plugin.WindowCommand):
         stino.arduino_info['ext_app_path'] = ide_path
         stino.arduino_info['app_dir_settings'].set('additional_app_path',
                                                    ide_path)
+        stino.do_action.put(stino.init_inst_pkgs_info)
+        stino.do_action.put(stino.st_menu.update_platform_menu,
+                            stino.arduino_info)
+        stino.do_action.put(stino.st_menu.update_example_menu,
+                            stino.arduino_info)
+        stino.do_action.put(stino.st_menu.update_library_menu,
+                            stino.arduino_info)
 
 
 class StinoImportAvrPlatformCommand(sublime_plugin.WindowCommand):
@@ -476,7 +549,10 @@ class StinoBoardInfoCommand(sublime_plugin.WindowCommand):
         """."""
         caption = '----'
         if stino.arduino_info['init_done']:
-            caption = '--%s--' % stino.arduino_info['selected'].get('board')
+            selected = stino.arduino_info['selected']
+            platform = selected.get('platform')
+            key = 'board@%s' % platform
+            caption = '--%s--' % selected.get(key)
         return caption
 
 
@@ -517,6 +593,52 @@ class StinoRefreshBoardsCommand(sublime_plugin.WindowCommand):
                                 stino.arduino_info)
 
 
+class StinoSaveForSketchCommand(sublime_plugin.TextCommand):
+    """."""
+
+    def run(self, edit):
+        """."""
+        if stino.arduino_info['init_done']:
+            file_path = self.view.file_name()
+            dir_path = os.path.dirname(file_path)
+            conf_file_name = 'config.stino-settings'
+            conf_file_path = os.path.join(dir_path, conf_file_name)
+            settings = stino.file.SettingsFile(conf_file_path)
+
+            selected = stino.arduino_info['selected']
+            pkg = selected.get('package', '')
+            ptfm = selected.get('platform', '')
+            ver = selected.get('version', '')
+            board = selected.get('board@%s' % ptfm, '')
+            programmer = selected.get('programmer', '')
+
+            settings.set('package', pkg)
+            settings.set('platform', ptfm)
+            settings.set('version', ver)
+            settings.set('board@%s' % ptfm, board)
+            settings.set('programmer', programmer)
+
+            board_info = stino.arduino_info['boards'].get(board, {})
+            options = board_info.get('options', [])
+            for option in options:
+                key = 'option_%s@%s' % (option, board)
+                value = selected.get(key)
+                settings.set(key, value)
+
+    def is_enabled(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            file_path = self.view.file_name()
+            if file_path:
+                if stino.c_file.is_cpp_file(file_path):
+                    info = \
+                        stino.selected.get_sel_board_info(stino.arduino_info)
+                    if info:
+                        state = True
+        return state
+
+
 class StinoSelectBoardCommand(sublime_plugin.WindowCommand):
     """."""
 
@@ -530,7 +652,10 @@ class StinoSelectBoardCommand(sublime_plugin.WindowCommand):
         """."""
         state = False
         if stino.arduino_info['init_done']:
-            state = stino.arduino_info['selected'].get('board') == board_name
+            selected = stino.arduino_info['selected']
+            platform = selected.get('platform')
+            key = 'board@%s' % platform
+            state = selected.get(key) == board_name
         return state
 
 
@@ -559,7 +684,10 @@ class StinoSelectBoardOptionCommand(sublime_plugin.WindowCommand):
         """."""
         state = False
         if stino.arduino_info['init_done']:
-            key = 'option_%s' % option
+            selected = stino.arduino_info['selected']
+            platform = selected.get('platform')
+            board = selected.get('board@%s' % platform, '')
+            key = 'option_%s@%s' % (option, board)
             state = stino.arduino_info['selected'].get(key) == value
         return state
 
@@ -662,11 +790,85 @@ class StinoVerifyCodeCommand(sublime_plugin.WindowCommand):
         return state
 
 
-class StinoShowBuildDirCommand(sublime_plugin.TextCommand):
-    """Show Sketch Folder."""
+class StinoExportBinaryCommand(sublime_plugin.TextCommand):
+    """."""
 
     def run(self, edit):
-        """Show Sketch Folder."""
+        """."""
+        if stino.arduino_info['init_done']:
+            caption = stino.translate('Target Directory: ')
+            win = self.view.window()
+            win.show_input_panel(caption, '', self.on_done, None, None)
+
+    def on_done(self, target_dir_path):
+        """."""
+        if os.path.isdir(target_dir_path):
+            file_path = self.view.file_name()
+            dir_path = os.path.dirname(file_path)
+            dir_name = os.path.basename(dir_path)
+            ptfm_path = \
+                stino.selected.get_build_platform_path(stino.arduino_info)
+            cmd_file_path = os.path.join(ptfm_path, 'platform.txt')
+            cmd_file = \
+                stino.plain_params_file.PlainParamsFile(cmd_file_path)
+            cmds_info = cmd_file.get_info()
+            bin_file_pattern = cmds_info.get('recipe.output.save_file', '')
+            if bin_file_pattern:
+                bin_file_ext = os.path.splitext(bin_file_pattern)[-1]
+                board_info = \
+                    stino.selected.get_sel_board_info(stino.arduino_info)
+                build_board = board_info.get('build.board', '')
+                build_mcu = board_info.get('build.mcu', '')
+                bin_file_name = '%s_%s_%s%s' % (dir_name, build_board,
+                                                build_mcu, bin_file_ext)
+                bin_file_path = os.path.join(dir_path, bin_file_name)
+                if os.path.isfile(bin_file_path):
+                    target_path = os.path.join(target_dir_path, bin_file_name)
+                    do_copy = True
+                    if os.path.isfile(target_path):
+                        msg = '%s exists. Continue?' % target_path
+                        result = sublime.yes_no_cancel_dialog(msg)
+                        if result == sublime.DIALOG_YES:
+                            os.remove(target_path)
+                        else:
+                            do_copy = False
+                    if do_copy:
+                        shutil.copy(bin_file_path, target_path)
+
+    def is_enabled(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            file_path = self.view.file_name()
+            if file_path:
+                dir_path = os.path.dirname(file_path)
+                dir_name = os.path.basename(dir_path)
+                ptfm_path = \
+                    stino.selected.get_build_platform_path(stino.arduino_info)
+                cmd_file_path = os.path.join(ptfm_path, 'platform.txt')
+                cmd_file = \
+                    stino.plain_params_file.PlainParamsFile(cmd_file_path)
+                cmds_info = cmd_file.get_info()
+                bin_file_pattern = cmds_info.get('recipe.output.save_file', '')
+                if bin_file_pattern:
+                    bin_file_ext = os.path.splitext(bin_file_pattern)[-1]
+                    board_info = \
+                        stino.selected.get_sel_board_info(stino.arduino_info)
+                    build_board = board_info.get('build.board', '')
+                    build_mcu = board_info.get('build.mcu', '')
+                    bin_file_name = '%s_%s_%s%s' % (dir_name, build_board,
+                                                    build_mcu, bin_file_ext)
+                    bin_file_path = os.path.join(dir_path, bin_file_name)
+                    if os.path.isfile(bin_file_path):
+                        state = True
+        return state
+
+
+class StinoShowBuildDirCommand(sublime_plugin.TextCommand):
+    """."""
+
+    def run(self, edit):
+        """."""
         if stino.arduino_info['init_done']:
             file_path = self.view.file_name()
             if file_path:
@@ -1195,7 +1397,7 @@ class StinoPanelWriteCommand(sublime_plugin.TextCommand):
             if view_size > 0:
                 point = view_size - 1
                 line, col = self.view.rowcol(point)
-                point = self.view.text_point(line, 1)
+                point = self.view.text_point(line - 1, 1)
                 self.view.show(point)
 
 

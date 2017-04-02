@@ -11,6 +11,7 @@ from __future__ import unicode_literals
 import os
 import re
 import time
+import glob
 
 from base_utils import sys_info
 from base_utils import serial_port
@@ -18,6 +19,9 @@ from base_utils import plain_params_file
 
 in_braces_pattern_text = r'\{[^{}]*}'
 in_braces_pattern = re.compile(in_braces_pattern_text)
+
+runtime_tools_pattern_text = r'\{runtime.tools.(\S+?).path}'
+runtime_tools_pattern = re.compile(runtime_tools_pattern_text)
 
 
 def get_package_names(pkgs_info):
@@ -44,8 +48,8 @@ def get_platform_arches(pkgs_info, pkg_name):
     """."""
     package_info = get_package_info(pkgs_info, pkg_name)
     platforms_info = package_info.get('platforms', {})
-    platform_names = platforms_info.get('arches', [])
-    return platform_names
+    platform_arches = platforms_info.get('arches', [])
+    return platform_arches
 
 
 def get_platform_versions_info(pkgs_info, pkg_name, ptfm_name):
@@ -76,6 +80,7 @@ def get_platform_name_by_arch(arduino_info, pkg_name, ptfm_arch):
     pkgs_info = arduino_info.get('packages', {})
     ptfm_names = get_platform_names(pkgs_info, pkg_name)
     ptfm_arches = get_platform_arches(pkgs_info, pkg_name)
+
     if ptfm_arch in ptfm_arches:
         index = ptfm_arches.index(ptfm_arch)
         ptfm_name = ptfm_names[index]
@@ -91,6 +96,17 @@ def get_platform_arch_by_name(arduino_info, pkg_name, ptfm_name):
     if ptfm_name in ptfm_names:
         index = ptfm_names.index(ptfm_name)
         ptfm_arch = ptfm_arches[index]
+
+    if not ptfm_arch:
+        pkgs_info = arduino_info.get('installed_packages', {})
+        ptfm_names = get_platform_names(pkgs_info, pkg_name)
+        if ptfm_name in ptfm_names:
+            vers = get_platform_versions(pkgs_info, pkg_name, ptfm_name)
+            if vers:
+                ver = vers[-1]
+                ptfm_info = get_platform_info(pkgs_info, pkg_name,
+                                              ptfm_name, ver)
+                ptfm_arch = ptfm_info.get('architecture', '').upper()
     return ptfm_arch
 
 
@@ -134,14 +150,16 @@ def get_sel_platform_info(arduino_info):
 
 def get_sel_board_info(arduino_info):
     """."""
-    sel_board = arduino_info['selected'].get('board')
+    selected = arduino_info['selected']
+    platform = selected.get('platform')
+    sel_board = selected.get('board@%s' % platform)
     board_info = arduino_info['boards'].get(sel_board, {})
 
     sel_board_info = board_info.get('generic', {})
     options = board_info.get('options', [])
     for option in options:
-        key = 'option_%s' % option
-        sel_value_name = arduino_info['selected'].get(key, '')
+        key = 'option_%s@%s' % (option, sel_board)
+        sel_value_name = selected.get(key, '')
         values_info = board_info.get(option, {})
         value_info = values_info.get(sel_value_name, {})
         sel_board_info.update(value_info)
@@ -150,7 +168,9 @@ def get_sel_board_info(arduino_info):
 
 def get_sel_board_options(arduino_info):
     """."""
-    sel_board = arduino_info['selected'].get('board')
+    selected = arduino_info['selected']
+    platform = selected.get('platform')
+    sel_board = selected.get('board@%s' % platform)
     board_info = arduino_info['boards'].get(sel_board, {})
     options = board_info.get('options', [])
     return options
@@ -337,7 +357,7 @@ def get_project_info(arduino_info, project=None):
     project_info['build.path'] = prj_build_path.replace('\\', '/')
 
     # core.a Info
-    archive_file_name = 'core.a'
+    archive_file_name = 'core/core.a'
     archive_file_path = os.path.join(prj_build_path, archive_file_name)
     project_info['archive_file'] = archive_file_name
     project_info['archive_file_path'] = archive_file_path
@@ -345,6 +365,78 @@ def get_project_info(arduino_info, project=None):
 
 
 #################################################################
+def get_tools_in_commands(cmds):
+    """."""
+    runtime_tools = []
+    for cmd in cmds:
+        tools = runtime_tools_pattern.findall(cmd)
+        for tool in tools:
+            if tool not in runtime_tools:
+                runtime_tools.append(tool)
+    return runtime_tools
+
+
+def get_tool_info(arduino_info, tool_name):
+    """."""
+    tool_info = {}
+    has_tool = False
+    sel_pkg = arduino_info['selected'].get('package')
+    inst_pkgs_info = arduino_info.get('installed_packages', {})
+    inst_pkg_names = inst_pkgs_info.get('names', [])
+    pkg_info = get_package_info(inst_pkgs_info, sel_pkg)
+    pkg_path = pkg_info.get('path', '')
+    tools_path = os.path.join(pkg_path, 'tools')
+    tool_path = os.path.join(tools_path, tool_name)
+    if os.path.isdir(tool_path):
+        has_tool = True
+    else:
+        for pkg_name in inst_pkg_names:
+            pkg_info = get_package_info(inst_pkgs_info, pkg_name)
+            pkg_path = pkg_info.get('path', '')
+            tools_path = os.path.join(pkg_path, 'tools')
+            tool_path = os.path.join(tools_path, tool_name)
+            if os.path.isdir(tool_path):
+                has_tool = True
+                break
+
+    has_bin = False
+    if has_tool:
+        sub_paths = glob.glob(tool_path + '/*')[::-1]
+        for sub_path in sub_paths:
+            if os.path.isfile(sub_path):
+                has_bin = True
+                break
+
+        if not has_bin:
+            for sub_path in sub_paths:
+                bin_path = os.path.join(sub_path, 'bin')
+                if os.path.isdir(bin_path):
+                    has_bin = True
+                else:
+                    s_sub_paths = glob.glob(sub_path + '/*')
+                    for s_sub_path in s_sub_paths:
+                        if os.path.isfile(s_sub_path):
+                            has_bin = True
+                            break
+                if has_bin:
+                    tool_path = sub_path
+                    break
+    if not has_bin:
+        tool_path = ''
+        avial_pkgs_info = arduino_info.get('packages', {})
+        avail_pkg_names = avial_pkgs_info.get('names', [])
+        for pkg_name in avail_pkg_names:
+            pkg_info = get_package_info(avial_pkgs_info, pkg_name)
+            tools_info = pkg_info.get('tools', {})
+            tool_names = tools_info.get('names', [])
+            if tool_name in tool_names:
+                tool_info = tools_info.get(tool_name)
+                break
+    tool_info['name'] = tool_name
+    tool_info['path'] = tool_path
+    return tool_info
+
+
 def get_default_tools_deps(arduino_info):
     """."""
     pkgs_info = arduino_info.get('packages', {})
@@ -359,6 +451,40 @@ def get_default_tools_deps(arduino_info):
 
 def get_dep_tools_info(arduino_info, platform_info):
     """."""
+    board_info = get_sel_board_info(arduino_info)
+    programmer_info = get_sel_programmer_info(arduino_info)
+    upload_tool = board_info.get('upload.tool', '')
+    program_tool = programmer_info.get('program.tool', '')
+    bootloader_tool = board_info.get('bootloader.tool', '')
+    build_ptfm_path = get_build_platform_path(arduino_info)
+
+    tools = [upload_tool, program_tool, bootloader_tool]
+    ptfm_paths = []
+    for tool in tools:
+        if tool:
+            ptfm_info = get_target_platform_info(arduino_info, tool)
+            ptfm_path = ptfm_info.get('path', '')
+            ptfm_paths.append(ptfm_path)
+
+    tools = ['compiler'] + tools
+    ptfm_paths = [build_ptfm_path] + ptfm_paths
+
+    cmds = []
+    for ptfm_path, tool in zip(ptfm_paths, tools):
+        if ':' in tool:
+            tool = tool.split(':')[-1]
+        path_word = '%s.path' % tool
+        cmd_file_path = os.path.join(ptfm_path, 'platform.txt')
+        cmd_file = plain_params_file.PlainParamsFile(cmd_file_path)
+        cmds_info = cmd_file.get_info()
+
+        for key in cmds_info:
+            if path_word in key:
+                cmds.append(cmds_info[key])
+                break
+    tool_names = get_tools_in_commands(cmds)
+
+    #########################################
     tools_info = {'names': []}
     arduino_app_path = arduino_info['arduino_app_path']
     packages_path = os.path.join(arduino_app_path, 'packages')
@@ -387,6 +513,12 @@ def get_dep_tools_info(arduino_info, platform_info):
         tool_info['path'] = path
         tools_info['names'].append(name)
         tools_info[name] = tool_info
+
+    for name in tool_names:
+        if name not in tools_info['names']:
+            tool_info = get_tool_info(arduino_info, name)
+            tools_info['names'].append(name)
+            tools_info[name] = tool_info
     return tools_info
 
 
@@ -437,10 +569,6 @@ def get_base_info(arduino_info, project=None):
 def get_runtime_build_info(arduino_info):
     """."""
     build_info = {}
-    # Include Paths Info
-    include_paths = arduino_info.get('include_paths', [])
-    includes = ['"-I%s"' % p.replace('\\', '/') for p in include_paths]
-    build_info['includes'] = ' '.join(includes)
 
     # Arch Info
     sel_pkg = arduino_info['selected'].get('package', '')
@@ -496,6 +624,28 @@ def get_build_commands_info(arduino_info, project=None):
     all_info.update(runtime_build_info)
     all_info.update(build_params_info)
     all_info.update(board_info)
+
+    if 'compiler.cpp.flags' not in all_info:
+        all_info['compiler.cpp.flags'] = ''
+
+    if 'recipe.ar.pattern' in build_params_info:
+        value = build_params_info['recipe.ar.pattern']
+        if 'core/{archive_file}' in value:
+            value = value.replace('core/{archive_file}', '{archive_file}')
+            build_params_info['recipe.ar.pattern'] = value
+
+    if 'recipe.c.combine.pattern' in build_params_info:
+        value = build_params_info['recipe.c.combine.pattern']
+        if '{build.path}/syscalls_sam3.c.o' in value:
+            value = value.replace('{build.path}/syscalls_sam3.c.o',
+                                  '{build.path}/core/syscalls_sam3.c.o')
+        if '{build.path}/startup_NRF51822.s.o' in value:
+            value = value.replace('{build.path}/startup_NRF51822.s.o',
+                                  '{build.path}/core/startup_NRF51822.s.o')
+        if '{build.path}/system_nrf51.c.o' in value:
+            text = '{build.path}/core/mbed/targets/cmsis/TARGET_NORDIC/'
+            text += 'TARGET_MCU_NRF51822/system_nrf51.c.o'
+            value = value.replace('{build.path}/system_nrf51.c.o', text)
 
     cmds_info = {}
     for key in build_params_info:

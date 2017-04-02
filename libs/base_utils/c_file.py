@@ -33,6 +33,7 @@ multi_line_comment = r'/\*[^*]*(?:\*(?!/)[^*]*)*\*/'
 single_line_comment = r'//.*?$'
 double_quoted_string = r'"(?:[^"\\]|\\.)*"'
 include = r'#include\s*[<"](\S+)[">]'
+full_include = r'#include\s*[<"]\S+[">]'
 
 
 def is_cpp_file(file_name):
@@ -131,9 +132,9 @@ def break_lines(lines):
                 elif char == '"':
                     in_double_quoted_string = True
                     text += char
-                elif char == '#':
-                    text += '\n'
-                    text += char
+                # elif char == '#':
+                #     text += '\n'
+                #     text += char
                 elif char not in none_operator_chars:
                     if char == '{' or char == '}':
                         delimeter = '\n'
@@ -217,6 +218,10 @@ def insert_semicolon_break(words_list):
     """Doc."""
     new_words_list = []
     for words in words_list:
+        if words[0].startswith('#'):
+            new_words_list.append(words)
+            continue
+
         new_words = []
         in_for = False
         semicolon_counter = 0
@@ -379,7 +384,7 @@ def regular_chars(words):
         if index - 1 >= 0:
             pre_word = words[index - 1]
 
-        if pre_word in '([!~^:' or word[0] in '[]]);,:?.^':
+        if pre_word in '#([!~^:' or word[0] in '[]]);,:?.^':
             new_word += word
 
         elif word == '(':
@@ -389,9 +394,17 @@ def regular_chars(words):
             elif pre_word[-1] in '+-*/%<>!=&|^':
                 new_words.append(new_word)
                 new_word = word
-            # elif words[0] == '#define' and index == 2:
-            #     new_words.append(new_word)
-            #     new_word = word
+            elif len(words) > 1 and words[0] + words[1] == '#define':
+                is_define_func = False
+                if ')' in words:
+                    index = words.index(')')
+                    if words[index + 1:]:
+                        is_define_func = True
+                if is_define_func:
+                    new_word += word
+                else:
+                    new_words.append(new_word)
+                    new_word = word
             else:
                 new_word += word
 
@@ -630,7 +643,10 @@ def indent_lines(lines):
             line_slices = split_line_by_str(line)
             last_slice = line_slices[-1]
             if last_slice.startswith('//'):
-                last_slice = line_slices[-2]
+                if len(line_slices) > 1:
+                    last_slice = line_slices[-2]
+                else:
+                    last_slice = ''
 
             if line.startswith('{'):
                 indent_flags.append('{')
@@ -864,24 +880,30 @@ def simplify_to_one_line(lines):
     new_lines = []
     in_one_lines = []
     is_line_end = False
+
     for line in lines:
+        line = line.strip()
+        is_line_end = False
         is_start_break = False
-        if line.startswith('void') or line.startswith('#'):
-            is_line_end = True
+        if line.startswith('void'):
             is_start_break = True
+        elif line.startswith('#'):
+            is_line_end = True
+
+        if is_start_break:
+            new_lines.append(' '.join(in_one_lines))
+            in_one_lines = [line]
+        elif line.endswith(';') or line.endswith('}'):
+            is_line_end = True
+
         if is_line_end:
+            in_one_lines.append(line)
             new_lines.append(' '.join(in_one_lines))
             in_one_lines = []
-            is_line_end = False
-        in_one_lines.append(line)
 
-        if not is_start_break:
-            if line.endswith(';') or line.endswith('}'):
-                is_line_end = True
-            if is_line_end:
-                new_lines.append(' '.join(in_one_lines))
-                in_one_lines = []
-                is_line_end = False
+        if not (is_start_break or is_line_end):
+            in_one_lines.append(line)
+
     if not is_line_end:
         new_lines.append(' '.join(in_one_lines))
     return new_lines
@@ -893,7 +915,7 @@ def remove_none_func_lines(lines):
     for line in lines:
         if line.startswith('#') and '.h' in line:
             new_lines.append(line)
-        elif line.endswith(');') or line.endswith('}'):
+        elif line.endswith(');') or line.endswith('{') or line.endswith('}'):
             if '(' in line and ')' in line and '::' not in line:
                 new_lines.append(line)
     return new_lines
@@ -975,6 +997,32 @@ def get_index_of_first_statement(src_text):
             break
         index = match.end()
     return index
+
+
+def list_includes(text):
+    """Doc."""
+    pattern_text = multi_line_comment
+    pattern_text += '|' + single_line_comment
+
+    pattern = re.compile(pattern_text, re.M | re.S)
+    text = pattern.sub('', text)
+
+    pattern = re.compile(full_include)
+    headers = pattern.findall(text)
+    return headers
+
+
+def list_include_headers(text):
+    """Doc."""
+    pattern_text = multi_line_comment
+    pattern_text += '|' + single_line_comment
+
+    pattern = re.compile(pattern_text, re.M | re.S)
+    text = pattern.sub('', text)
+
+    pattern = re.compile(include)
+    headers = pattern.findall(text)
+    return headers
 
 
 class CFile(file.File):
@@ -1060,21 +1108,15 @@ class CFile(file.File):
         if not self._simplified_lines:
             self._simplified_lines = simplify_lines(self._lines)
         for line in self._simplified_lines:
-            if line.endswith('}'):
-                function_definitions.append(line.split('{')[0].strip())
+            if line.endswith('{') or line.endswith('}'):
+                line = line.split('{')[0].strip()
+                function_definitions.append(line)
         return function_definitions
 
-    def list_inclde_headers(self):
+    def list_include_headers(self):
         """Doc."""
         self._check_modified()
-        pattern_text = multi_line_comment
-        pattern_text += '|' + single_line_comment
-
-        pattern = re.compile(pattern_text, re.M | re.S)
-        text = pattern.sub('', self._text)
-
-        pattern = re.compile(include)
-        headers = pattern.findall(text)
+        headers = list_include_headers(self._text)
         return headers
 
     def get_undeclar_func_defs(self):
@@ -1084,6 +1126,9 @@ class CFile(file.File):
 
         undeclar_func_defs = []
         for func_def in func_defs:
+            func_name = func_def.split('(')[0]
+            if ' main' in func_name:
+                continue
             if func_def not in func_declars:
                 undeclar_func_defs.append(func_def)
         return undeclar_func_defs

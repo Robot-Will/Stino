@@ -82,7 +82,6 @@ class TaskQueue(object):
         """."""
         while self._queue:
             args = self._queue.pop(0)
-            print(args)
             if isinstance(args, tuple):
                 self._consumer(*args)
             else:

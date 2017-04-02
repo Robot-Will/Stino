@@ -34,6 +34,7 @@ from base_utils import task_queue
 from base_utils import task_listener
 from base_utils import downloader
 from base_utils import sys_info
+from base_utils import progress_bar
 from . import const
 from . import st_menu
 from . import selected
@@ -44,15 +45,9 @@ plugin_name = const.PLUGIN_NAME
 _d_pattern_text = r"'-D[\S\s]*?'"
 _d_pattern = re.compile(_d_pattern_text)
 
-_unix_path = r'((/[\S ]+?)+?)'
-_win_path = r'([A-Za-z]:)'
+header_pattern = re.compile(c_file.include)
 
-_error_pattern_text = _unix_path + r':([0-9]+?):([0-9]+?):(.*?)$'
-if sys_info.get_os_name() == 'windows':
-    _error_pattern_text = _win_path + _error_pattern_text
-error_pattern = re.compile(_error_pattern_text, re.M | re.S)
-
-EXCLUDES = ['examples', 'samples', 'test']
+EXCLUDES = ['example', 'examples', 'sample', 'samples', 'test', 'tests']
 
 
 def get_app_dir_settings():
@@ -153,18 +148,22 @@ def get_lib_index_files_info(arduino_dir_path):
 
 def get_ext_app_pkg_info(ext_app_hardware_path):
     """."""
+    exclucds = ['examples', 'drivers', 'tools', 'libraries']
     pkg_info = {'platforms': {}}
     pkg_info['platforms']['names'] = []
     pkg_dir_paths = glob.glob(ext_app_hardware_path + '/*')
     pkg_dir_paths = [p for p in pkg_dir_paths if os.path.isdir(p)]
     pkg_dir_paths = [p for p in pkg_dir_paths
-                     if os.path.basename(p) != 'tools']
+                     if os.path.basename(p).lower() not in exclucds]
     for pkg_dir_path in pkg_dir_paths:
+        pkg_info['path'] = pkg_dir_path
         sub_pkg_name = os.path.basename(pkg_dir_path)
         pkg_info['platforms']['names'].append(sub_pkg_name)
         arch_dir_paths = glob.glob(pkg_dir_path + '/*')
         arch_dir_paths = [p for p in arch_dir_paths
                           if os.path.isdir(p)]
+        arch_dir_paths = [p for p in arch_dir_paths
+                          if os.path.basename(p).lower() not in exclucds]
         arch_names = [os.path.basename(p) for p in arch_dir_paths]
         ptfm_info = {'versions': arch_names}
         for arch_name, arch_path in zip(arch_names, arch_dir_paths):
@@ -190,27 +189,28 @@ def get_installed_packages_info(arduino_info):
 
     pkg_name = 'Arduino IDE'
     if os.path.isdir(ext_app_hardware_path):
-        if pkg_name not in package_names:
-            package_names.append(pkg_name)
-
         pkg_info = get_ext_app_pkg_info(ext_app_hardware_path)
-        installed_packages_info['installed_packages'][pkg_name] = pkg_info
+        if pkg_info['platforms']['names']:
+            if pkg_name not in package_names:
+                package_names.append(pkg_name)
+            installed_packages_info['installed_packages'][pkg_name] = pkg_info
 
     pkg_name = 'Sketchbook'
-    if os.path.isdir(sketchbook_path):
-        if pkg_name not in package_names:
-            package_names.append(pkg_name)
+    if os.path.isdir(sketchbook_hardware_path):
         pkg_info = get_ext_app_pkg_info(sketchbook_hardware_path)
-        installed_packages_info['installed_packages'][pkg_name] = pkg_info
+        if pkg_info['platforms']['names']:
+            if pkg_name not in package_names:
+                package_names.append(pkg_name)
+            installed_packages_info['installed_packages'][pkg_name] = pkg_info
 
     packages_path = os.path.join(arduino_dir_path, 'packages')
     package_paths = glob.glob(packages_path + '/*')
-    package_names += [os.path.basename(p) for p in package_paths]
     installed_packages_info['installed_packages']['names'] = package_names
 
     for package_path in package_paths:
         pkg_name = os.path.basename(package_path)
         pkg_info = {'platforms': {}}
+        pkg_info['path'] = package_path
         hardware_path = os.path.join(package_path, 'hardware')
         platform_paths = glob.glob(hardware_path + '/*')
 
@@ -232,7 +232,10 @@ def get_installed_packages_info(arduino_info):
                 version_info['version'] = version
                 ptfm_info[version] = version_info
             pkg_info['platforms'][ptfm_name] = ptfm_info
-        installed_packages_info['installed_packages'][pkg_name] = pkg_info
+        if pkg_info['platforms']['names']:
+            if pkg_name not in package_names:
+                package_names.append(pkg_name)
+            installed_packages_info['installed_packages'][pkg_name] = pkg_info
     return installed_packages_info
 
 
@@ -317,7 +320,7 @@ def check_platform_selected(arduino_info):
             sel_package = package_names[0]
             sel_settings.set('package', sel_package)
     else:
-        sel_package = None
+        sel_package = ''
         sel_settings.set('package', sel_package)
 
     package_info = packages_info.get(sel_package, {})
@@ -328,7 +331,7 @@ def check_platform_selected(arduino_info):
             sel_platform = platform_names[0]
             sel_settings.set('platform', sel_platform)
     else:
-        sel_platform = None
+        sel_platform = ''
         sel_settings.set('platform', sel_platform)
 
     platform_vers_info = platforms_info.get(sel_platform, {})
@@ -338,7 +341,7 @@ def check_platform_selected(arduino_info):
             sel_version = versions[-1]
             sel_settings.set('version', sel_version)
     else:
-        sel_version = None
+        sel_version = ''
         sel_settings.set('version', sel_version)
 
 
@@ -376,7 +379,7 @@ def check_port_selected(arduino_info):
                     break
 
         if not has_port:
-            sel_item = None
+            sel_item = ''
             sel_settings.set('serial_port', sel_item)
 
 
@@ -385,25 +388,32 @@ def check_selected(arduino_info, item_type):
     if item_type == 'serial_port'and not arduino_info['init_done']:
         return
     sel_settings = arduino_info.get('selected')
-    sel_item = sel_settings.get(item_type, '')
+    key = item_type
+    if item_type == 'board':
+        platform = sel_settings.get('platform')
+        key = 'board@%s' % platform
+
+    sel_item = sel_settings.get(key, '')
     sel_item_info = arduino_info.get('%ss' % item_type, {})
     names = sel_item_info.get('names', [])
     if names:
         if sel_item not in names:
             sel_item = names[0]
-            sel_settings.set(item_type, sel_item)
+            sel_settings.set(key, sel_item)
     else:
-        sel_item = None
-        sel_settings.set(item_type, sel_item)
+        sel_item = ''
+        sel_settings.set(key, sel_item)
 
 
 def check_board_options_selected(arduino_info):
     """."""
-    sel_board = arduino_info['selected'].get('board')
+    selected = arduino_info['selected']
+    platform = selected.get('platform')
+    sel_board = selected.get('board@%s' % platform)
     board_info = arduino_info['boards'].get(sel_board, {})
     options = board_info.get('options', [])
     for option in options:
-        key = 'option_%s' % option
+        key = 'option_%s@%s' % (option, sel_board)
         sel_value_name = arduino_info['selected'].get(key)
         values_info = board_info.get(option, {})
         value_names = values_info.get('names', [])
@@ -426,14 +436,17 @@ def on_platform_select(package_name, platform_name):
 def on_version_select(version):
     """."""
     global arduino_info
-    arduino_info['selected'].set('version', version)
+    selected = arduino_info['selected']
+    selected.set('version', version)
     boards_info = get_boards_info(arduino_info)
     arduino_info.update(boards_info)
     check_selected(arduino_info, 'board')
     programmers_info = get_all_programmers_info(arduino_info)
     arduino_info.update(programmers_info)
     check_selected(arduino_info, 'programmer')
-    sel_board = arduino_info['selected'].get('board')
+
+    platform = selected.get('platform')
+    sel_board = selected.get('board@%s' % platform)
     on_board_select(sel_board)
     st_menu.update_platform_example_menu(arduino_info)
     st_menu.update_platform_library_menu(arduino_info)
@@ -444,7 +457,10 @@ def on_version_select(version):
 def on_board_select(board_name):
     """."""
     global arduino_info
-    arduino_info['selected'].set('board', board_name)
+    selected = arduino_info['selected']
+    platform = selected.get('platform')
+    key = 'board@%s' % platform
+    selected.set(key, board_name)
     check_board_options_selected(arduino_info)
     st_menu.update_board_options_menu(arduino_info)
     check_platform_dep()
@@ -453,7 +469,12 @@ def on_board_select(board_name):
 def on_board_option_select(option, value):
     """."""
     global arduino_info
-    arduino_info['selected'].set('option_%s' % option, value)
+    selected = arduino_info['selected']
+    platform = selected.get('platform')
+    key = 'board@%s' % platform
+    board = arduino_info['selected'].get(key, '')
+    key = 'option_%s@%s' % (option, board)
+    arduino_info['selected'].set(key, value)
 
 
 def on_programmer_select(programmer_name):
@@ -926,7 +947,7 @@ def find_dirs(path, dir_name):
 
 def get_tool_dirs(dir_name):
     """Find include dirs."""
-    tool_include_dirs = []
+    tool_dirs = []
     platform_info = selected.get_sel_platform_info(arduino_info)
     tools_info = selected.get_dep_tools_info(arduino_info, platform_info)
     tool_names = tools_info.get('names', [])
@@ -934,8 +955,35 @@ def get_tool_dirs(dir_name):
         tool_info = tools_info.get(name, {})
         path = tool_info.get('path', '')
         if path:
-            tool_include_dirs += find_dirs(path, dir_name)
-    return tool_include_dirs
+            tool_dirs += find_dirs(path, dir_name)
+    tool_dirs = [p.replace('\\', '/') for p in tool_dirs]
+    return tool_dirs
+
+
+def get_all_sub_paths(path):
+    """."""
+    all_sub_paths = [path]
+    sub_paths = glob.glob(path + '/*')
+    sub_paths = [p for p in sub_paths if os.path.isdir(p)]
+    for sub_path in sub_paths:
+        sub_name = os.path.basename(sub_path)
+        if sub_name.lower() not in EXCLUDES:
+            all_sub_paths.append(sub_path)
+            all_sub_paths += get_all_sub_paths(sub_path)
+    return all_sub_paths
+
+
+def get_all_lib_paths(project):
+    """."""
+    all_lib_paths = []
+    # if project.is_arduino_project():
+    #     core_src_path = selected.get_build_core_src_path(arduino_info)
+    #     variant_path = selected.get_build_variant_path(arduino_info)
+    #     all_lib_paths.append(core_src_path)
+    #     all_lib_paths.append(variant_path)
+    all_lib_paths.append(project.get_path())
+    all_lib_paths = [p.replace('\\', '/') for p in all_lib_paths]
+    return all_lib_paths
 
 
 def get_h_path_info(project):
@@ -943,91 +991,247 @@ def get_h_path_info(project):
     h_path_info = {}
     get_h_info = c_project.get_file_info_of_extensions
 
+    lib_paths = get_all_lib_paths(project)
+
     sketchbook_path = arduino_info['sketchbook_path']
     ext_app_path = arduino_info['ext_app_path']
     platform_path = selected.get_sel_platform_path(arduino_info)
 
-    paths = []
-    if ext_app_path:
-        paths.append(ext_app_path)
-    if platform_path:
-        paths.append(platform_path)
-    paths.append(sketchbook_path)
-
-    for path in paths:
+    platform_paths = [sketchbook_path, platform_path, ext_app_path]
+    for path in platform_paths:
         libraries_path = os.path.join(path, 'libraries')
-        lib_paths = glob.glob(libraries_path + '/*')
-        lib_paths = [p for p in lib_paths if os.path.isdir(p)]
-        for lib_path in lib_paths:
-            src_path = get_real_lib_path(lib_path)
+        paths = glob.glob(libraries_path + '/*')
+        paths = [p for p in paths if os.path.isdir(p)]
+        paths = [get_real_lib_path(p) for p in paths]
+        lib_paths += paths
 
-            info = get_h_info(src_path, c_file.H_EXTS, 'recursion', EXCLUDES)
-            h_path_info.update(info)
-
-    if project.is_arduino_project():
-        core_src_path = selected.get_build_core_src_path(arduino_info)
-        variant_path = selected.get_build_variant_path(arduino_info)
-        src_paths = [core_src_path, variant_path]
-        for src_path in src_paths:
-            if src_path:
-                info = get_h_info(src_path, c_file.H_EXTS,
-                                  'recursion', EXCLUDES)
-                h_path_info.update(info)
-
-    info = get_h_info(project.get_path(), c_file.H_EXTS, 'recursion', EXCLUDES)
-    h_path_info.update(info)
+    lib_paths = [p.replace('\\', '/') for p in lib_paths]
+    for lib_path in lib_paths[::-1]:
+        info = get_h_info(lib_path, c_file.H_EXTS, 'recursion', EXCLUDES)
+        h_path_info.update(info)
     return h_path_info
 
 
-def get_dep_cpps(dir_paths, h_path_info, used_cpps, used_headers, used_dirs):
+def get_paths_from_header(h_path_info, header):
     """."""
-    for dir_path in dir_paths:
-        if dir_path not in used_dirs:
+    dir_paths = []
+    if '/' in header:
+        header = header.split('/')[-1]
+        if header in h_path_info:
+            dir_path = h_path_info.get(header)
+            dir_paths.append(dir_path)
+            dir_path = dir_path.replace('\\', '/')
+            dir_path = os.path.dirname(dir_path)
+            dir_paths.append(dir_path)
+    else:
+        if header in h_path_info:
+            dir_path = h_path_info.get(header)
+            dir_path = dir_path.replace('\\', '/')
+            dir_paths.append(dir_path)
+    return dir_paths
+
+
+def clean_path(dir_path):
+    """."""
+    if os.path.isdir(dir_path):
+        shutil.rmtree(dir_path)
+
+
+def find_lib_paths_by_compiler(cmd_pattern, src_path, h_cpp_info,
+                               lib_paths, h_path_info, dummy_dir_path):
+    """."""
+    if dummy_dir_path not in lib_paths:
+        lib_paths.append(dummy_dir_path)
+
+    src_path = src_path.replace('\\', '/')
+    lib_paths = [p.replace('\\', '/') for p in lib_paths]
+    all_includes = ['"-I%s"' % p for p in lib_paths]
+    all_inc_text = ' '.join(all_includes)
+    cmd = cmd_pattern.replace('{source_file}', src_path)
+    cmd = cmd.replace('{includes}', all_inc_text)
+    return_code, stdout, stderr = run_command(cmd)
+
+    headers = []
+    if return_code != 0 and stderr:
+        lines = stderr.split('\n')
+        for line in lines:
+            if '#' in line and 'include' in line:
+                headers += header_pattern.findall(line)
+    elif return_code == 0:
+        if not stdout:
+            pass
+        else:
+            lines = stdout.split('\n')
+            for line in lines:
+                line = line.strip()
+                if line.endswith(':'):
+                    h_file_path = line[:-1]
+                    if not os.path.isabs(h_file_path):
+                        headers.append(h_file_path)
+
+    if dummy_dir_path in lib_paths:
+        lib_paths.remove(dummy_dir_path)
+
+    for header in headers:
+        dir_paths = get_paths_from_header(h_path_info, header)
+        if dir_paths:
+            h_file_path = dir_paths[-1] + '/' + header
+            if os.path.isfile(h_file_path):
+                if '.combine.cpp' in src_path:
+                    src_path = src_path.replace('.combine.cpp', '.ino.cpp')
+
+                if h_file_path not in h_cpp_info:
+                    h_cpp_info[h_file_path] = [src_path]
+                else:
+                    if src_path not in h_cpp_info[h_file_path]:
+                        h_cpp_info[h_file_path].append(src_path)
+
+                for dir_path in dir_paths:
+                    if dir_path not in lib_paths:
+                        lib_paths.append(dir_path)
+        else:
+            dummy_file_path = os.path.join(dummy_dir_path, header)
+            dir_path = os.path.dirname(dummy_file_path)
+            if not os.path.isdir(dir_path):
+                os.makedirs(dir_path)
+            if not os.path.isfile(dummy_file_path):
+                with open(dummy_file_path, 'w') as f:
+                    f.write('')
+
+    if headers:
+        lib_paths, h_cpp_info = \
+            find_lib_paths_by_compiler(cmd_pattern, src_path, h_cpp_info,
+                                       lib_paths, h_path_info, dummy_dir_path)
+
+    exts = ['.d', '.o']
+    paths = [src_path, os.path.splitext(src_path)[0]]
+    for ext in exts:
+        for path in paths:
+            tmp_file_path = path + ext
+            if os.path.isfile(tmp_file_path):
+                os.remove(tmp_file_path)
+    return lib_paths, h_cpp_info
+
+
+def find_lib_paths(src_path, h_path_info, h_cpp_info):
+    """."""
+    lib_paths = []
+    f = c_file.CFile(src_path)
+    headers = f.list_include_headers()
+
+    if '.combine.cpp' in src_path:
+        src_path = src_path.replace('.combine.cpp', '.ino.cpp')
+
+    for header in headers:
+        dir_paths = get_paths_from_header(h_path_info, header)
+        if dir_paths:
+            h_file_path = dir_paths[-1] + '/' + header
+            if os.path.isfile(h_file_path):
+                if h_file_path not in h_cpp_info:
+                    h_cpp_info[h_file_path] = [src_path]
+                else:
+                    if src_path not in h_cpp_info[h_file_path]:
+                        h_cpp_info[h_file_path].append(src_path)
+                for dir_path in dir_paths:
+                    if dir_path not in lib_paths:
+                        lib_paths.append(dir_path)
+    return lib_paths, h_cpp_info
+
+
+def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info, used_cpps,
+                      used_h_paths, h_cpp_info, used_dirs, arch, build_path):
+    """."""
+    sub_src_paths = []
+    src_paths = [p.replace('\\', '/') for p in src_paths]
+
+    for src_path in src_paths:
+        h_paths = []
+        cpp_paths = []
+
+        if os.path.isfile(src_path):
+            dir_path = os.path.dirname(src_path)
             used_dirs.append(dir_path)
+            cpp_paths = [src_path]
+        elif src_path not in used_dirs:
+            paths = [src_path]
+            arch_dir_path = src_path + '/' + arch
+            if os.path.isdir(arch_dir_path):
+                paths.append(arch_dir_path)
 
-            parent_path = os.path.dirname(dir_path)
-            parent_name = os.path.basename(parent_path)
-            if parent_name == 'build':
-                prj_name = os.path.basename(dir_path)
-                ino_cpp_name = prj_name + '.ino.cpp'
-                ino_cpp_path = os.path.join(dir_path, ino_cpp_name)
-                h_paths = []
-                cpp_paths = [ino_cpp_path]
-            else:
-                h_paths = \
-                    c_project.list_files_of_extensions(dir_path, c_file.H_EXTS)
+            for src_path in paths:
+                used_dirs.append(src_path)
                 cpp_paths = \
-                    c_project.list_files_of_extensions(dir_path,
+                    c_project.list_files_of_extensions(src_path,
                                                        c_file.CC_EXTS)
+                if not cmd_pattern:
+                    h_paths = \
+                        c_project.list_files_of_extensions(src_path,
+                                                           c_file.H_EXTS)
 
-            unused_src_paths = []
-            for h_path in h_paths:
-                header = os.path.basename(h_path)
-                if header not in used_headers:
-                    used_headers.append(header)
-                    unused_src_paths.append(h_path)
-            for cpp_path in cpp_paths:
-                if cpp_path not in used_cpps:
-                    used_cpps.append(cpp_path)
-                    unused_src_paths.append(cpp_path)
+        unused_src_paths = []
+        for h_path in h_paths:
+            h_path = h_path.replace('\\', '/')
+            if h_path not in used_h_paths:
+                used_h_paths.append(h_path)
+                unused_src_paths.append(h_path)
+        for cpp_path in cpp_paths:
+            cpp_path = cpp_path.replace('\\', '/')
+            if cpp_path not in used_cpps:
+                cpp_path = cpp_path
+                used_cpps.append(cpp_path)
+                unused_src_paths.append(cpp_path)
 
-            sub_dir_paths = []
-            for src_path in unused_src_paths:
-                f = c_file.CFile(src_path)
-                headers = f.list_inclde_headers()
-                for header in headers:
-                    if '/' in header:
-                        header = header.split('/')[-1]
-                    if header in h_path_info:
-                        dir_path = h_path_info.get(header)
-                        if dir_path not in sub_dir_paths:
-                            if dir_path not in used_dirs:
-                                sub_dir_paths.append(dir_path)
+        lib_paths = []
+        dummy_dir_path = os.path.join(build_path, 'dummy')
+        dummy_dir_path = dummy_dir_path.replace('\\', '/')
 
-            used_cpps, used_headers, used_dirs = \
-                get_dep_cpps(sub_dir_paths, h_path_info, used_cpps,
-                             used_headers, used_dirs)
-    return used_cpps, used_headers, used_dirs
+        for src_path in unused_src_paths:
+            l_paths, h_cpp_info = find_lib_paths(src_path, h_path_info,
+                                                 h_cpp_info)
+            if cmd_pattern:
+                src_paths = [os.path.dirname(src_path)]
+                cl_paths, h_cpp_info = \
+                    find_lib_paths_by_compiler(cmd_pattern, src_path,
+                                               h_cpp_info, src_paths,
+                                               h_path_info, dummy_dir_path)
+                clean_path(dummy_dir_path)
+
+                inc_l_paths = []
+                for l_path in l_paths:
+                    is_include = False
+                    for cl_path in cl_paths:
+                        if l_path.startswith(cl_path):
+                            is_include = True
+                            break
+                    if is_include:
+                        inc_l_paths.append(l_path)
+                l_paths = inc_l_paths
+            lib_paths += l_paths
+
+        lib_paths = [p.replace('\\', '/') for p in lib_paths]
+
+        non_inc_h_paths = []
+        for h_path in h_cpp_info:
+            is_inc_h = False
+            for lib_path in lib_paths:
+                if h_path.startswith(lib_path):
+                    is_inc_h = True
+                    break
+            if not is_inc_h and h_path not in non_inc_h_paths:
+                non_inc_h_paths.append(h_path)
+        for h_path in non_inc_h_paths:
+            h_cpp_info.pop(h_path)
+
+        for lib_path in lib_paths:
+            if (lib_path not in used_dirs and lib_path not in sub_src_paths):
+                    sub_src_paths.append(lib_path)
+
+    if sub_src_paths:
+        used_cpps, used_h_paths, h_cpp_info, used_dirs = \
+            get_dep_lib_paths(cmd_pattern, sub_src_paths, h_path_info,
+                              used_cpps, used_h_paths, h_cpp_info,
+                              used_dirs, arch, build_path)
+    return used_cpps, used_h_paths, h_cpp_info, used_dirs
 
 
 def is_modified(file_path, info):
@@ -1058,12 +1262,85 @@ def get_hooks_cmds(cmds_info, pattern_key):
     return cmds, msgs
 
 
-def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
+def get_obj_paths(build_path, src_paths, mode):
+    """."""
+    obj_paths = []
+    if mode == 'sketch':
+        prj_path = os.path.dirname(src_paths[0])
+        for src_path in src_paths:
+            sub_path = src_path.replace(prj_path, '')
+            if sub_path.startswith('/'):
+                sub_path = sub_path[1:]
+            dir_path = os.path.join(build_path, 'sketch')
+            obj_path = os.path.join(dir_path, sub_path)
+            obj_path += '.o'
+            obj_path = obj_path.replace('\\', '/')
+            obj_paths.append(obj_path)
+    elif mode == 'libs':
+        for src_path in src_paths:
+            sub_path = src_path.split('libraries')[-1]
+            if sub_path.startswith('/'):
+                sub_path = sub_path[1:]
+            dir_path = os.path.join(build_path, 'libraries')
+            obj_path = os.path.join(dir_path, sub_path)
+            obj_path += '.o'
+            obj_path = obj_path.replace('\\', '/')
+            obj_paths.append(obj_path)
+    elif mode == 'core':
+        for src_path in src_paths:
+            if 'cores' in src_path:
+                sub_path = src_path.split('cores')[-1]
+            elif 'variants' in src_path:
+                sub_path = src_path.split('variants')[-1]
+            else:
+                sub_path = ''
+            if sub_path.startswith('/'):
+                sub_path = sub_path[1:]
+            if '/' in sub_path:
+                index = sub_path.index('/')
+                sub_path = sub_path[index + 1:]
+            dir_path = os.path.join(build_path, 'core')
+            obj_path = os.path.join(dir_path, sub_path)
+            obj_path += '.o'
+            obj_path = obj_path.replace('\\', '/')
+            obj_paths.append(obj_path)
+
+    for obj_path in obj_paths:
+        dir_path = os.path.dirname(obj_path)
+        if not os.path.isdir(dir_path):
+            os.makedirs(dir_path)
+    return obj_paths
+
+
+def get_changed_src_paths(h_path, h_cpp_info, last_build_info,
+                          changed_src_paths, used_h_paths):
+    """."""
+    if h_path in h_cpp_info:
+        if is_modified(h_path, last_build_info):
+            src_paths = h_cpp_info[h_path]
+            for src_path in src_paths:
+                src_ext = os.path.splitext(src_path)[-1]
+                if src_ext in c_file.CC_EXTS:
+                    if src_path not in changed_src_paths:
+                        changed_src_paths.append(src_path)
+                elif src_ext in c_file.H_EXTS:
+                    if src_ext not in used_h_paths:
+                        used_h_paths.append(used_h_paths)
+                        changed_src_paths, used_h_paths = \
+                            get_changed_src_paths(src_path, h_cpp_info,
+                                                  last_build_info,
+                                                  changed_src_paths,
+                                                  used_h_paths)
+    return changed_src_paths, used_h_paths
+
+
+def get_build_cmds(cmds_info, prj_build_path, inc_text,
+                   prj_src_paths, lib_src_paths, core_src_paths, h_cpp_info):
     """."""
     cmds = []
     msgs = []
 
-    if not all_src_paths:
+    if not prj_src_paths:
         return cmds, msgs
 
     is_full_build = bool(arduino_info['settings'].get('full_build'))
@@ -1071,18 +1348,19 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
                                    'last_build.stino-settings')
     last_build_info = file.SettingsFile(last_build_path)
     prj_name = os.path.basename(prj_build_path)
-    core_a_path = os.path.join(prj_build_path, 'core.a')
+    core_a_path = os.path.join(prj_build_path, 'core/core.a')
+    core_a_path = core_a_path.replace('\\', '/')
 
     last_package = last_build_info.get('package', '')
     last_platform = last_build_info.get('platform', '')
     last_version = last_build_info.get('version', '')
-    last_board = last_build_info.get('board', '')
+    last_board = last_build_info.get('board@%s' % last_platform, '')
 
     arduino_sel = arduino_info['selected']
     sel_package = arduino_sel.get('package', '')
     sel_platform = arduino_sel.get('platform', '')
     sel_version = arduino_sel.get('version', '')
-    sel_board = arduino_sel.get('board', '')
+    sel_board = arduino_sel.get('board@%s' % sel_platform, '')
     sel_board_options = selected.get_sel_board_options(arduino_info)
 
     if not is_full_build:
@@ -1096,20 +1374,19 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
             is_full_build = True
         else:
             for option in sel_board_options:
-                key = 'option_%s' % option
+                key = 'option_%s@%s' % (option, sel_board)
                 sel_option = arduino_sel.get(key, '')
                 last_option = last_build_info.get(key, '')
                 if sel_option != last_option:
                     is_full_build = True
+                    break
 
-    obj_paths = []
-    src_paths = all_src_paths[::-1]
-    for src_path in src_paths:
-        src_name = os.path.basename(src_path)
-        obj_name = src_name + '.o'
-        obj_path = os.path.join(prj_build_path, obj_name)
-        obj_path = obj_path.replace('\\', '/')
-        obj_paths.append(obj_path)
+    prj_obj_paths = get_obj_paths(prj_build_path, prj_src_paths, 'sketch')
+    lib_obj_paths = get_obj_paths(prj_build_path, lib_src_paths, 'libs')
+    core_obj_paths = get_obj_paths(prj_build_path, core_src_paths, 'core')
+
+    src_paths = prj_src_paths + lib_src_paths + core_src_paths
+    obj_paths = prj_obj_paths + lib_obj_paths + core_obj_paths
 
     build_src_paths = []
     build_obj_paths = []
@@ -1123,8 +1400,18 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
         libs_changed = True
         need_gen_bins = True
     else:
+        changed_src_paths = []
+        used_h_paths = []
+        for h_path in h_cpp_info:
+            changed_src_paths, used_h_paths = \
+                get_changed_src_paths(h_path, h_cpp_info, last_build_info,
+                                      changed_src_paths, used_h_paths)
+
         need_compile = False
-        if is_modified(src_paths[0], last_build_info):
+        main_src_path = src_paths[0]
+        if main_src_path in changed_src_paths:
+            need_compile = True
+        elif is_modified(main_src_path, last_build_info):
             need_compile = True
         elif not os.path.isfile(obj_paths[0]):
             need_compile = True
@@ -1136,7 +1423,9 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
 
         for src_path, obj_path in zip(src_paths[1:], obj_paths[1:]):
             need_compile = False
-            if is_modified(src_path, last_build_info):
+            if src_path in changed_src_paths:
+                need_compile = True
+            elif is_modified(src_path, last_build_info):
                 need_compile = True
             elif not os.path.isfile(obj_path):
                 need_compile = True
@@ -1169,6 +1458,7 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
             cmd = cmds_info.get('recipe.cpp.o.pattern', '')
         else:
             cmd = ''
+        cmd = cmd.replace('{includes}', inc_text)
         cmd = cmd.replace('{source_file}', src_path)
         cmd = cmd.replace('{object_file}', obj_path)
         msg = 'Compiling %s...' % os.path.basename(src_path)
@@ -1191,8 +1481,7 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
         msgs += _msgs
 
         cmd_pattern = cmds_info.get('recipe.ar.pattern', '')
-        if '/core/' in cmd_pattern:
-            cmd_pattern = cmd_pattern.replace('core/', '')
+
         for obj_path in obj_paths[1:]:
             cmd = cmd_pattern.replace('{object_file}', obj_path)
             cmds.append(cmd)
@@ -1206,7 +1495,7 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
 
     out_file_name = cmds_info.get('recipe.output.save_file', '')
     if out_file_name:
-        bin_ext = out_file_name[-4:]
+        bin_ext = os.path.splitext(out_file_name)[-1]
     else:
         bin_ext = '.bin'
 
@@ -1229,8 +1518,14 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
 
         cmd_pattern = cmds_info.get('recipe.c.combine.pattern', '')
         cmd = cmd_pattern.replace('{object_files}', '"%s"' % obj_paths[0])
-        if '/core/' in cmd:
-            cmd = cmd.replace('core/', '')
+
+        if not src_paths[1:]:
+            # lib_paths = get_tool_dirs('lib')
+            # libs = ['"-L%s"' % p for p in lib_paths]
+            # lib_text = ' '.join(libs)
+            lib_text = ''
+            cmd = cmd.replace('"%s"' % core_a_path, lib_text)
+
         cmds.append(cmd)
         msgs.append('')
 
@@ -1265,6 +1560,14 @@ def get_build_cmds(cmds_info, prj_build_path, all_src_paths):
 
 def run_command(cmd):
     """."""
+    texts = _d_pattern.findall(cmd)
+    for text in texts:
+        key, value = text[1:-1].split('=')
+        key = key.strip()
+        value = value.strip().replace('"', '\\"')
+        new_text = key + '="' + value + '"'
+        cmd = cmd.replace(text, new_text)
+
     proc = subprocess.Popen(cmd, stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE, shell=True)
     result = proc.communicate()
@@ -1331,7 +1634,7 @@ def get_error_infos(line):
                     col_no = int(info)
                     line = linecache.getline(file_path, line_no + 1)
                     if col_no >= len(line):
-                        col_no -= 1
+                        col_no = len(line) - 1
                     elif col_no < 1:
                         col_no = 1
 
@@ -1355,7 +1658,7 @@ def open_file(file_path):
     if not is_opened_file:
         win = sublime.active_window()
         view = win.open_file(file_path)
-        time.sleep(0.5)
+        time.sleep(0.25)
     return win, view
 
 
@@ -1416,6 +1719,13 @@ def handle_build_error_messages(error_msg):
                                       sublime.LAYOUT_BELOW,
                                       on_navigate=handle_phantoms)
             phantoms.append(phantom)
+
+            if col_no > 0:
+                text_point = view.text_point(line_no, col_no - 1)
+            view.sel().clear()
+            view.sel().add(sublime.Region(text_point))
+
+            text_point = view.text_point(line_no - 1, col_no)
             view.show(text_point)
         phantom_set.update(phantoms)
 
@@ -1425,14 +1735,6 @@ def run_build_command(percent, cmd, msg):
     is_ok = True
     if cmd:
         cmd = cmd.replace('\\', '/')
-
-        texts = _d_pattern.findall(cmd)
-        for text in texts:
-            key, value = text[1:-1].split('=')
-            key = key.strip()
-            value = value.strip().replace('"', '\\"')
-            new_text = key + '="' + value + '"'
-            cmd = cmd.replace(text, new_text)
 
         if msg:
             msg = '[%.1f%%] %s' % (percent, msg)
@@ -1594,17 +1896,33 @@ def save_project_files(project_path):
                         view.run_command('save')
 
 
+def get_src_paths(paths, mode='norecursion'):
+    """."""
+    all_src_paths = []
+    for path in paths:
+        src_paths = c_project.list_files_of_extensions(path, c_file.CC_EXTS,
+                                                       mode)
+        for src_path in src_paths:
+            src_path = src_path.replace('\\', '/')
+            if src_path not in all_src_paths:
+                all_src_paths.append(src_path)
+    return all_src_paths
+
+
 def build_sketch(build_info={}):
     """."""
     earse_all_phantoms()
     if not build_info:
+        message_queue.put('[Error] No build info.')
         return
 
     arduino_sel = arduino_info['selected']
     sel_package = arduino_sel.get('package', '')
     sel_platform = arduino_sel.get('platform', '')
     sel_version = arduino_sel.get('version', '')
-    sel_board = arduino_sel.get('board', '')
+    sel_board = arduino_sel.get('board@%s' % sel_platform, '')
+    sel_arch = selected.get_platform_arch_by_name(arduino_info, sel_package,
+                                                  sel_platform).lower()
 
     project_path = build_info.get('path')
     upload_mode = build_info.get('upload_mode', '')
@@ -1614,16 +1932,19 @@ def build_sketch(build_info={}):
         save_project_files(project_path)
 
     is_ready = True
+
     if not (sel_package and sel_platform and sel_version and sel_board):
         is_ready = False
     else:
         sel_board_options = selected.get_sel_board_options(arduino_info)
         for option in sel_board_options:
-            key = 'option_%s' % option
+            key = 'option_%s@%s' % (option, sel_board)
             sel_option = arduino_sel.get(key, '')
             if not sel_option:
                 is_ready = False
+                break
     if not is_ready:
+        message_queue.put('[Error] No complete board info.')
         return
 
     msg = '[Build] %s...' % project_path.replace('\\', '/')
@@ -1633,6 +1954,9 @@ def build_sketch(build_info={}):
 
     is_ready = check_platform_dep()
     if not is_ready:
+        msg = '[Error] Toolchain is not ready. '
+        msg += 'Please build the sketch after the toolchain installation done.'
+        message_queue.put(msg)
         return
 
     msg = '[Step 2] Find all source files.'
@@ -1641,66 +1965,142 @@ def build_sketch(build_info={}):
     build_dir_path = os.path.join(arduino_app_path, 'build')
 
     prj = c_project.CProject(project_path, build_dir_path)
-    prj_build_path = prj.get_build_path()
+    if not prj.has_main_file():
+        msg = '[Error] No main source file found. '
+        msg += 'Main source file should be a c/c++ file, which contains '
+        msg += 'main() function, or a Arduino file, which contains setup() '
+        msg += 'and loop() functions.'
+        message_queue.put(msg)
+        return
 
-    prj_src_dir_paths = []
-    if prj.is_arduino_project():
-        prj.gen_arduino_tmp_file()
-        prj_src_dir_paths.append(prj.get_build_path())
-    prj_src_dir_paths.append(prj.get_path())
+    prog_bar.start(sublime.active_window().status_message,
+                   'Finding source files')
 
-    if prj.is_arduino_project():
-        core_src_path = selected.get_build_core_src_path(arduino_info)
-        variant_path = selected.get_build_variant_path(arduino_info)
-        prj_src_dir_paths.append(core_src_path)
-        prj_src_dir_paths.append(variant_path)
-
-    all_src_paths = []
-    used_headers = []
-    tool_include_dirs = []
+    prj_name = prj.get_name()
+    prj_path = prj.get_path().replace('\\', '/')
+    prj_build_path = prj.get_build_path().replace('\\', '/')
+    build_sketch_path = prj_build_path + '/sketch'
+    if not os.path.isdir(build_sketch_path):
+        os.makedirs(build_sketch_path)
+    os.chdir(build_sketch_path)
 
     h_path_info = get_h_path_info(prj)
-    all_src_paths, used_headers, dep_dirs = \
-        get_dep_cpps(prj_src_dir_paths, h_path_info, all_src_paths,
-                     used_headers, tool_include_dirs)
-    all_src_paths = [p.replace('\\', '/') for p in all_src_paths]
-
-    dep_dirs += get_tool_dirs('include')
-    include_dirs = [p.replace('\\', '/') for p in dep_dirs]
-    arduino_info['include_paths'] = include_dirs
 
     cmds_info = selected.get_build_commands_info(arduino_info, prj)
+    cmd_preproc_includes = cmds_info.get('recipe.preproc.includes', '')
 
-    # source_file = all_src_paths[0]
-    # cmd_preproc_includes = cmds_info['recipe.preproc.includes']
-    # cmd_preproc_includes = cmd_preproc_includes.replace('{source_file}',
-    #                                                     source_file)
-    # return_code, stdout, stderr = run_command(cmd_preproc_includes)
+    main_file_path = prj.get_main_file_path()
+    core_dir_paths = []
 
-    # include_paths = []
-    # include_paths.append(prj.get_path().replace('\\', '/'))
-    # include_paths.append(prj.get_build_path().replace('\\', '/'))
-    # lines = stdout.split('\n')
-    # for line in lines:
-    #     if line.endswith(':'):
-    #         dir_path = os.path.dirname(line).replace('\\', '/')
-    #         if dir_path not in include_paths:
-    #             include_paths.append(dir_path)
+    if prj.is_arduino_project():
+        core_dir_path = selected.get_build_core_src_path(arduino_info)
+        variant_dir_path = selected.get_build_variant_path(arduino_info)
+        core_dir_path = core_dir_path.replace('\\', '/')
+        variant_dir_path = variant_dir_path.replace('\\', '/')
+        core_dir_paths = [core_dir_path, variant_dir_path]
 
-    # src_paths = []
-    # for src_path in all_src_paths:
-    #     src_dir_path = os.path.dirname(src_path)
-    #     if src_dir_path in include_paths:
-    #         src_paths.append(src_path)
+    src_paths = []
+    lib_paths = []
+    used_h_paths = []
+    h_cpp_info = {}
+    prj_src_dir_paths = []
+    prj_src_dir_paths.append(prj_path)
 
-    cmds, msgs = get_build_cmds(cmds_info, prj_build_path, all_src_paths)
+    if prj.is_main_file_ino():
+        main_file_path = prj.get_simple_combine_path()
+        prj_src_dir_paths.append(main_file_path)
+
+    all_src_paths, used_h_paths, h_cpp_info, all_lib_paths = \
+        get_dep_lib_paths(cmd_preproc_includes, prj_src_dir_paths, h_path_info,
+                          src_paths, used_h_paths, h_cpp_info, lib_paths,
+                          sel_arch, prj_build_path)
+
+    prj_paths = []
+    lib_paths = []
+
+    for path in all_lib_paths:
+        if path.startswith(prj_build_path):
+            continue
+        elif path.startswith(prj_path):
+            prj_paths.append(path)
+        else:
+            lib_paths.append(path)
+
+    if prj_path in prj_paths:
+        prj_paths.remove(prj_path)
+        prj_paths = [prj_path] + prj_paths
+
+    all_lib_paths = prj_paths + core_dir_paths + lib_paths
+    # all_lib_paths += get_tool_dirs('include')
+    all_lib_paths = [p.replace('\\', '/') for p in all_lib_paths]
+    includes = ['"-I%s"' % p for p in all_lib_paths]
+    inc_text = ' '.join(includes)
+
+    if prj.is_main_file_ino():
+        if 'recipe.preproc.macros' in cmds_info:
+            minus_src_name = '%s.gcc_minus.cpp' % prj_name
+            minus_src_path = os.path.join(build_sketch_path, minus_src_name)
+            file_path = prj.get_simple_combine_path(with_header=False)
+            cmd_preproc_macros = cmds_info.get('recipe.preproc.macros', '')
+            cmd = cmd_preproc_macros.replace('{includes}', '')
+            cmd = cmd.replace('{source_file}', file_path)
+            cmd = cmd.replace('{preprocessed_file_path}', minus_src_path)
+            run_command(cmd)
+            main_file_path = prj.get_combine_path(minus_src_path)
+        else:
+            main_file_path = prj.get_combine_path()
+
+    prj_src_paths = []
+    lib_src_paths = []
+    for path in all_src_paths:
+        if path.startswith(prj_build_path):
+            continue
+        elif path.startswith(prj_path):
+            prj_src_paths.append(path)
+        else:
+            lib_src_paths.append(path)
+
+    # lib_src_paths = get_src_paths(lib_paths, mode='recursion')
+    # prj_src_paths = get_src_paths([prj_path], mode='recursion')
+    main_file_path = main_file_path.replace('\\', '/')
+    if main_file_path in prj_src_paths:
+        prj_src_paths.remove(main_file_path)
+    prj_src_paths = [main_file_path] + prj_src_paths
+
+    core_src_paths = get_src_paths(core_dir_paths, mode='recursion')
+    src_paths = prj_src_paths + lib_src_paths + core_src_paths
+
+    prog_bar.stop()
+
+    cmds, msgs = get_build_cmds(cmds_info, prj_build_path, inc_text,
+                                prj_src_paths, lib_src_paths, core_src_paths,
+                                h_cpp_info)
 
     msg = '[Step 3] Start building.'
     message_queue.put(msg)
+    prog_bar.start(sublime.active_window().status_message,
+                   'Building sketch')
     is_ok = run_build_commands(cmds, msgs)
+    prog_bar.stop()
     if not is_ok:
         message_queue.put('[Build] Error occurred.')
         return
+
+    bin_file_pattern = cmds_info.get('recipe.output.save_file', '')
+    if bin_file_pattern:
+        bin_file_ext = os.path.splitext(bin_file_pattern)[-1]
+        binary_file_name = prj_name + bin_file_ext
+        bin_file_path = os.path.join(prj_build_path, binary_file_name)
+
+        board_info = selected.get_sel_board_info(arduino_info)
+        build_board = board_info.get('build.board', '')
+        build_mcu = board_info.get('build.mcu', '')
+        out_binary_file_name = '%s_%s_%s%s' % (prj_name, build_board,
+                                               build_mcu, bin_file_ext)
+        out_binary_file_path = os.path.join(prj_path, out_binary_file_name)
+        if os.path.isfile(out_binary_file_path):
+            os.remove(out_binary_file_path)
+        shutil.copy(bin_file_path, out_binary_file_path)
 
     arduino_info['settings'].set('full_build', False)
     size_cmd = cmds_info.get('recipe.size.pattern', '')
@@ -1721,14 +2121,18 @@ def build_sketch(build_info={}):
     last_build_info.set('package', sel_package)
     last_build_info.set('platform', sel_platform)
     last_build_info.set('version', sel_version)
-    last_build_info.set('board', sel_board)
+    last_build_info.set('board@%s' % sel_platform, sel_board)
     for option in sel_board_options:
-        key = 'option_%s' % option
+        key = 'option_%s@%s' % (option, sel_board)
         sel_option = arduino_sel.get(key, '')
         last_build_info.set(key, sel_option)
-    for src_path in all_src_paths:
+    h_paths = list(h_cpp_info.keys())
+    for src_path in (src_paths + h_paths):
         mtime = os.path.getmtime(src_path)
         last_build_info.set(src_path, mtime)
+
+    msg = 'Build done.'
+    message_queue.put(msg)
 
     if upload_mode:
         upload_cmd = selected.get_upload_command(arduino_info, project=prj,
@@ -1740,6 +2144,8 @@ def upload_sketch(upload_cmd=''):
     """."""
     if upload_cmd:
         message_queue.put('[Upload]...')
+        prog_bar.start(sublime.active_window().status_message,
+                       'Building sketch')
         upload_port = arduino_info['selected'].get('serial_port', '')
         is_network_upload = arduino_info['selected'].get('use_network_port',
                                                          False)
@@ -1769,7 +2175,7 @@ def upload_sketch(upload_cmd=''):
             new_upload_port = serial_port.prepare_upload_port(upload_port,
                                                               do_touch,
                                                               do_reset)
-            if new_upload_port != upload_port:
+            if new_upload_port and new_upload_port != upload_port:
                 new_serial_file = serial_port.get_serial_file(new_upload_port)
                 upload_cmd = upload_cmd.replace(upload_port, new_upload_port)
                 upload_cmd = upload_cmd.replace(serial_file, new_serial_file)
@@ -1782,6 +2188,8 @@ def upload_sketch(upload_cmd=''):
             serial_listener.start()
             if monitor and is_monitor_running:
                 monitor.start()
+            prog_bar.stop()
+            message_queue.put('Upload done.')
 
 
 def upload_bin_file(file_path, mode='upload'):
@@ -1915,7 +2323,7 @@ def check_pkgs():
         remote_etag = downloader.get_remote_etag(url)
         if remote_etag:
             local_etag = arduino_info['etags'].get(key)
-            if remote_etag and remote_etag != local_etag:
+            if remote_etag != local_etag:
                 is_done = downloader.download(url, arduino_dir_path,
                                               message_queue.put,
                                               mode='replace')
@@ -2111,6 +2519,18 @@ def _init():
     arduino_info['init_done'] = True
 
 
+def focus_view(view, line_no, col_no):
+    """."""
+    text_point = view.text_point(line_no, col_no)
+    if col_no > 0:
+        text_point = view.text_point(line_no, col_no - 1)
+    view.sel().clear()
+    view.sel().add(sublime.Region(text_point))
+
+    text_point = view.text_point(line_no - 1, col_no)
+    view.show(text_point)
+
+
 arduino_info = {'init_done': False}
 message_queue = None
 serial_listener = serial_port.PortListener(serial_port.list_serial_ports,
@@ -2127,6 +2547,10 @@ ide_importer = task_queue.TaskQueue(import_avr_platform)
 sketch_builder = task_queue.TaskQueue(build_sketch)
 sketch_uploader = task_queue.TaskQueue(upload_sketch)
 bootloader = task_queue.TaskQueue(burn_bootloader)
+view_selector = task_queue.TaskQueue(focus_view)
+prog_bar = progress_bar.ProgressBar()
 
 do_action = task_queue.ActionQueue()
 do_action.put(_init)
+
+sublime.active_window().status_message('Thanks for supporting stino!')
