@@ -1665,7 +1665,7 @@ def open_file(file_path):
 def handle_build_error_messages(error_msg):
     """."""
     global arduino_info
-    message_queue.put(error_msg)
+    build_message_queue.put(error_msg)
 
     st_version = int(sublime.version())
     if st_version < 3118:
@@ -1738,13 +1738,13 @@ def run_build_command(percent, cmd, msg):
 
         if msg:
             msg = '[%.1f%%] %s' % (percent, msg)
-            message_queue.put(msg)
+            build_message_queue.put(msg)
         return_code, stdout, stderr = run_command(cmd)
         verbose_build = bool(arduino_info['settings'].get('verbose_build'))
         if verbose_build:
-            message_queue.put(cmd.replace('\\', '/'))
+            build_message_queue.put(cmd.replace('\\', '/'))
             if stdout:
-                message_queue.put(stdout.replace('\r', ''))
+                build_message_queue.put(stdout.replace('\r', ''))
         if stderr:
             handle_build_error_messages(stderr.replace('\r', ''))
         if return_code != 0:
@@ -1760,12 +1760,12 @@ def run_upload_command(cmd):
         return_code, stdout, stderr = run_command(cmd)
         verbose_upload = bool(arduino_info['settings'].get('verbose_upload'))
         if verbose_upload:
-            message_queue.put(cmd.replace('\\', '/'))
+            build_message_queue.put(cmd.replace('\\', '/'))
 
         if stdout:
-            message_queue.put(stdout)
+            build_message_queue.put(stdout)
         if stderr:
-            message_queue.put(stderr)
+            build_message_queue.put(stderr)
         if return_code != 0:
             is_ok = False
     return is_ok
@@ -1795,9 +1795,9 @@ def run_bootloader_cmds(cmds):
         cmd = cmd.replace('\\', '/')
         return_code, stdout, stderr = run_command(cmd)
         if stdout:
-            message_queue.put(stdout)
+            build_message_queue.put(stdout)
         if stderr:
-            message_queue.put(stderr)
+            build_message_queue.put(stderr)
 
         if return_code != 0:
             is_ok = False
@@ -1847,7 +1847,7 @@ def run_size_command(cmd, regex_info):
                     text += '%s bytes (%s%%) ' % (size, size_percent)
                     text += 'of program storage space. '
                     text += 'Maximum is %s bytes.' % size_total
-                    message_queue.put(text)
+                    build_message_queue.put(text)
 
             data_regex = regex_info.get('recipe.size.regex.data', '')
             if data_regex:
@@ -1871,14 +1871,14 @@ def run_size_command(cmd, regex_info):
                 text += 'of dynamic memory, leaving '
                 text += '%s bytes for local variables. ' % size_data_remain
                 text += 'Maximum is %s bytes.' % size_data_total
-                message_queue.put(text)
+                build_message_queue.put(text)
 
             eeprom_regex = regex_info.get('recipe.size.regex.eeprom', '')
             if eeprom_regex:
                 pattern = re.compile(eeprom_regex, re.M)
                 result = pattern.findall(stdout)
                 if result:
-                    message_queue.put(result)
+                    build_message_queue.put(result)
 
 
 def save_project_files(project_path):
@@ -1912,8 +1912,10 @@ def get_src_paths(paths, mode='norecursion'):
 def build_sketch(build_info={}):
     """."""
     earse_all_phantoms()
+    build_message_queue.put('', False, 'replace')
+
     if not build_info:
-        message_queue.put('[Error] No build info.')
+        build_message_queue.put('[Error] No build info.')
         return
 
     arduino_sel = arduino_info['selected']
@@ -1944,23 +1946,23 @@ def build_sketch(build_info={}):
                 is_ready = False
                 break
     if not is_ready:
-        message_queue.put('[Error] No complete board info.')
+        build_message_queue.put('[Error] No complete board info.')
         return
 
     msg = '[Build] %s...' % project_path.replace('\\', '/')
-    message_queue.put(msg)
+    build_message_queue.put(msg)
     msg = '[Step 1] Check Toolchain.'
-    message_queue.put(msg)
+    build_message_queue.put(msg)
 
     is_ready = check_platform_dep()
     if not is_ready:
         msg = '[Error] Toolchain is not ready. '
         msg += 'Please build the sketch after the toolchain installation done.'
-        message_queue.put(msg)
+        build_message_queue.put(msg)
         return
 
     msg = '[Step 2] Find all source files.'
-    message_queue.put(msg)
+    build_message_queue.put(msg)
     arduino_app_path = arduino_info['arduino_app_path']
     build_dir_path = os.path.join(arduino_app_path, 'build')
 
@@ -1970,7 +1972,7 @@ def build_sketch(build_info={}):
         msg += 'Main source file should be a c/c++ file, which contains '
         msg += 'main() function, or a Arduino file, which contains setup() '
         msg += 'and loop() functions.'
-        message_queue.put(msg)
+        build_message_queue.put(msg)
         return
 
     prog_bar.start(sublime.active_window().status_message,
@@ -2077,13 +2079,13 @@ def build_sketch(build_info={}):
                                 h_cpp_info)
 
     msg = '[Step 3] Start building.'
-    message_queue.put(msg)
+    build_message_queue.put(msg)
     prog_bar.start(sublime.active_window().status_message,
                    'Building sketch')
     is_ok = run_build_commands(cmds, msgs)
     prog_bar.stop()
     if not is_ok:
-        message_queue.put('[Build] Error occurred.')
+        build_message_queue.put('[Build] Error occurred.')
         return
 
     bin_file_pattern = cmds_info.get('recipe.output.save_file', '')
@@ -2132,7 +2134,7 @@ def build_sketch(build_info={}):
         last_build_info.set(src_path, mtime)
 
     msg = 'Build done.'
-    message_queue.put(msg)
+    build_message_queue.put(msg)
 
     if upload_mode:
         upload_cmd = selected.get_upload_command(arduino_info, project=prj,
@@ -2143,7 +2145,7 @@ def build_sketch(build_info={}):
 def upload_sketch(upload_cmd=''):
     """."""
     if upload_cmd:
-        message_queue.put('[Upload]...')
+        build_message_queue.put('[Upload]...')
         prog_bar.start(sublime.active_window().status_message,
                        'Building sketch')
         upload_port = arduino_info['selected'].get('serial_port', '')
@@ -2189,7 +2191,7 @@ def upload_sketch(upload_cmd=''):
             if monitor and is_monitor_running:
                 monitor.start()
             prog_bar.stop()
-            message_queue.put('Upload done.')
+            build_message_queue.put('Upload done.')
 
 
 def upload_bin_file(file_path, mode='upload'):
@@ -2487,6 +2489,8 @@ def init_menus():
 def _init():
     """."""
     global message_queue
+    global build_message_queue
+
     # 0. init paths and settings
     init_app_dir_settings()
     init_ardunio_app_path()
@@ -2513,6 +2517,10 @@ def _init():
     message_panel = st_panel.StPanel(info=arduino_info)
     message_queue = task_queue.TaskQueue(message_panel.write)
 
+    build_panel = st_panel.StPanel(name='stino_build_panel',
+                                   info=arduino_info)
+    build_message_queue = task_queue.TaskQueue(build_panel.write)
+
     pkgs_checker.start()
     serial_listener.start()
     network_port_listener.start()
@@ -2533,6 +2541,7 @@ def focus_view(view, line_no, col_no):
 
 arduino_info = {'init_done': False}
 message_queue = None
+build_message_queue = None
 serial_listener = serial_port.PortListener(serial_port.list_serial_ports,
                                            update_serial_info)
 network_port_listener = \

@@ -536,7 +536,14 @@
             {
                 "caption": "Show Message Panel",
                 "id": "stino_show_panel",
-                "command": "stino_show_panel"
+                "command": "stino_show_panel",
+                "args": {"panel_name": "stino_panel"}
+            },
+            {
+                "caption": "Show Build Message Panel",
+                "id": "stino_show_panel",
+                "command": "stino_show_panel",
+                "args": {"panel_name": "stino_build_panel"}
             },
             {
                 "caption": "Language",

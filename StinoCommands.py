@@ -71,22 +71,24 @@ class ViewMonitor(sublime_plugin.EventListener):
     def on_activated_async(self, view):
         """."""
         if stino.arduino_info['init_done']:
-            panel_name = 'stino_panel'
-            win = view.window()
-            if not win:
-                return
+            panel_names = ['stino_panel', 'stino_build_panel']
+            for panel_name in panel_names:
+                win = view.window()
+                if win:
+                    panel = win.find_output_panel(panel_name)
+                    if panel:
+                        vector = panel.layout_extent()
+                        key = '%s_size' % panel_name
+                        stino.arduino_info['selected'].set(key, vector)
 
-            panel = win.find_output_panel(panel_name)
-            if panel:
-                vector = panel.layout_extent()
-                stino.arduino_info['selected'].set('panel_size', vector)
-
+            ####################################
             view_name = view.name()
             if view_name.endswith('- Serial Monitor'):
                 serial_port = view_name.split('-')[0].strip()
                 view.run_command('stino_send_to_serial',
                                  {'serial_port': serial_port})
 
+            ####################################
             file_path = view.file_name()
             if file_path and stino.c_file.is_cpp_file(file_path):
                 dir_path = os.path.dirname(file_path)
@@ -124,7 +126,7 @@ class ViewMonitor(sublime_plugin.EventListener):
                             programmer = settings.get('programmer', '')
                             stino.on_programmer_select(programmer)
 
-                ########################################
+                ####################################
                 selected = stino.arduino_info['selected']
                 pkg = selected.get('package')
                 ptfm = selected.get('platform')
@@ -148,7 +150,7 @@ class ViewMonitor(sublime_plugin.EventListener):
 
     def on_selection_modified_async(self, view):
         """."""
-        panel_name = 'stino_panel'
+        panel_name = 'stino_build_panel'
         view_name = view.name()
 
         if view_name == panel_name:
@@ -1326,12 +1328,11 @@ class StinoAutoFormatCommand(sublime_plugin.TextCommand):
 class StinoShowPanelCommand(sublime_plugin.WindowCommand):
     """."""
 
-    def run(self):
+    def run(self, panel_name='stino_panel'):
         """."""
-        panel_name = 'stino_panel'
         if not self.window.find_output_panel(panel_name):
             stino.message_queue.put()
-        out_panel_name = 'output.stino_panel'
+        out_panel_name = 'output.%s' % panel_name
         self.window.run_command("show_panel", {"panel": out_panel_name})
 
 
