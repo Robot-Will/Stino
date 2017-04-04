@@ -573,13 +573,15 @@ class StinoBuildCommand(sublime_plugin.TextCommand):
         """."""
         state = False
         if stino.arduino_info['init_done']:
-            file_path = self.view.file_name()
-            if file_path:
-                if stino.c_file.is_cpp_file(file_path):
-                    info = \
-                        stino.selected.get_sel_board_info(stino.arduino_info)
-                    if info:
-                        state = True
+            build_enabled = stino.arduino_info['settings'].get('build_enabled')
+            if build_enabled:
+                file_path = self.view.file_name()
+                if file_path:
+                    if stino.c_file.is_cpp_file(file_path):
+                        get_info = stino.selected.get_sel_board_info
+                        info = get_info(stino.arduino_info)
+                        if info:
+                            state = True
         return state
 
 
@@ -691,6 +693,25 @@ class StinoSelectBoardOptionCommand(sublime_plugin.WindowCommand):
             board = selected.get('board@%s' % platform, '')
             key = 'option_%s@%s' % (option, board)
             state = stino.arduino_info['selected'].get(key) == value
+        return state
+
+
+class StinoToggleBuildEnabledCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            state = \
+                bool(stino.arduino_info['settings'].get('build_enabled'))
+            stino.arduino_info['settings'].set('build_enabled', not state)
+
+    def is_checked(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            state = \
+                bool(stino.arduino_info['settings'].get('build_enabled'))
         return state
 
 
@@ -937,13 +958,16 @@ class StinoUploadCommand(sublime_plugin.TextCommand):
         """."""
         state = False
         if stino.arduino_info['init_done']:
-            file_path = self.view.file_name()
-            sel_serial = stino.arduino_info['selected'].get('serial_port')
-            if sel_serial and file_path and \
-                    stino.c_file.is_cpp_file(file_path):
-                info = stino.selected.get_sel_board_info(stino.arduino_info)
-                if info:
-                    state = True
+            build_enabled = stino.arduino_info['settings'].get('build_enabled')
+            if build_enabled:
+                file_path = self.view.file_name()
+                sel_serial = stino.arduino_info['selected'].get('serial_port')
+                if sel_serial and file_path and \
+                        stino.c_file.is_cpp_file(file_path):
+                    get_info = stino.selected.get_sel_board_info
+                    info = get_info(stino.arduino_info)
+                    if info:
+                        state = True
         return state
 
 
@@ -1181,16 +1205,19 @@ class StinoUploadUsingProgrammerCommand(sublime_plugin.TextCommand):
         """."""
         state = False
         if stino.arduino_info['init_done']:
-            file_path = self.view.file_name()
-            sel_prog = stino.arduino_info['selected'].get('programmer')
-            if file_path and stino.c_file.is_cpp_file(file_path) and sel_prog:
-                cmd = stino.selected.get_upload_command(stino.arduino_info,
-                                                        mode='program')
-                if cmd:
-                    info = \
-                        stino.selected.get_sel_board_info(stino.arduino_info)
-                    if info:
-                        state = True
+            build_enabled = stino.arduino_info['settings'].get('build_enabled')
+            if build_enabled:
+                file_path = self.view.file_name()
+                sel_prog = stino.arduino_info['selected'].get('programmer')
+                if (file_path and stino.c_file.is_cpp_file(file_path) and
+                        sel_prog):
+                    cmd = stino.selected.get_upload_command(stino.arduino_info,
+                                                            mode='program')
+                    if cmd:
+                        get_info = stino.selected.get_sel_board_info
+                        info = get_info(stino.arduino_info)
+                        if info:
+                            state = True
         return state
 
 

@@ -2384,6 +2384,8 @@ def init_config_settings():
         config_settings.set('extra_build_flag', '')
     if config_settings.get('save_before_build') is None:
         config_settings.set('save_before_build', True)
+    if config_settings.get('build_enabled') is None:
+        config_settings.set('build_enabled', True)
     arduino_info['settings'] = config_settings
 
 
