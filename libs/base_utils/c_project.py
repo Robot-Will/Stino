@@ -153,7 +153,7 @@ def combine_ino_files(ino_file_paths, target_file_path,
                 for ino_file_path in f_paths[1:]:
                     first_line = '#line 1 "%s"\n' % ino_file_path
                     target_f.write(first_line)
-                    with codecs.open(target_file_path,
+                    with codecs.open(ino_file_path,
                                      'r', 'utf-8') as source_f:
                         target_f.write(source_f.read())
     else:
