@@ -2540,6 +2540,9 @@ def focus_view(view, line_no, col_no):
     text_point = view.text_point(line_no - 1, col_no)
     view.show(text_point)
 
+    win = view.window()
+    win.focus_view(view)
+
 
 arduino_info = {'init_done': False}
 message_queue = None
