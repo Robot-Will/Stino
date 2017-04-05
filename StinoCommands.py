@@ -159,6 +159,7 @@ class ViewMonitor(sublime_plugin.EventListener):
             line_region = view.line(word_region)
             line = view.substr(line_region)
             file_path, line_no, col_no, _ = stino.get_error_infos(line)
+
             if os.path.isfile(file_path):
                 # win = view.window()
                 # panel_name = 'output.' + panel_name

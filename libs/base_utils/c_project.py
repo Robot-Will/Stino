@@ -74,15 +74,32 @@ def remove_headers(text):
 
 
 def simple_combine_ino_files(ino_file_paths, target_file_path,
-                             with_header=True):
+                             with_header=True, is_arduino_project=True):
     """."""
-    with codecs.open(target_file_path, 'w', 'utf-8') as target_f:
-        # if with_header:
-        #     text = '#include <Arduino.h>\n\n'
-        #     target_f.write(text)
+    with codecs.open(ino_file_paths[0], 'r', 'utf-8') as source_f:
+        src_text = source_f.read()
+        index = c_file.get_index_of_first_statement(src_text)
 
-        for file_path in ino_file_paths:
-            with codecs.open(file_path, 'r', 'utf-8') as source_f:
+        header_text = src_text[:index]
+        footer_text = src_text[index:]
+
+    with codecs.open(target_file_path, 'w', 'utf-8') as target_f:
+        cur_path = ino_file_paths[0]
+        footer_start_line = len(header_text.split('\n'))
+        text = '#line 1 "%s"\n' % cur_path
+        text += header_text
+        if is_arduino_project and with_header:
+            text += '\n#include <Arduino.h>\n'
+
+        text += '#line %d "%s"\n' % (footer_start_line, cur_path)
+        text += footer_text
+        target_f.write(text)
+
+        for ino_file_path in ino_file_paths[1:]:
+            first_line = '#line 1 "%s"\n' % ino_file_path
+            target_f.write(first_line)
+            with codecs.open(ino_file_path,
+                             'r', 'utf-8') as source_f:
                 text = source_f.read()
                 if not with_header:
                     text = remove_headers(text)
@@ -285,7 +302,7 @@ class CProject(object):
             os.makedirs(dir_path)
         tmp_file_path = os.path.join(dir_path, tmp_cpp_name)
         simple_combine_ino_files(self._ino_file_paths, tmp_file_path,
-                                 with_header)
+                                 with_header, self._is_arduino_project)
         tmp_file_path = tmp_file_path.replace('\\', '/')
         return tmp_file_path
 
