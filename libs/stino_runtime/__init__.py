@@ -1155,10 +1155,9 @@ def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info, used_cpps,
                 cpp_paths = \
                     c_project.list_files_of_extensions(src_path,
                                                        c_file.CC_EXTS)
-                if not cmd_pattern:
-                    h_paths = \
-                        c_project.list_files_of_extensions(src_path,
-                                                           c_file.H_EXTS)
+                h_paths = \
+                    c_project.list_files_of_extensions(src_path,
+                                                       c_file.H_EXTS)
 
         unused_src_paths = []
         for h_path in h_paths:

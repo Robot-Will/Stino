@@ -76,6 +76,7 @@ def remove_headers(text):
 def simple_combine_ino_files(ino_file_paths, target_file_path,
                              with_header=True, is_arduino_project=True):
     """."""
+    ino_file_paths = [p.replace('\\', '/') for p in ino_file_paths]
     with codecs.open(ino_file_paths[0], 'r', 'utf-8') as source_f:
         src_text = source_f.read()
         index = c_file.get_index_of_first_statement(src_text)
@@ -112,6 +113,7 @@ def combine_ino_files(ino_file_paths, target_file_path,
     """."""
     need_combine = False
 
+    ino_file_paths = [p.replace('\\', '/') for p in ino_file_paths]
     build_path = os.path.dirname(target_file_path)
     last_inos_path = os.path.join(build_path,
                                   'last_inos.stino-settings')
