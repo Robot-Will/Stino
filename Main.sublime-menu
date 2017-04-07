@@ -340,6 +340,11 @@
                         "id": "stino_refresh_network_ports",
                         "command": "stino_refresh_network_ports"
                     },
+                    {
+                        "caption": "Add Connection...",
+                        "id": "stino_add_connection",
+                        "command": "stino_add_connection"
+                    },
                     {"caption": "-"}
                 ]
             },

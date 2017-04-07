@@ -102,7 +102,7 @@ def simple_combine_ino_files(ino_file_paths, target_file_path,
 
 
 def combine_ino_files(ino_file_paths, target_file_path,
-                      minus_src_path=None, is_arduino_project=True):
+                      minus_src_path='', is_arduino_project=True):
     """."""
     need_combine = False
 

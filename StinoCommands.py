@@ -982,6 +982,21 @@ class StinoRefreshNetworkPortsCommand(sublime_plugin.WindowCommand):
                                 stino.arduino_info)
 
 
+class StinoAddConnectionCommand(sublime_plugin.TextCommand):
+    """."""
+
+    def run(self, edit):
+        """."""
+        if stino.arduino_info['init_done']:
+            caption = 'user:pwd@address or user:pwd@address:port'
+            self.win = self.view.window()
+            self.win.show_input_panel(caption, '', self.on_done, None, None)
+
+    def on_done(self, text):
+        """."""
+        stino.do_action.put(stino.add_connection, text)
+
+
 class StinoSelectNetworkPortCommand(sublime_plugin.WindowCommand):
     """."""
 

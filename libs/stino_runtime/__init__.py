@@ -1257,31 +1257,35 @@ def get_hooks_cmds(cmds_info, pattern_key):
     return cmds, msgs
 
 
-def get_obj_paths(build_path, src_paths, mode):
+def get_obj_paths(prj_path, build_path, src_paths, mode):
     """."""
     obj_paths = []
     if mode == 'sketch':
-        prj_path = os.path.dirname(src_paths[0])
+        dir_path = os.path.join(build_path, 'sketch')
         for src_path in src_paths:
-            sub_path = src_path.replace(prj_path, '')
-            if sub_path.startswith('/'):
-                sub_path = sub_path[1:]
-            dir_path = os.path.join(build_path, 'sketch')
-            obj_path = os.path.join(dir_path, sub_path)
-            obj_path += '.o'
-            obj_path = obj_path.replace('\\', '/')
+            if src_path.startswith(build_path):
+                obj_path = src_path + '.o'
+            else:
+                sub_path = src_path.replace(prj_path, '')
+                if sub_path.startswith('/'):
+                    sub_path = sub_path[1:]
+
+                obj_path = os.path.join(dir_path, sub_path)
+                obj_path += '.o'
+                obj_path = obj_path.replace('\\', '/')
             obj_paths.append(obj_path)
     elif mode == 'libs':
+        dir_path = os.path.join(build_path, 'libraries')
         for src_path in src_paths:
             sub_path = src_path.split('libraries')[-1]
             if sub_path.startswith('/'):
                 sub_path = sub_path[1:]
-            dir_path = os.path.join(build_path, 'libraries')
             obj_path = os.path.join(dir_path, sub_path)
             obj_path += '.o'
             obj_path = obj_path.replace('\\', '/')
             obj_paths.append(obj_path)
     elif mode == 'core':
+        dir_path = os.path.join(build_path, 'core')
         for src_path in src_paths:
             if 'cores' in src_path:
                 sub_path = src_path.split('cores')[-1]
@@ -1294,7 +1298,6 @@ def get_obj_paths(build_path, src_paths, mode):
             if '/' in sub_path:
                 index = sub_path.index('/')
                 sub_path = sub_path[index + 1:]
-            dir_path = os.path.join(build_path, 'core')
             obj_path = os.path.join(dir_path, sub_path)
             obj_path += '.o'
             obj_path = obj_path.replace('\\', '/')
@@ -1329,7 +1332,7 @@ def get_changed_src_paths(h_path, h_cpp_info, last_build_info,
     return changed_src_paths, used_h_paths
 
 
-def get_build_cmds(cmds_info, prj_build_path, inc_text,
+def get_build_cmds(cmds_info, prj_path, prj_build_path, inc_text,
                    prj_src_paths, lib_src_paths, core_src_paths, h_cpp_info):
     """."""
     cmds = []
@@ -1376,9 +1379,12 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
                     is_full_build = True
                     break
 
-    prj_obj_paths = get_obj_paths(prj_build_path, prj_src_paths, 'sketch')
-    lib_obj_paths = get_obj_paths(prj_build_path, lib_src_paths, 'libs')
-    core_obj_paths = get_obj_paths(prj_build_path, core_src_paths, 'core')
+    prj_obj_paths = get_obj_paths(prj_path, prj_build_path,
+                                  prj_src_paths, 'sketch')
+    lib_obj_paths = get_obj_paths(prj_path, prj_build_path,
+                                  lib_src_paths, 'libs')
+    core_obj_paths = get_obj_paths(prj_path, prj_build_path,
+                                   core_src_paths, 'core')
 
     src_paths = prj_src_paths + lib_src_paths + core_src_paths
     obj_paths = prj_obj_paths + lib_obj_paths + core_obj_paths
@@ -1476,6 +1482,10 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
         msgs += _msgs
 
         cmd_pattern = cmds_info.get('recipe.ar.pattern', '')
+
+        build_core_path = os.path.join(prj_build_path, 'core')
+        if obj_paths[1:] and not os.path.isdir(build_core_path):
+            os.makedirs(build_core_path)
 
         for obj_path in obj_paths[1:]:
             cmd = cmd_pattern.replace('{object_file}', obj_path)
@@ -1800,7 +1810,7 @@ def run_bootloader_cmds(cmds):
     return is_ok
 
 
-def regular_numner(num):
+def regular_number(num):
     """."""
     txt = str(num)
     regular_num = ''
@@ -1835,8 +1845,8 @@ def run_size_command(cmd, regex_info):
                     size = sum(int(n) for n in result)
                     size_percent = size / size_total * 100
 
-                    size = regular_numner(size)
-                    size_total = regular_numner(size_total)
+                    size = regular_number(size)
+                    size_total = regular_number(size_total)
                     size_percent = '%.1f' % size_percent
                     text = 'Sketch uses '
                     text += '%s bytes (%s%%) ' % (size, size_percent)
@@ -1857,9 +1867,9 @@ def run_size_command(cmd, regex_info):
                 size_data_percent = size_data / size_data_total * 100
                 size_data_remain = size_data_total - size_data
 
-                size_data = regular_numner(size_data)
-                size_data_remain = regular_numner(size_data_remain)
-                size_data_total = regular_numner(size_data_total)
+                size_data = regular_number(size_data)
+                size_data_remain = regular_number(size_data_remain)
+                size_data_total = regular_number(size_data_total)
                 size_data_percent = '%.1f' % size_data_percent
                 text = 'Global variables use '
                 text += '%s bytes (%s%%) ' % (size_data, size_data_percent)
@@ -2069,9 +2079,12 @@ def build_sketch(build_info={}):
             cmd = cmd.replace('{source_file}', main_file_path)
             cmd = cmd.replace('{preprocessed_file_path}', minus_src_path)
             run_command(cmd)
+            os.remove(main_file_path)
+
             if os.path.isfile(minus_src_path):
                 simply_minus_src(minus_src_path, main_file_path)
             main_file_path = prj.get_combine_path(minus_src_path)
+            os.remove(minus_src_path)
         else:
             main_file_path = prj.get_combine_path()
 
@@ -2097,7 +2110,7 @@ def build_sketch(build_info={}):
 
     prog_bar.stop()
 
-    cmds, msgs = get_build_cmds(cmds_info, prj_build_path, inc_text,
+    cmds, msgs = get_build_cmds(cmds_info, prj_path, prj_build_path, inc_text,
                                 prj_src_paths, lib_src_paths, core_src_paths,
                                 h_cpp_info)
 
@@ -2565,6 +2578,17 @@ def focus_view(view, line_no, col_no):
 
     win = view.window()
     win.focus_view(view)
+
+
+def add_connection(conn_text):
+    """."""
+    user = 'root'
+    pwd = ''
+    addr = ''
+    port = '22'
+
+    if '@' in conn_text:
+        message_queue.put(conn_text)
 
 
 arduino_info = {'init_done': False}
