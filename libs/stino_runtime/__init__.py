@@ -1904,6 +1904,31 @@ def get_src_paths(paths, mode='norecursion'):
     return all_src_paths
 
 
+def simply_minus_src(minus_src_path, file_path):
+    """."""
+    if os.path.isfile(minus_src_path):
+        text = ''
+        src_file = c_file.CFile(minus_src_path)
+        lines = src_file.get_lines()
+
+        is_src_text = False
+        for line in lines:
+            if line.startswith('#') and line.count('"') > 1:
+                words = line.split()
+                if len(words) > 2:
+                    word = words[2]
+                    if word.count('"') > 1:
+                        f_path = word[1:-1]
+                        if f_path == file_path:
+                            is_src_text = True
+                        else:
+                            is_src_text = False
+
+            if is_src_text and not line.startswith('#'):
+                text += line + '\n'
+        src_file.write(text)
+
+
 def build_sketch(build_info={}):
     """."""
     earse_all_phantoms()
@@ -2003,6 +2028,7 @@ def build_sketch(build_info={}):
     prj_src_dir_paths = []
     prj_src_dir_paths.append(prj_path)
 
+    main_file_path = ''
     if prj.is_main_file_ino():
         main_file_path = prj.get_simple_combine_path()
         prj_src_dir_paths.append(main_file_path)
@@ -2033,16 +2059,18 @@ def build_sketch(build_info={}):
     includes = ['"-I%s"' % p for p in all_lib_paths]
     inc_text = ' '.join(includes)
 
+    cmd_preproc_macros = cmds_info.get('recipe.preproc.macros', '')
     if prj.is_main_file_ino():
-        if 'recipe.preproc.macros' in cmds_info:
+        if cmd_preproc_macros:
             minus_src_name = '%s.gcc_minus.cpp' % prj_name
-            minus_src_path = os.path.join(build_sketch_path, minus_src_name)
-            file_path = prj.get_simple_combine_path(with_header=False)
-            cmd_preproc_macros = cmds_info.get('recipe.preproc.macros', '')
-            cmd = cmd_preproc_macros.replace('{includes}', '')
-            cmd = cmd.replace('{source_file}', file_path)
+            minus_src_path = build_sketch_path + '/' + minus_src_name
+
+            cmd = cmd_preproc_macros.replace('{includes}', inc_text)
+            cmd = cmd.replace('{source_file}', main_file_path)
             cmd = cmd.replace('{preprocessed_file_path}', minus_src_path)
             run_command(cmd)
+            if os.path.isfile(minus_src_path):
+                simply_minus_src(minus_src_path, main_file_path)
             main_file_path = prj.get_combine_path(minus_src_path)
         else:
             main_file_path = prj.get_combine_path()

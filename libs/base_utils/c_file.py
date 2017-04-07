@@ -832,6 +832,7 @@ def collapse_braces(lines):
         line = line.strip()
         if not line:
             continue
+
         if line_on:
             if line.startswith('{'):
                 indent_flags.append('{')
@@ -1036,6 +1037,7 @@ class CFile(file.File):
         super(CFile, self).__init__(file_path)
         self._last_mtime = 0
         self._text = self.read()
+        self._text = self._text.replace('\r', '\n')
         self._lines = self._text.split('\n')
         self._beautified_lines = []
         self._simplified_lines = []
@@ -1052,6 +1054,7 @@ class CFile(file.File):
         """Doc."""
         self._last_mtime = self.get_mtime()
         self._text = self.read()
+        self._text = self._text.replace('\r', '\n')
         self._lines = self._text.split('\n')
 
     def _check_modified(self):
