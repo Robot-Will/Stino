@@ -2165,6 +2165,7 @@ def build_sketch(build_info={}):
         last_build_info.set(key, sel_option)
     h_paths = list(h_cpp_info.keys())
 
+    src_paths = prj_src_paths + lib_src_paths + core_src_paths
     for src_path in (src_paths + h_paths):
         if os.path.isfile(src_path):
             mtime = os.path.getmtime(src_path)
