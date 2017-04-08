@@ -95,36 +95,34 @@ class ViewMonitor(sublime_plugin.EventListener):
                 conf_file_name = 'config.stino-settings'
                 conf_file_path = os.path.join(dir_path, conf_file_name)
                 if os.path.isfile(conf_file_path):
-                    if dir_path != self.pre_dir_path:
-                        settings = stino.file.SettingsFile(conf_file_path)
-                        pkg = settings.get('package', '')
-                        ptfm = settings.get('platform', '')
-                        ver = settings.get('version', '')
-                        pkgs_info = \
-                            stino.arduino_info.get('installed_packages',
-                                                   {})
-                        ptfm_info = \
-                            stino.selected.get_platform_info(pkgs_info,
-                                                             pkg, ptfm,
-                                                             ver)
-                        if ptfm_info:
-                            self.pre_dir_path = dir_path
-                            stino.do_action.put(stino.on_platform_select,
-                                                pkg, ptfm)
-                            stino.do_action.put(stino.on_version_select,
-                                                ver)
+                    settings = stino.file.SettingsFile(conf_file_path)
+                    pkg = settings.get('package', '')
+                    ptfm = settings.get('platform', '')
+                    ver = settings.get('version', '')
+                    pkgs_info = \
+                        stino.arduino_info.get('installed_packages',
+                                               {})
+                    ptfm_info = \
+                        stino.selected.get_platform_info(pkgs_info,
+                                                         pkg, ptfm,
+                                                         ver)
+                    if ptfm_info:
+                        stino.do_action.put(stino.on_platform_select,
+                                            pkg, ptfm)
+                        stino.do_action.put(stino.on_version_select,
+                                            ver)
 
-                            keys = settings.get_keys()
-                            for key in keys:
-                                if key.startswith('option_'):
-                                    value = settings.get(key)
-                                    stino.on_board_option_select(key, value)
+                        keys = settings.get_keys()
+                        for key in keys:
+                            if key.startswith('option_'):
+                                value = settings.get(key)
+                                stino.on_board_option_select(key, value)
 
-                            board = settings.get('board@%s' % ptfm, '')
-                            stino.do_action.put(stino.on_board_select,
-                                                board)
-                            programmer = settings.get('programmer', '')
-                            stino.on_programmer_select(programmer)
+                        board = settings.get('board@%s' % ptfm, '')
+                        stino.do_action.put(stino.on_board_select,
+                                            board)
+                        programmer = settings.get('programmer', '')
+                        stino.on_programmer_select(programmer)
 
                 ####################################
                 selected = stino.arduino_info['selected']
