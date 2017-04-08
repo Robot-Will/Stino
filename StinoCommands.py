@@ -1270,6 +1270,29 @@ class StinoSelectProgrammerCommand(sublime_plugin.WindowCommand):
 #############################################
 # Tools Commands
 #############################################
+class StinoBackupBinFileCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            caption = stino.translate('Binary File Path for save: ')
+            self.window.show_input_panel(caption, '', self.on_done, None, None)
+
+    def on_done(self, file_path):
+        """."""
+        stino.do_action.put(stino.backup_bin_file, file_path)
+
+    def is_enabled(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            sel_serial = stino.arduino_info['selected'].get('serial_port')
+            if sel_serial:
+                state = True
+        return state
+
+
 class StinoUploadBinFileCommand(sublime_plugin.WindowCommand):
     """."""
 

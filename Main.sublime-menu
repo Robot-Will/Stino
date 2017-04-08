@@ -524,6 +524,11 @@
             },
             {"caption": "-"},
             {
+                "caption": "Backup Binary from Device",
+                "id": "stino_backup_bin_file",
+                "command": "stino_backup_bin_file"
+            },
+            {
                 "caption": "Upload Binary File",
                 "id": "stino_upload_bin_file",
                 "command": "stino_upload_bin_file"

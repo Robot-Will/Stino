@@ -2164,9 +2164,11 @@ def build_sketch(build_info={}):
         sel_option = arduino_sel.get(key, '')
         last_build_info.set(key, sel_option)
     h_paths = list(h_cpp_info.keys())
+
     for src_path in (src_paths + h_paths):
-        mtime = os.path.getmtime(src_path)
-        last_build_info.set(src_path, mtime)
+        if os.path.isfile(src_path):
+            mtime = os.path.getmtime(src_path)
+            last_build_info.set(src_path, mtime)
 
     msg = 'Build done.'
     build_message_queue.put(msg)
@@ -2227,6 +2229,12 @@ def upload_sketch(upload_cmd=''):
                 monitor.start()
             prog_bar.stop()
             build_message_queue.put('Upload done.')
+
+
+def backup_bin_file(file_path, mode='upload'):
+    """."""
+    msg = 'Not Implemented'
+    message_queue.put(msg)
 
 
 def upload_bin_file(file_path, mode='upload'):
