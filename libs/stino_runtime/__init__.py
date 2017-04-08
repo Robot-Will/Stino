@@ -2038,10 +2038,11 @@ def build_sketch(build_info={}):
     prj_src_dir_paths = []
     prj_src_dir_paths.append(prj_path)
 
-    main_file_path = ''
     if prj.is_main_file_ino():
         main_file_path = prj.get_simple_combine_path()
         prj_src_dir_paths.append(main_file_path)
+    else:
+        main_file_path = prj.get_main_file_path()
 
     all_src_paths, used_h_paths, h_cpp_info, all_lib_paths = \
         get_dep_lib_paths(cmd_preproc_includes, prj_src_dir_paths, h_path_info,
@@ -2106,8 +2107,6 @@ def build_sketch(build_info={}):
     prj_src_paths = [main_file_path] + prj_src_paths
 
     core_src_paths = get_src_paths(core_dir_paths, mode='recursion')
-    src_paths = prj_src_paths + lib_src_paths + core_src_paths
-
     prog_bar.stop()
 
     cmds, msgs = get_build_cmds(cmds_info, prj_path, prj_build_path, inc_text,
