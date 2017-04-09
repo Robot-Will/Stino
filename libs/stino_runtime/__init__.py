@@ -18,6 +18,7 @@ import shutil
 import time
 import subprocess
 import linecache
+import datetime
 
 import sublime
 
@@ -121,12 +122,54 @@ def get_sketchbook_path(app_dir_settings):
     return dir_path
 
 
+def get_default_dir_paths():
+    """."""
+    dir_paths = []
+    os_name = sys_info.get_os_name()
+    if os_name == 'windows':
+        dir_paths = ['C:/Program Files', 'C:/Program Files (x86)']
+    elif os_name == 'osx':
+        dir_paths = ['/applications/Arduino.app']
+    elif os_name == 'linux':
+        dir_paths = ['/usr/share/arduino']
+    return dir_paths
+
+
+def find_arduino_dir_path(dir_paths):
+    """."""
+    path = ''
+    for dir_path in dir_paths:
+        hardware_path = os.path.join(dir_path, 'hardware')
+        if os.path.isdir(hardware_path):
+            path = dir_path
+            break
+
+    if not path:
+        for dir_path in dir_paths:
+            sub_paths = glob.glob(dir_path + '/*')
+            sub_dir_paths = [p for p in sub_paths if os.path.isdir(p)]
+            sub_path = find_arduino_dir_path(sub_dir_paths)
+            if sub_path:
+                path = sub_path
+                break
+
+    path = path.replace('\\', '/')
+    return path
+
+
 def get_ext_app_path(app_dir_settings):
     """."""
     ext_app_path = app_dir_settings.get('additional_app_path')
     if not isinstance(ext_app_path, str):
         ext_app_path = ''
-        app_dir_settings.set('additional_app_path', '')
+
+    hardware_path = os.path.join(ext_app_path, 'hardware')
+    if not (os.path.abspath(ext_app_path) and os.path.isdir(hardware_path)):
+        dir_paths = get_default_dir_paths()
+        path = find_arduino_dir_path(dir_paths)
+        if path:
+            ext_app_path = path
+    app_dir_settings.set('additional_app_path', ext_app_path)
     return ext_app_path
 
 
@@ -2197,7 +2240,7 @@ def build_sketch(build_info={}):
             mtime = os.path.getmtime(src_path)
             last_build_info.set(src_path, mtime)
 
-    msg = 'Build done.'
+    msg = '[Build done.]'
     build_message_queue.put(msg)
 
     if upload_mode:
@@ -2209,7 +2252,7 @@ def build_sketch(build_info={}):
 def upload_sketch(upload_cmd=''):
     """."""
     if upload_cmd:
-        build_message_queue.put('[Upload]...')
+        build_message_queue.put('[Upload/Backup]...')
         prog_bar.start(sublime.active_window().status_message,
                        'Building sketch')
         upload_port = arduino_info['selected'].get('serial_port', '')
@@ -2255,13 +2298,29 @@ def upload_sketch(upload_cmd=''):
             if monitor and is_monitor_running:
                 monitor.start()
             prog_bar.stop()
-            build_message_queue.put('Upload done.')
+            build_message_queue.put('[Upload/Backup done.]')
 
 
-def backup_bin_file(file_path, mode='upload'):
+def backup_bin_file(dir_path, mode='upload'):
     """."""
-    msg = 'Not Implemented'
-    message_queue.put(msg)
+    if os.path.abspath(dir_path):
+        board_info = selected.get_sel_board_info(arduino_info)
+        build_mcu = board_info.get('build.mcu', 'unknown')
+        now = datetime.datetime.now()
+        now_text = now.strftime("%Y%m%d-%H%M%S")
+
+        file_name = '%s-%s.hex' % (build_mcu, now_text)
+        file_path = os.path.join(dir_path, file_name)
+        file_path = file_path.replace('\\', '/')
+        upload_cmd = selected.get_upload_command(arduino_info,
+                                                 bin_path=file_path,
+                                                 mode=mode)
+        if 'flash:w:' in upload_cmd:
+            upload_cmd = upload_cmd.replace('flash:w:', 'flash:r:')
+            sketch_uploader.put(upload_cmd)
+        else:
+            msg = 'Only support Avr Boards.'
+            message_queue.put(msg)
 
 
 def upload_bin_file(file_path, mode='upload'):
@@ -2276,7 +2335,9 @@ def upload_bin_file(file_path, mode='upload'):
 def burn_bootloader():
     """."""
     cmds = selected.get_bootloader_commands(arduino_info)
+    build_message_queue.put('[Burn Bootloader]...')
     run_bootloader_cmds(cmds)
+    build_message_queue.put('[Burn Bootloader Done.]')
 
 
 def start_serial_monitor(port):

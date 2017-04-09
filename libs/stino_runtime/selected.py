@@ -678,7 +678,7 @@ def get_upload_command(arduino_info, project=None,
     base_info = get_base_info(arduino_info, project)
     all_info.update(base_info)
 
-    if not project and os.path.isfile(bin_path):
+    if not project and os.path.abspath(bin_path):
         dir_path = os.path.dirname(bin_path)
         file_name = os.path.basename(bin_path)
         prj_name = os.path.splitext(file_name)[0]

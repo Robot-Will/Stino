@@ -433,6 +433,10 @@ class StinoAddIdeCommand(sublime_plugin.WindowCommand):
     def on_done(self, ide_path):
         """New Sketch."""
         ide_path = ide_path.replace('\\', '/')
+        if 'Arduino.app' in ide_path:
+            path = stino.find_arduino_dir_path([ide_path])
+            if path:
+                ide_path = path
         stino.arduino_info['ext_app_path'] = ide_path
         stino.arduino_info['app_dir_settings'].set('additional_app_path',
                                                    ide_path)
@@ -1366,12 +1370,12 @@ class StinoBackupBinFileCommand(sublime_plugin.WindowCommand):
     def run(self):
         """."""
         if stino.arduino_info['init_done']:
-            caption = stino.translate('Binary File Path for save: ')
+            caption = stino.translate('Folder Path for save: ')
             self.window.show_input_panel(caption, '', self.on_done, None, None)
 
-    def on_done(self, file_path):
+    def on_done(self, dir_path):
         """."""
-        stino.do_action.put(stino.backup_bin_file, file_path)
+        stino.do_action.put(stino.backup_bin_file, dir_path)
 
     def is_enabled(self):
         """."""
