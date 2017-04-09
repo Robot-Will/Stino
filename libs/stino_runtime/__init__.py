@@ -1082,9 +1082,8 @@ def find_lib_paths_by_compiler(cmd_pattern, src_path, h_cpp_info,
                         lib_paths.append(dir_path)
         else:
             dummy_file_path = os.path.join(dummy_dir_path, header)
-            dir_path = os.path.dirname(dummy_file_path)
-            if not os.path.isdir(dir_path):
-                os.makedirs(dir_path)
+            if not os.path.isdir(dummy_dir_path):
+                os.makedirs(dummy_dir_path)
             if not os.path.isfile(dummy_file_path):
                 with open(dummy_file_path, 'w') as f:
                     f.write('')
@@ -1939,6 +1938,28 @@ def simply_minus_src(minus_src_path, file_path):
         src_file.write(text)
 
 
+def gen_minus_src_file(cmd, dummy_dir_path):
+    """."""
+    return_code, stdout, stderr = run_command(cmd)
+
+    header = ''
+    if return_code != 0 and stderr:
+        lines = stderr.split('\n')
+        for line in lines:
+            if 'No such file or directory' in line:
+                header = line.split(':')[-2].strip()
+                break
+    if header:
+        dummy_file_path = os.path.join(dummy_dir_path, header)
+        if not os.path.isdir(dummy_dir_path):
+            os.makedirs(dummy_dir_path)
+        if not os.path.isfile(dummy_file_path):
+            with open(dummy_file_path, 'w') as f:
+                f.write('')
+
+        gen_minus_src_file(cmd, dummy_dir_path)
+
+
 def build_sketch(build_info={}):
     """."""
     earse_all_phantoms()
@@ -2076,16 +2097,21 @@ def build_sketch(build_info={}):
             minus_src_name = '%s.gcc_minus.cpp' % prj_name
             minus_src_path = build_sketch_path + '/' + minus_src_name
 
-            cmd = cmd_preproc_macros.replace('{includes}', inc_text)
+            dummy_dir_path = prj_build_path + '/' + 'dummy'
+            minus_inc_text = '%s "-I%s"' % (inc_text, dummy_dir_path)
+
+            cmd = cmd_preproc_macros.replace('{includes}', minus_inc_text)
             cmd = cmd.replace('{source_file}', main_file_path)
             cmd = cmd.replace('{preprocessed_file_path}', minus_src_path)
-            run_command(cmd)
-            os.remove(main_file_path)
+            gen_minus_src_file(cmd, dummy_dir_path)
 
             if os.path.isfile(minus_src_path):
                 simply_minus_src(minus_src_path, main_file_path)
+
             main_file_path = prj.get_combine_path(minus_src_path)
-            os.remove(minus_src_path)
+            if os.path.isfile(minus_src_path):
+                os.remove(minus_src_path)
+            clean_path(dummy_dir_path)
         else:
             main_file_path = prj.get_combine_path()
 
