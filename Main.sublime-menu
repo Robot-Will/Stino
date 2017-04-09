@@ -246,6 +246,11 @@
                         "id": "stino_save_for_sketch",
                         "command": "stino_save_for_sketch"
                     },
+                    {
+                        "caption": "Remove Current Sketch Settings",
+                        "id": "stino_remove_sketch_settings",
+                        "command": "stino_remove_sketch_settings"
+                    },
                     {"caption": "-"}
                 ]
             },

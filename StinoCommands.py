@@ -50,7 +50,8 @@ class ViewMonitor(sublime_plugin.EventListener):
 
     def __init__(self):
         """."""
-        self.pre_dir_path = ''
+        self.global_settings = None
+        self.is_sketch_settings = False
 
     def on_close_async(self, view):
         """."""
@@ -89,28 +90,63 @@ class ViewMonitor(sublime_plugin.EventListener):
                                  {'serial_port': serial_port})
 
             ####################################
+            if self.global_settings is None:
+                app_dir_path = stino.arduino_info['arduino_app_path']
+                settings_path = os.path.join(app_dir_path,
+                                             'global.stino-settings')
+                self.global_settings = stino.file.SettingsFile(settings_path)
+
+            has_settings_changed = False
             file_path = view.file_name()
             if file_path and stino.c_file.is_cpp_file(file_path):
                 dir_path = os.path.dirname(file_path)
                 conf_file_name = 'config.stino-settings'
                 conf_file_path = os.path.join(dir_path, conf_file_name)
                 if os.path.isfile(conf_file_path):
+                    has_settings_changed = True
                     settings = stino.file.SettingsFile(conf_file_path)
+
+                    if not self.is_sketch_settings:
+                        self.is_sketch_settings = True
+                        selected = stino.arduino_info['selected']
+                        pkg = selected.get('package', '')
+                        ptfm = selected.get('platform', '')
+                        ver = selected.get('version', '')
+                        board = selected.get('board@%s' % ptfm, '')
+                        programmer = selected.get('programmer', '')
+
+                        self.global_settings.set('package', pkg)
+                        self.global_settings.set('platform', ptfm)
+                        self.global_settings.set('version', ver)
+                        self.global_settings.set('board@%s' % ptfm, board)
+                        self.global_settings.set('programmer', programmer)
+
+                        board_info = stino.arduino_info['boards'].get(board,
+                                                                      {})
+                        options = board_info.get('options', [])
+                        for option in options:
+                            key = 'option_%s@%s' % (option, board)
+                            value = selected.get(key)
+                            self.global_settings.set(key, value)
+
+                elif self.is_sketch_settings:
+                    has_settings_changed = True
+                    self.is_sketch_settings = False
+                    settings = self.global_settings
+
+                if has_settings_changed:
                     pkg = settings.get('package', '')
                     ptfm = settings.get('platform', '')
                     ver = settings.get('version', '')
                     pkgs_info = \
-                        stino.arduino_info.get('installed_packages',
-                                               {})
+                        stino.arduino_info.get('installed_packages', {})
                     ptfm_info = \
-                        stino.selected.get_platform_info(pkgs_info,
-                                                         pkg, ptfm,
+                        stino.selected.get_platform_info(pkgs_info, pkg, ptfm,
                                                          ver)
                     if ptfm_info:
-                        stino.do_action.put(stino.on_platform_select,
-                                            pkg, ptfm)
-                        stino.do_action.put(stino.on_version_select,
-                                            ver)
+                        stino.do_action.put(stino.on_platform_select, pkg,
+                                            ptfm)
+                        stino.do_action.put(stino.on_version_select, ver)
 
                         keys = settings.get_keys()
                         for key in keys:
@@ -639,6 +675,62 @@ class StinoSaveForSketchCommand(sublime_plugin.TextCommand):
                         stino.selected.get_sel_board_info(stino.arduino_info)
                     if info:
                         state = True
+        return state
+
+
+class StinoRemoveSketchSettingsCommand(sublime_plugin.TextCommand):
+    """."""
+
+    def run(self, edit):
+        """."""
+        if stino.arduino_info['init_done']:
+            file_path = self.view.file_name()
+            dir_path = os.path.dirname(file_path)
+            conf_file_name = 'config.stino-settings'
+            conf_file_path = os.path.join(dir_path, conf_file_name)
+            if os.path.isfile(conf_file_path):
+                os.remove(conf_file_path)
+
+                app_dir_path = stino.arduino_info['arduino_app_path']
+                settings_path = os.path.join(app_dir_path,
+                                             'global.stino-settings')
+                settings = stino.file.SettingsFile(settings_path)
+
+                pkg = settings.get('package', '')
+                ptfm = settings.get('platform', '')
+                ver = settings.get('version', '')
+                pkgs_info = \
+                    stino.arduino_info.get('installed_packages',
+                                           {})
+                ptfm_info = \
+                    stino.selected.get_platform_info(pkgs_info, pkg, ptfm, ver)
+                if ptfm_info:
+                    stino.do_action.put(stino.on_platform_select, pkg, ptfm)
+                    stino.do_action.put(stino.on_version_select, ver)
+
+                    keys = settings.get_keys()
+                    for key in keys:
+                        if key.startswith('option_'):
+                            value = settings.get(key)
+                            stino.on_board_option_select(key, value)
+
+                    board = settings.get('board@%s' % ptfm, '')
+                    stino.do_action.put(stino.on_board_select,
+                                        board)
+                    programmer = settings.get('programmer', '')
+                    stino.on_programmer_select(programmer)
+
+    def is_enabled(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            file_path = self.view.file_name()
+            if file_path and stino.c_file.is_cpp_file(file_path):
+                dir_path = os.path.dirname(file_path)
+                conf_file_name = 'config.stino-settings'
+                conf_file_path = os.path.join(dir_path, conf_file_name)
+                if os.path.isfile(conf_file_path):
+                    state = True
         return state
 
 

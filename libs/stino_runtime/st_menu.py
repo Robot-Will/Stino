@@ -991,6 +991,11 @@ def update_board_menu(arduino_info):
     text += '\t' * 6 + '"id": "stino_save_for_sketch",\n'
     text += '\t' * 6 + '"command": "stino_save_for_sketch"\n'
     text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Remove Current Sketch Settings",\n'
+    text += '\t' * 6 + '"id": "stino_remove_sketch_settings",\n'
+    text += '\t' * 6 + '"command": "stino_remove_sketch_settings"\n'
+    text += '\t' * 5 + '},\n'
     text += '\t' * 5 + '{"caption": "-"}'
 
     for board_name in board_names:
