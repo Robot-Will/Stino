@@ -2682,10 +2682,46 @@ def add_connection(conn_text):
     addr = ''
     port = '22'
 
+    user_text = ''
+    addr_text = ''
     if '@' in conn_text:
-        message_queue.put(conn_text)
+        user_text, addr_text = conn_text.split('@')[:2]
+    else:
+        addr_text = conn_text
+
+    if user_text:
+        if ':' in user_text:
+            user, pwd = user_text.split(':')[:2]
+        else:
+            user = user_text
+
+    if addr_text:
+        if ':' in addr_text:
+            addr, port = addr_text.split(':')[:2]
+        else:
+            addr = addr_text
+
+    if port.isdigit():
+        port = int(port.split('.')[0])
+
+    if user and addr:
+        try:
+            import paramiko
+        except ImportError:
+            pass
+        else:
+            client = paramiko.SSHClient()
+            client.load_system_host_keys()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(addr, port, user, pwd)
+            cmd = 'date'
+            stdin, stdout, stderr = client.exec_command(cmd)
+            print(stdout.read().decode('utf-8'))
+            print(stderr.read().decode('utf-8'))
+            client.close()
 
 
+###########################################################
 arduino_info = {'init_done': False}
 message_queue = None
 build_message_queue = None
