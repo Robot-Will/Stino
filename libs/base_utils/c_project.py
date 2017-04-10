@@ -309,7 +309,7 @@ class CProject(object):
         headers.update(set(scf.list_include_headers()))
         return headers
 
-    def get_combine_path(self, minus_src_path=None):
+    def get_combine_path(self, minus_src_path=''):
         """."""
         tmp_cpp_name = self._name + '.ino.cpp'
         dir_path = os.path.join(self._build_path, 'sketch')
