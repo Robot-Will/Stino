@@ -439,7 +439,8 @@ def regular_chars(words):
                     new_word = word
 
         elif pre_word == '<':
-            if words[0] == '#include' or word in '<=':
+            if (len(words) > 1 and words[0] + words[1] == '#include') or \
+                    word in '<=':
                 new_word += word
             else:
                 new_words.append(new_word)
@@ -467,7 +468,7 @@ def regular_chars(words):
                 new_word = word
 
         elif word == '>':
-            if words[0] == '#include':
+            if len(words) > 1 and words[0] + words[1] == '#include':
                 new_word += word
             else:
                 new_words.append(new_word)
