@@ -74,27 +74,39 @@ def remove_headers(text):
 
 
 def simple_combine_ino_files(ino_file_paths, target_file_path,
-                             with_header=True):
+                             is_arduino_project=True):
     """."""
-    with codecs.open(target_file_path, 'w', 'utf-8') as target_f:
-        # if with_header:
-        #     text = '#include <Arduino.h>\n\n'
-        #     target_f.write(text)
+    ino_file_paths = [p.replace('\\', '/') for p in ino_file_paths]
+    with codecs.open(ino_file_paths[0], 'r', 'utf-8') as source_f:
+        src_text = source_f.read()
+        index = c_file.get_index_of_first_statement(src_text)
 
-        for file_path in ino_file_paths:
-            with codecs.open(file_path, 'r', 'utf-8') as source_f:
+        header_text = src_text[:index]
+        footer_text = src_text[index:]
+
+    with codecs.open(target_file_path, 'w', 'utf-8') as target_f:
+        text = ''
+        text += header_text
+        if is_arduino_project:
+            text += '\n#include <Arduino.h>\n'
+
+        text += footer_text
+        target_f.write(text)
+
+        for ino_file_path in ino_file_paths[1:]:
+            with codecs.open(ino_file_path,
+                             'r', 'utf-8') as source_f:
                 text = source_f.read()
-                if not with_header:
-                    text = remove_headers(text)
                 target_f.write(text)
     return target_file_path
 
 
 def combine_ino_files(ino_file_paths, target_file_path,
-                      minus_src_path=None, is_arduino_project=True):
+                      minus_src_path='', is_arduino_project=True):
     """."""
     need_combine = False
 
+    ino_file_paths = [p.replace('\\', '/') for p in ino_file_paths]
     build_path = os.path.dirname(target_file_path)
     last_inos_path = os.path.join(build_path,
                                   'last_inos.stino-settings')
@@ -114,7 +126,7 @@ def combine_ino_files(ino_file_paths, target_file_path,
 
         if need_combine:
             func_prototypes = []
-            if minus_src_path:
+            if os.path.isfile(minus_src_path):
                 src_file = c_file.CFile(minus_src_path)
                 prototypes = src_file.get_undeclar_func_defs()
                 for prototype in prototypes:
@@ -153,7 +165,7 @@ def combine_ino_files(ino_file_paths, target_file_path,
                 for ino_file_path in f_paths[1:]:
                     first_line = '#line 1 "%s"\n' % ino_file_path
                     target_f.write(first_line)
-                    with codecs.open(target_file_path,
+                    with codecs.open(ino_file_path,
                                      'r', 'utf-8') as source_f:
                         target_f.write(source_f.read())
     else:
@@ -285,7 +297,7 @@ class CProject(object):
             os.makedirs(dir_path)
         tmp_file_path = os.path.join(dir_path, tmp_cpp_name)
         simple_combine_ino_files(self._ino_file_paths, tmp_file_path,
-                                 with_header)
+                                 self._is_arduino_project)
         tmp_file_path = tmp_file_path.replace('\\', '/')
         return tmp_file_path
 

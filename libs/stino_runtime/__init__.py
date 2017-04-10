@@ -18,6 +18,7 @@ import shutil
 import time
 import subprocess
 import linecache
+import datetime
 
 import sublime
 
@@ -121,12 +122,54 @@ def get_sketchbook_path(app_dir_settings):
     return dir_path
 
 
+def get_default_dir_paths():
+    """."""
+    dir_paths = []
+    os_name = sys_info.get_os_name()
+    if os_name == 'windows':
+        dir_paths = ['C:/Program Files', 'C:/Program Files (x86)']
+    elif os_name == 'osx':
+        dir_paths = ['/applications/Arduino.app']
+    elif os_name == 'linux':
+        dir_paths = ['/usr/share/arduino']
+    return dir_paths
+
+
+def find_arduino_dir_path(dir_paths):
+    """."""
+    path = ''
+    for dir_path in dir_paths:
+        hardware_path = os.path.join(dir_path, 'hardware')
+        if os.path.isdir(hardware_path):
+            path = dir_path
+            break
+
+    if not path:
+        for dir_path in dir_paths:
+            sub_paths = glob.glob(dir_path + '/*')
+            sub_dir_paths = [p for p in sub_paths if os.path.isdir(p)]
+            sub_path = find_arduino_dir_path(sub_dir_paths)
+            if sub_path:
+                path = sub_path
+                break
+
+    path = path.replace('\\', '/')
+    return path
+
+
 def get_ext_app_path(app_dir_settings):
     """."""
     ext_app_path = app_dir_settings.get('additional_app_path')
     if not isinstance(ext_app_path, str):
         ext_app_path = ''
-        app_dir_settings.set('additional_app_path', '')
+
+    hardware_path = os.path.join(ext_app_path, 'hardware')
+    if not (os.path.abspath(ext_app_path) and os.path.isdir(hardware_path)):
+        dir_paths = get_default_dir_paths()
+        path = find_arduino_dir_path(dir_paths)
+        if path:
+            ext_app_path = path
+    app_dir_settings.set('additional_app_path', ext_app_path)
     return ext_app_path
 
 
@@ -1049,30 +1092,21 @@ def find_lib_paths_by_compiler(cmd_pattern, src_path, h_cpp_info,
     all_inc_text = ' '.join(all_includes)
     cmd = cmd_pattern.replace('{source_file}', src_path)
     cmd = cmd.replace('{includes}', all_inc_text)
+    cmd = cmd.replace('{preprocessed_file_path}', 'nul')
     return_code, stdout, stderr = run_command(cmd)
 
-    headers = []
+    header = ''
     if return_code != 0 and stderr:
         lines = stderr.split('\n')
         for line in lines:
-            if '#' in line and 'include' in line:
-                headers += header_pattern.findall(line)
-    elif return_code == 0:
-        if not stdout:
-            pass
-        else:
-            lines = stdout.split('\n')
-            for line in lines:
-                line = line.strip()
-                if line.endswith(':'):
-                    h_file_path = line[:-1]
-                    if not os.path.isabs(h_file_path):
-                        headers.append(h_file_path)
+            if 'No such file or directory' in line:
+                header = line.split(':')[-2].strip()
+                break
 
     if dummy_dir_path in lib_paths:
         lib_paths.remove(dummy_dir_path)
 
-    for header in headers:
+    if header:
         dir_paths = get_paths_from_header(h_path_info, header)
         if dir_paths:
             h_file_path = dir_paths[-1] + '/' + header
@@ -1091,14 +1125,13 @@ def find_lib_paths_by_compiler(cmd_pattern, src_path, h_cpp_info,
                         lib_paths.append(dir_path)
         else:
             dummy_file_path = os.path.join(dummy_dir_path, header)
-            dir_path = os.path.dirname(dummy_file_path)
-            if not os.path.isdir(dir_path):
-                os.makedirs(dir_path)
+            if not os.path.isdir(dummy_dir_path):
+                os.makedirs(dummy_dir_path)
             if not os.path.isfile(dummy_file_path):
                 with open(dummy_file_path, 'w') as f:
                     f.write('')
 
-    if headers:
+    if header:
         lib_paths, h_cpp_info = \
             find_lib_paths_by_compiler(cmd_pattern, src_path, h_cpp_info,
                                        lib_paths, h_path_info, dummy_dir_path)
@@ -1139,7 +1172,8 @@ def find_lib_paths(src_path, h_path_info, h_cpp_info):
 
 
 def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info, used_cpps,
-                      used_h_paths, h_cpp_info, used_dirs, arch, build_path):
+                      used_h_paths, h_cpp_info, used_dirs, arch, build_path,
+                      core_paths):
     """."""
     sub_src_paths = []
     src_paths = [p.replace('\\', '/') for p in src_paths]
@@ -1163,10 +1197,9 @@ def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info, used_cpps,
                 cpp_paths = \
                     c_project.list_files_of_extensions(src_path,
                                                        c_file.CC_EXTS)
-                if not cmd_pattern:
-                    h_paths = \
-                        c_project.list_files_of_extensions(src_path,
-                                                           c_file.H_EXTS)
+                h_paths = \
+                    c_project.list_files_of_extensions(src_path,
+                                                       c_file.H_EXTS)
 
         unused_src_paths = []
         for h_path in h_paths:
@@ -1189,7 +1222,7 @@ def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info, used_cpps,
             l_paths, h_cpp_info = find_lib_paths(src_path, h_path_info,
                                                  h_cpp_info)
             if cmd_pattern:
-                src_paths = [os.path.dirname(src_path)]
+                src_paths = core_paths + [os.path.dirname(src_path)]
                 cl_paths, h_cpp_info = \
                     find_lib_paths_by_compiler(cmd_pattern, src_path,
                                                h_cpp_info, src_paths,
@@ -1199,13 +1232,17 @@ def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info, used_cpps,
                 inc_l_paths = []
                 for l_path in l_paths:
                     is_include = False
-                    for cl_path in cl_paths:
-                        if l_path.startswith(cl_path):
-                            is_include = True
-                            break
+                    if l_path in cl_paths:
+                        is_include = True
+                    if not is_include:
+                        for cl_path in cl_paths:
+                            if l_path.startswith(cl_path + '/'):
+                                is_include = True
+                                break
                     if is_include:
                         inc_l_paths.append(l_path)
                 l_paths = inc_l_paths
+
             lib_paths += l_paths
 
         lib_paths = [p.replace('\\', '/') for p in lib_paths]
@@ -1230,7 +1267,7 @@ def get_dep_lib_paths(cmd_pattern, src_paths, h_path_info, used_cpps,
         used_cpps, used_h_paths, h_cpp_info, used_dirs = \
             get_dep_lib_paths(cmd_pattern, sub_src_paths, h_path_info,
                               used_cpps, used_h_paths, h_cpp_info,
-                              used_dirs, arch, build_path)
+                              used_dirs, arch, build_path, core_paths)
     return used_cpps, used_h_paths, h_cpp_info, used_dirs
 
 
@@ -1262,31 +1299,35 @@ def get_hooks_cmds(cmds_info, pattern_key):
     return cmds, msgs
 
 
-def get_obj_paths(build_path, src_paths, mode):
+def get_obj_paths(prj_path, build_path, src_paths, mode):
     """."""
     obj_paths = []
     if mode == 'sketch':
-        prj_path = os.path.dirname(src_paths[0])
+        dir_path = os.path.join(build_path, 'sketch')
         for src_path in src_paths:
-            sub_path = src_path.replace(prj_path, '')
-            if sub_path.startswith('/'):
-                sub_path = sub_path[1:]
-            dir_path = os.path.join(build_path, 'sketch')
-            obj_path = os.path.join(dir_path, sub_path)
-            obj_path += '.o'
-            obj_path = obj_path.replace('\\', '/')
+            if src_path.startswith(build_path):
+                obj_path = src_path + '.o'
+            else:
+                sub_path = src_path.replace(prj_path, '')
+                if sub_path.startswith('/'):
+                    sub_path = sub_path[1:]
+
+                obj_path = os.path.join(dir_path, sub_path)
+                obj_path += '.o'
+                obj_path = obj_path.replace('\\', '/')
             obj_paths.append(obj_path)
     elif mode == 'libs':
+        dir_path = os.path.join(build_path, 'libraries')
         for src_path in src_paths:
             sub_path = src_path.split('libraries')[-1]
             if sub_path.startswith('/'):
                 sub_path = sub_path[1:]
-            dir_path = os.path.join(build_path, 'libraries')
             obj_path = os.path.join(dir_path, sub_path)
             obj_path += '.o'
             obj_path = obj_path.replace('\\', '/')
             obj_paths.append(obj_path)
     elif mode == 'core':
+        dir_path = os.path.join(build_path, 'core')
         for src_path in src_paths:
             if 'cores' in src_path:
                 sub_path = src_path.split('cores')[-1]
@@ -1299,7 +1340,6 @@ def get_obj_paths(build_path, src_paths, mode):
             if '/' in sub_path:
                 index = sub_path.index('/')
                 sub_path = sub_path[index + 1:]
-            dir_path = os.path.join(build_path, 'core')
             obj_path = os.path.join(dir_path, sub_path)
             obj_path += '.o'
             obj_path = obj_path.replace('\\', '/')
@@ -1334,7 +1374,7 @@ def get_changed_src_paths(h_path, h_cpp_info, last_build_info,
     return changed_src_paths, used_h_paths
 
 
-def get_build_cmds(cmds_info, prj_build_path, inc_text,
+def get_build_cmds(cmds_info, prj_path, prj_build_path, inc_text,
                    prj_src_paths, lib_src_paths, core_src_paths, h_cpp_info):
     """."""
     cmds = []
@@ -1381,9 +1421,12 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
                     is_full_build = True
                     break
 
-    prj_obj_paths = get_obj_paths(prj_build_path, prj_src_paths, 'sketch')
-    lib_obj_paths = get_obj_paths(prj_build_path, lib_src_paths, 'libs')
-    core_obj_paths = get_obj_paths(prj_build_path, core_src_paths, 'core')
+    prj_obj_paths = get_obj_paths(prj_path, prj_build_path,
+                                  prj_src_paths, 'sketch')
+    lib_obj_paths = get_obj_paths(prj_path, prj_build_path,
+                                  lib_src_paths, 'libs')
+    core_obj_paths = get_obj_paths(prj_path, prj_build_path,
+                                   core_src_paths, 'core')
 
     src_paths = prj_src_paths + lib_src_paths + core_src_paths
     obj_paths = prj_obj_paths + lib_obj_paths + core_obj_paths
@@ -1481,6 +1524,10 @@ def get_build_cmds(cmds_info, prj_build_path, inc_text,
         msgs += _msgs
 
         cmd_pattern = cmds_info.get('recipe.ar.pattern', '')
+
+        build_core_path = os.path.join(prj_build_path, 'core')
+        if obj_paths[1:] and not os.path.isdir(build_core_path):
+            os.makedirs(build_core_path)
 
         for obj_path in obj_paths[1:]:
             cmd = cmd_pattern.replace('{object_file}', obj_path)
@@ -1665,7 +1712,7 @@ def open_file(file_path):
 def handle_build_error_messages(error_msg):
     """."""
     global arduino_info
-    message_queue.put(error_msg)
+    build_message_queue.put(error_msg)
 
     st_version = int(sublime.version())
     if st_version < 3118:
@@ -1738,13 +1785,13 @@ def run_build_command(percent, cmd, msg):
 
         if msg:
             msg = '[%.1f%%] %s' % (percent, msg)
-            message_queue.put(msg)
+            build_message_queue.put(msg)
         return_code, stdout, stderr = run_command(cmd)
         verbose_build = bool(arduino_info['settings'].get('verbose_build'))
         if verbose_build:
-            message_queue.put(cmd.replace('\\', '/'))
+            build_message_queue.put(cmd.replace('\\', '/'))
             if stdout:
-                message_queue.put(stdout.replace('\r', ''))
+                build_message_queue.put(stdout.replace('\r', ''))
         if stderr:
             handle_build_error_messages(stderr.replace('\r', ''))
         if return_code != 0:
@@ -1760,12 +1807,12 @@ def run_upload_command(cmd):
         return_code, stdout, stderr = run_command(cmd)
         verbose_upload = bool(arduino_info['settings'].get('verbose_upload'))
         if verbose_upload:
-            message_queue.put(cmd.replace('\\', '/'))
+            build_message_queue.put(cmd.replace('\\', '/'))
 
         if stdout:
-            message_queue.put(stdout)
+            build_message_queue.put(stdout)
         if stderr:
-            message_queue.put(stderr)
+            build_message_queue.put(stderr)
         if return_code != 0:
             is_ok = False
     return is_ok
@@ -1795,9 +1842,9 @@ def run_bootloader_cmds(cmds):
         cmd = cmd.replace('\\', '/')
         return_code, stdout, stderr = run_command(cmd)
         if stdout:
-            message_queue.put(stdout)
+            build_message_queue.put(stdout)
         if stderr:
-            message_queue.put(stderr)
+            build_message_queue.put(stderr)
 
         if return_code != 0:
             is_ok = False
@@ -1805,7 +1852,7 @@ def run_bootloader_cmds(cmds):
     return is_ok
 
 
-def regular_numner(num):
+def regular_number(num):
     """."""
     txt = str(num)
     regular_num = ''
@@ -1840,14 +1887,14 @@ def run_size_command(cmd, regex_info):
                     size = sum(int(n) for n in result)
                     size_percent = size / size_total * 100
 
-                    size = regular_numner(size)
-                    size_total = regular_numner(size_total)
+                    size = regular_number(size)
+                    size_total = regular_number(size_total)
                     size_percent = '%.1f' % size_percent
                     text = 'Sketch uses '
                     text += '%s bytes (%s%%) ' % (size, size_percent)
                     text += 'of program storage space. '
                     text += 'Maximum is %s bytes.' % size_total
-                    message_queue.put(text)
+                    build_message_queue.put(text)
 
             data_regex = regex_info.get('recipe.size.regex.data', '')
             if data_regex:
@@ -1862,23 +1909,23 @@ def run_size_command(cmd, regex_info):
                 size_data_percent = size_data / size_data_total * 100
                 size_data_remain = size_data_total - size_data
 
-                size_data = regular_numner(size_data)
-                size_data_remain = regular_numner(size_data_remain)
-                size_data_total = regular_numner(size_data_total)
+                size_data = regular_number(size_data)
+                size_data_remain = regular_number(size_data_remain)
+                size_data_total = regular_number(size_data_total)
                 size_data_percent = '%.1f' % size_data_percent
                 text = 'Global variables use '
                 text += '%s bytes (%s%%) ' % (size_data, size_data_percent)
                 text += 'of dynamic memory, leaving '
                 text += '%s bytes for local variables. ' % size_data_remain
                 text += 'Maximum is %s bytes.' % size_data_total
-                message_queue.put(text)
+                build_message_queue.put(text)
 
             eeprom_regex = regex_info.get('recipe.size.regex.eeprom', '')
             if eeprom_regex:
                 pattern = re.compile(eeprom_regex, re.M)
                 result = pattern.findall(stdout)
                 if result:
-                    message_queue.put(result)
+                    build_message_queue.put(result)
 
 
 def save_project_files(project_path):
@@ -1909,11 +1956,60 @@ def get_src_paths(paths, mode='norecursion'):
     return all_src_paths
 
 
+def simply_minus_src(minus_src_path, file_path):
+    """."""
+    if os.path.isfile(minus_src_path):
+        text = ''
+        src_file = c_file.CFile(minus_src_path)
+        lines = src_file.get_lines()
+
+        is_src_text = False
+        for line in lines:
+            if line.startswith('#') and line.count('"') > 1:
+                words = line.split()
+                if len(words) > 2:
+                    word = words[2]
+                    if word.count('"') > 1:
+                        f_path = word[1:-1]
+                        if f_path == file_path:
+                            is_src_text = True
+                        else:
+                            is_src_text = False
+
+            if is_src_text and not line.startswith('#'):
+                text += line + '\n'
+        src_file.write(text)
+
+
+def gen_minus_src_file(cmd, dummy_dir_path):
+    """."""
+    return_code, stdout, stderr = run_command(cmd)
+
+    header = ''
+    if return_code != 0 and stderr:
+        lines = stderr.split('\n')
+        for line in lines:
+            if 'No such file or directory' in line:
+                header = line.split(':')[-2].strip()
+                break
+    if header:
+        dummy_file_path = os.path.join(dummy_dir_path, header)
+        if not os.path.isdir(dummy_dir_path):
+            os.makedirs(dummy_dir_path)
+        if not os.path.isfile(dummy_file_path):
+            with open(dummy_file_path, 'w') as f:
+                f.write('')
+
+        gen_minus_src_file(cmd, dummy_dir_path)
+
+
 def build_sketch(build_info={}):
     """."""
     earse_all_phantoms()
+    build_message_queue.put('', False, 'replace')
+
     if not build_info:
-        message_queue.put('[Error] No build info.')
+        build_message_queue.put('[Error] No build info.')
         return
 
     arduino_sel = arduino_info['selected']
@@ -1944,23 +2040,23 @@ def build_sketch(build_info={}):
                 is_ready = False
                 break
     if not is_ready:
-        message_queue.put('[Error] No complete board info.')
+        build_message_queue.put('[Error] No complete board info.')
         return
 
     msg = '[Build] %s...' % project_path.replace('\\', '/')
-    message_queue.put(msg)
+    build_message_queue.put(msg)
     msg = '[Step 1] Check Toolchain.'
-    message_queue.put(msg)
+    build_message_queue.put(msg)
 
     is_ready = check_platform_dep()
     if not is_ready:
         msg = '[Error] Toolchain is not ready. '
         msg += 'Please build the sketch after the toolchain installation done.'
-        message_queue.put(msg)
+        build_message_queue.put(msg)
         return
 
     msg = '[Step 2] Find all source files.'
-    message_queue.put(msg)
+    build_message_queue.put(msg)
     arduino_app_path = arduino_info['arduino_app_path']
     build_dir_path = os.path.join(arduino_app_path, 'build')
 
@@ -1970,7 +2066,7 @@ def build_sketch(build_info={}):
         msg += 'Main source file should be a c/c++ file, which contains '
         msg += 'main() function, or a Arduino file, which contains setup() '
         msg += 'and loop() functions.'
-        message_queue.put(msg)
+        build_message_queue.put(msg)
         return
 
     prog_bar.start(sublime.active_window().status_message,
@@ -1987,7 +2083,7 @@ def build_sketch(build_info={}):
     h_path_info = get_h_path_info(prj)
 
     cmds_info = selected.get_build_commands_info(arduino_info, prj)
-    cmd_preproc_includes = cmds_info.get('recipe.preproc.includes', '')
+    cmd_preproc_includes = cmds_info.get('recipe.preproc.macros', '')
 
     main_file_path = prj.get_main_file_path()
     core_dir_paths = []
@@ -2009,11 +2105,13 @@ def build_sketch(build_info={}):
     if prj.is_main_file_ino():
         main_file_path = prj.get_simple_combine_path()
         prj_src_dir_paths.append(main_file_path)
+    else:
+        main_file_path = prj.get_main_file_path()
 
     all_src_paths, used_h_paths, h_cpp_info, all_lib_paths = \
         get_dep_lib_paths(cmd_preproc_includes, prj_src_dir_paths, h_path_info,
                           src_paths, used_h_paths, h_cpp_info, lib_paths,
-                          sel_arch, prj_build_path)
+                          sel_arch, prj_build_path, core_dir_paths)
 
     prj_paths = []
     lib_paths = []
@@ -2036,17 +2134,27 @@ def build_sketch(build_info={}):
     includes = ['"-I%s"' % p for p in all_lib_paths]
     inc_text = ' '.join(includes)
 
+    cmd_preproc_macros = cmds_info.get('recipe.preproc.macros', '')
     if prj.is_main_file_ino():
-        if 'recipe.preproc.macros' in cmds_info:
+        if cmd_preproc_macros:
             minus_src_name = '%s.gcc_minus.cpp' % prj_name
-            minus_src_path = os.path.join(build_sketch_path, minus_src_name)
-            file_path = prj.get_simple_combine_path(with_header=False)
-            cmd_preproc_macros = cmds_info.get('recipe.preproc.macros', '')
-            cmd = cmd_preproc_macros.replace('{includes}', '')
-            cmd = cmd.replace('{source_file}', file_path)
+            minus_src_path = build_sketch_path + '/' + minus_src_name
+
+            dummy_dir_path = prj_build_path + '/' + 'dummy'
+            minus_inc_text = '%s "-I%s"' % (inc_text, dummy_dir_path)
+
+            cmd = cmd_preproc_macros.replace('{includes}', minus_inc_text)
+            cmd = cmd.replace('{source_file}', main_file_path)
             cmd = cmd.replace('{preprocessed_file_path}', minus_src_path)
-            run_command(cmd)
+            gen_minus_src_file(cmd, dummy_dir_path)
+
+            if os.path.isfile(minus_src_path):
+                simply_minus_src(minus_src_path, main_file_path)
+
             main_file_path = prj.get_combine_path(minus_src_path)
+            if os.path.isfile(minus_src_path):
+                os.remove(minus_src_path)
+            clean_path(dummy_dir_path)
         else:
             main_file_path = prj.get_combine_path()
 
@@ -2068,22 +2176,20 @@ def build_sketch(build_info={}):
     prj_src_paths = [main_file_path] + prj_src_paths
 
     core_src_paths = get_src_paths(core_dir_paths, mode='recursion')
-    src_paths = prj_src_paths + lib_src_paths + core_src_paths
-
     prog_bar.stop()
 
-    cmds, msgs = get_build_cmds(cmds_info, prj_build_path, inc_text,
+    cmds, msgs = get_build_cmds(cmds_info, prj_path, prj_build_path, inc_text,
                                 prj_src_paths, lib_src_paths, core_src_paths,
                                 h_cpp_info)
 
     msg = '[Step 3] Start building.'
-    message_queue.put(msg)
+    build_message_queue.put(msg)
     prog_bar.start(sublime.active_window().status_message,
                    'Building sketch')
     is_ok = run_build_commands(cmds, msgs)
     prog_bar.stop()
     if not is_ok:
-        message_queue.put('[Build] Error occurred.')
+        build_message_queue.put('[Build] Error occurred.')
         return
 
     bin_file_pattern = cmds_info.get('recipe.output.save_file', '')
@@ -2127,12 +2233,15 @@ def build_sketch(build_info={}):
         sel_option = arduino_sel.get(key, '')
         last_build_info.set(key, sel_option)
     h_paths = list(h_cpp_info.keys())
-    for src_path in (src_paths + h_paths):
-        mtime = os.path.getmtime(src_path)
-        last_build_info.set(src_path, mtime)
 
-    msg = 'Build done.'
-    message_queue.put(msg)
+    src_paths = prj_src_paths + lib_src_paths + core_src_paths
+    for src_path in (src_paths + h_paths):
+        if os.path.isfile(src_path):
+            mtime = os.path.getmtime(src_path)
+            last_build_info.set(src_path, mtime)
+
+    msg = '[Build done.]'
+    build_message_queue.put(msg)
 
     if upload_mode:
         upload_cmd = selected.get_upload_command(arduino_info, project=prj,
@@ -2143,7 +2252,7 @@ def build_sketch(build_info={}):
 def upload_sketch(upload_cmd=''):
     """."""
     if upload_cmd:
-        message_queue.put('[Upload]...')
+        build_message_queue.put('[Upload/Backup]...')
         prog_bar.start(sublime.active_window().status_message,
                        'Building sketch')
         upload_port = arduino_info['selected'].get('serial_port', '')
@@ -2189,7 +2298,29 @@ def upload_sketch(upload_cmd=''):
             if monitor and is_monitor_running:
                 monitor.start()
             prog_bar.stop()
-            message_queue.put('Upload done.')
+            build_message_queue.put('[Upload/Backup done.]')
+
+
+def backup_bin_file(dir_path, mode='upload'):
+    """."""
+    if os.path.abspath(dir_path):
+        board_info = selected.get_sel_board_info(arduino_info)
+        build_mcu = board_info.get('build.mcu', 'unknown')
+        now = datetime.datetime.now()
+        now_text = now.strftime("%Y%m%d-%H%M%S")
+
+        file_name = '%s-%s.hex' % (build_mcu, now_text)
+        file_path = os.path.join(dir_path, file_name)
+        file_path = file_path.replace('\\', '/')
+        upload_cmd = selected.get_upload_command(arduino_info,
+                                                 bin_path=file_path,
+                                                 mode=mode)
+        if 'flash:w:' in upload_cmd:
+            upload_cmd = upload_cmd.replace('flash:w:', 'flash:r:')
+            sketch_uploader.put(upload_cmd)
+        else:
+            msg = 'Only support Avr Boards.'
+            message_queue.put(msg)
 
 
 def upload_bin_file(file_path, mode='upload'):
@@ -2204,7 +2335,9 @@ def upload_bin_file(file_path, mode='upload'):
 def burn_bootloader():
     """."""
     cmds = selected.get_bootloader_commands(arduino_info)
+    build_message_queue.put('[Burn Bootloader]...')
     run_bootloader_cmds(cmds)
+    build_message_queue.put('[Burn Bootloader Done.]')
 
 
 def start_serial_monitor(port):
@@ -2382,6 +2515,8 @@ def init_config_settings():
         config_settings.set('extra_build_flag', '')
     if config_settings.get('save_before_build') is None:
         config_settings.set('save_before_build', True)
+    if config_settings.get('build_enabled') is None:
+        config_settings.set('build_enabled', True)
     arduino_info['settings'] = config_settings
 
 
@@ -2487,6 +2622,8 @@ def init_menus():
 def _init():
     """."""
     global message_queue
+    global build_message_queue
+
     # 0. init paths and settings
     init_app_dir_settings()
     init_ardunio_app_path()
@@ -2513,6 +2650,10 @@ def _init():
     message_panel = st_panel.StPanel(info=arduino_info)
     message_queue = task_queue.TaskQueue(message_panel.write)
 
+    build_panel = st_panel.StPanel(name='stino_build_panel',
+                                   info=arduino_info)
+    build_message_queue = task_queue.TaskQueue(build_panel.write)
+
     pkgs_checker.start()
     serial_listener.start()
     network_port_listener.start()
@@ -2530,9 +2671,60 @@ def focus_view(view, line_no, col_no):
     text_point = view.text_point(line_no - 1, col_no)
     view.show(text_point)
 
+    win = view.window()
+    win.focus_view(view)
 
+
+def add_connection(conn_text):
+    """."""
+    user = 'root'
+    pwd = ''
+    addr = ''
+    port = '22'
+
+    user_text = ''
+    addr_text = ''
+    if '@' in conn_text:
+        user_text, addr_text = conn_text.split('@')[:2]
+    else:
+        addr_text = conn_text
+
+    if user_text:
+        if ':' in user_text:
+            user, pwd = user_text.split(':')[:2]
+        else:
+            user = user_text
+
+    if addr_text:
+        if ':' in addr_text:
+            addr, port = addr_text.split(':')[:2]
+        else:
+            addr = addr_text
+
+    if port.isdigit():
+        port = int(port.split('.')[0])
+
+    if user and addr:
+        try:
+            import paramiko
+        except ImportError:
+            pass
+        else:
+            client = paramiko.SSHClient()
+            client.load_system_host_keys()
+            client.set_missing_host_key_policy(paramiko.AutoAddPolicy())
+            client.connect(addr, port, user, pwd)
+            cmd = 'date'
+            stdin, stdout, stderr = client.exec_command(cmd)
+            print(stdout.read().decode('utf-8'))
+            print(stderr.read().decode('utf-8'))
+            client.close()
+
+
+###########################################################
 arduino_info = {'init_done': False}
 message_queue = None
+build_message_queue = None
 serial_listener = serial_port.PortListener(serial_port.list_serial_ports,
                                            update_serial_info)
 network_port_listener = \

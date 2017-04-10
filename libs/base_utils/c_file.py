@@ -439,7 +439,8 @@ def regular_chars(words):
                     new_word = word
 
         elif pre_word == '<':
-            if words[0] == '#include' or word in '<=':
+            if (len(words) > 1 and words[0] + words[1] == '#include') or \
+                    word in '<=':
                 new_word += word
             else:
                 new_words.append(new_word)
@@ -467,7 +468,7 @@ def regular_chars(words):
                 new_word = word
 
         elif word == '>':
-            if words[0] == '#include':
+            if len(words) > 1 and words[0] + words[1] == '#include':
                 new_word += word
             else:
                 new_words.append(new_word)
@@ -832,6 +833,7 @@ def collapse_braces(lines):
         line = line.strip()
         if not line:
             continue
+
         if line_on:
             if line.startswith('{'):
                 indent_flags.append('{')
@@ -915,7 +917,8 @@ def remove_none_func_lines(lines):
     for line in lines:
         if line.startswith('#') and '.h' in line:
             new_lines.append(line)
-        elif line.endswith(');') or line.endswith('{') or line.endswith('}'):
+        elif line.endswith(');') or line.endswith('{') or \
+                line.endswith('}') or line.endswith('};'):
             if '(' in line and ')' in line and '::' not in line:
                 new_lines.append(line)
     return new_lines
@@ -1036,6 +1039,7 @@ class CFile(file.File):
         super(CFile, self).__init__(file_path)
         self._last_mtime = 0
         self._text = self.read()
+        self._text = self._text.replace('\r', '\n')
         self._lines = self._text.split('\n')
         self._beautified_lines = []
         self._simplified_lines = []
@@ -1052,6 +1056,7 @@ class CFile(file.File):
         """Doc."""
         self._last_mtime = self.get_mtime()
         self._text = self.read()
+        self._text = self._text.replace('\r', '\n')
         self._lines = self._text.split('\n')
 
     def _check_modified(self):
@@ -1111,7 +1116,7 @@ class CFile(file.File):
         if not self._simplified_lines:
             self._simplified_lines = simplify_lines(self._lines)
         for line in self._simplified_lines:
-            if line.endswith('{') or line.endswith('}'):
+            if line.endswith('{') or line.endswith('}') or line.endswith('};'):
                 line = line.split('{')[0].strip()
                 function_definitions.append(line)
         return function_definitions

@@ -898,16 +898,63 @@ def update_platform_library_menu(arduino_info):
     text += '\t' * 5 + '},\n'
     text += '\t' * 5 + '{"caption": "-"}'
 
-    for library_path in library_paths:
-        library_path = library_path.replace('\\', '/')
-        library_name = get_lib_name_in_path(library_path)
-        text += ',\n'
-        text += '\t' * 5 + '{\n'
-        text += '\t' * 6 + '"caption": "%s",\n' % library_name
-        text += '\t' * 6 + '"id": "stino_library_%s",\n' % library_name
-        text += '\t' * 6 + '"command": "stino_import_library",\n'
-        text += '\t' * 6 + '"args": {"library_path": "%s"}\n' % library_path
-        text += '\t' * 5 + '}'
+    if len(library_paths) < 31:
+        for library_path in library_paths:
+            library_path = library_path.replace('\\', '/')
+            library_name = get_lib_name_in_path(library_path)
+            text += ',\n'
+            text += '\t' * 5 + '{\n'
+            text += '\t' * 6 + '"caption": "%s",\n' % library_name
+            text += '\t' * 6 + '"id": "stino_library_%s",\n' % library_name
+            text += '\t' * 6 + '"command": "stino_import_library",\n'
+            text += '\t' * 6
+            text += '"args": {"library_path": "%s"}\n' % library_path
+            text += '\t' * 5 + '}'
+    else:
+        index = 0
+        index_letters = []
+        while len(index_letters) < 2:
+            index_letters = []
+            letter_path_info = {}
+            for path in library_paths:
+                name = os.path.basename(path)
+                if index < len(name):
+                    index_letter = name[index].upper()
+                else:
+                    index_letter = '->'
+                if index_letter not in index_letters:
+                    index_letters.append(index_letter)
+                    letter_path_info[index_letter] = []
+                letter_path_info[index_letter].append(path)
+            index += 1
+
+        for index_letter in index_letters:
+            paths = letter_path_info[index_letter]
+            text += ',\n'
+            text += '\t' * 5 + '{\n'
+            text += '\t' * 6 + '"caption": "%s",\n' % index_letter
+            text += '\t' * 6
+            text += '"id": "stino_plibrary_cat_%s",\n' % index_letter
+            text += '\t' * 6 + '"children":\n'
+            text += '\t' * 6 + '[\n'
+            text += '\t' * 7 + '{"caption": "-"}'
+
+            for library_path in paths:
+                library_path = library_path.replace('\\', '/')
+                library_name = get_lib_name_in_path(library_path)
+                text += ',\n'
+                text += '\t' * 7 + '{\n'
+                text += '\t' * 8 + '"caption": "%s",\n' % library_name
+                text += '\t' * 8
+                text += '"id": "stino_library_%s",\n' % library_name
+                text += '\t' * 8
+                text += '"command": "stino_import_library",\n'
+                text += '\t' * 8 + '"args": {"library_path": '
+                text += '"%s"}\n' % library_path
+                text += '\t' * 7 + '}'
+
+            text += '\t' * 6 + ']\n'
+            text += '\t' * 5 + '}'
 
     text += '\n' + '\t' * 4 + ']\n'
     text += '\t' * 3 + '}\n'
@@ -943,6 +990,11 @@ def update_board_menu(arduino_info):
     text += '\t' * 6 + '"caption": "Save for Current Sketch",\n'
     text += '\t' * 6 + '"id": "stino_save_for_sketch",\n'
     text += '\t' * 6 + '"command": "stino_save_for_sketch"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Remove Current Sketch Settings",\n'
+    text += '\t' * 6 + '"id": "stino_remove_sketch_settings",\n'
+    text += '\t' * 6 + '"command": "stino_remove_sketch_settings"\n'
     text += '\t' * 5 + '},\n'
     text += '\t' * 5 + '{"caption": "-"}'
 
@@ -1092,6 +1144,11 @@ def update_network_port_menu(arduino_info):
     text += '\t' * 6 + '"caption": "Refresh",\n'
     text += '\t' * 6 + '"id": "stino_refresh_network_ports",\n'
     text += '\t' * 6 + '"command": "stino_refresh_network_ports"\n'
+    text += '\t' * 5 + '},\n'
+    text += '\t' * 5 + '{\n'
+    text += '\t' * 6 + '"caption": "Add Connection...",\n'
+    text += '\t' * 6 + '"id": "stino_add_connection",\n'
+    text += '\t' * 6 + '"command": "stino_add_connection"\n'
     text += '\t' * 5 + '},\n'
     text += '\t' * 5 + '{"caption": "-"}'
 

@@ -41,7 +41,8 @@ class StPanel:
             vector = self._panel.layout_extent()
             panel.window_to_layout(vector)
         elif self._info:
-            vector = self._info['selected'].get('panel_size', None)
+            key = '%s_size' % self._name
+            vector = self._info['selected'].get(key, None)
             if vector:
                 panel.window_to_layout(vector)
 
@@ -68,7 +69,7 @@ class StPanel:
             self._windows.append(self._window)
             self._panels.append(self._panel)
 
-    def write(self, text='', quiet=False):
+    def write(self, text='', quiet=False, mode='insert'):
         """."""
         if not text.endswith('\n'):
             text += '\n'
@@ -76,7 +77,6 @@ class StPanel:
             self._texts.pop(0)
         self._texts.append(text)
 
-        mode = 'insert'
         window = sublime.active_window()
         if window != self._window:
             if window in self._windows:

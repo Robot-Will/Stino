@@ -246,6 +246,11 @@
                         "id": "stino_save_for_sketch",
                         "command": "stino_save_for_sketch"
                     },
+                    {
+                        "caption": "Remove Current Sketch Settings",
+                        "id": "stino_remove_sketch_settings",
+                        "command": "stino_remove_sketch_settings"
+                    },
                     {"caption": "-"}
                 ]
             },
@@ -267,6 +272,12 @@
                 "id": "build_options",
                 "children":
                 [
+                    {
+                        "caption": "Build Enabled",
+                        "id": "stino_build_enabled",
+                        "command": "stino_toggle_build_enabled",
+                        "checkbox": true
+                    },
                     {
                         "caption": "Extra Flags",
                         "id": "stino_set_extra_flag",
@@ -333,6 +344,11 @@
                         "caption": "Refresh",
                         "id": "stino_refresh_network_ports",
                         "command": "stino_refresh_network_ports"
+                    },
+                    {
+                        "caption": "Add Connection...",
+                        "id": "stino_add_connection",
+                        "command": "stino_add_connection"
                     },
                     {"caption": "-"}
                 ]
@@ -513,6 +529,11 @@
             },
             {"caption": "-"},
             {
+                "caption": "Backup Binary from Device",
+                "id": "stino_backup_bin_file",
+                "command": "stino_backup_bin_file"
+            },
+            {
                 "caption": "Upload Binary File",
                 "id": "stino_upload_bin_file",
                 "command": "stino_upload_bin_file"
@@ -536,7 +557,14 @@
             {
                 "caption": "Show Message Panel",
                 "id": "stino_show_panel",
-                "command": "stino_show_panel"
+                "command": "stino_show_panel",
+                "args": {"panel_name": "stino_panel"}
+            },
+            {
+                "caption": "Show Build Message Panel",
+                "id": "stino_show_panel",
+                "command": "stino_show_panel",
+                "args": {"panel_name": "stino_build_panel"}
             },
             {
                 "caption": "Language",
