@@ -2206,7 +2206,10 @@ def build_sketch(build_info={}):
         out_binary_file_path = os.path.join(prj_path, out_binary_file_name)
         if os.path.isfile(out_binary_file_path):
             os.remove(out_binary_file_path)
-        shutil.copy(bin_file_path, out_binary_file_path)
+        try:
+            shutil.copy(bin_file_path, out_binary_file_path)
+        except (IOError, PermissionError):
+            pass
 
     arduino_info['settings'].set('full_build', False)
     size_cmd = cmds_info.get('recipe.size.pattern', '')
