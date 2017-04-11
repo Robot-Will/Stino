@@ -1482,6 +1482,24 @@ class StinoAutoFormatCommand(sublime_plugin.TextCommand):
         return state
 
 
+class StinoSelectIndentCharCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self, indent_char):
+        """."""
+        if stino.arduino_info['init_done']:
+            if not self.is_checked(indent_char):
+                stino.arduino_info['selected'].set('indent_char', indent_char)
+
+    def is_checked(self, indent_char):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            key = 'indent_char'
+            state = stino.arduino_info['selected'].get(key) == indent_char
+        return state
+
+
 #############################################
 # Help Commands
 #############################################

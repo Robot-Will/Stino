@@ -548,10 +548,36 @@
                 "id": "stino_burn_bootloader",
                 "command": "stino_burn_bootloader"
             },
+            {"caption": "-"},
             {
                 "caption": "Auto Format",
                 "id": "stino_auto_format",
                 "command": "stino_auto_format"
+            },
+            {
+                "caption": "Indent by",
+                "id": "stino_indent_options",
+                "children":
+                [
+                    {
+                        "caption": "Tab",
+                        "id": "stino_select_indent_char",
+                        "command": "stino_select_indent_char",
+                        "args": {"indent_char": "tab"}
+                    },
+                    {
+                        "caption": "2 Spaces",
+                        "id": "stino_select_indent_char",
+                        "command": "stino_select_indent_char",
+                        "args": {"indent_char": "2"}
+                    },
+                    {
+                        "caption": "4 Spaces",
+                        "id": "stino_select_indent_char",
+                        "command": "stino_select_indent_char",
+                        "args": {"indent_char": "4"}
+                    }
+                ]
             },
             {"caption": "-"},
             {

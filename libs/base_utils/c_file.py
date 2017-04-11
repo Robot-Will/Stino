@@ -593,7 +593,7 @@ def regular_lines(lines):
     return new_lines_list
 
 
-def break_long_line(line, indent_level):
+def break_long_line(line, indent_level, indent_char='\t'):
     """Doc."""
     words = split_line_to_words(line)
     level = indent_level + 1
@@ -607,15 +607,15 @@ def break_long_line(line, indent_level):
                 new_words.pop()
                 new_words.append('\\')
                 words_list.append(new_words)
-                new_words = ['\t' + word]
+                new_words = [indent_char + word]
     words_list.append(new_words)
     lines = [' '.join(words) for words in words_list]
-    lines = ['\t' * indent_level + line for line in lines]
+    lines = [indent_char * indent_level + line for line in lines]
     new_line = '\n'.join(lines)
     return new_line
 
 
-def indent_lines(lines):
+def indent_lines(lines, indent_char='\t'):
     """Doc."""
     new_lines = []
     indent_flags = []
@@ -628,7 +628,7 @@ def indent_lines(lines):
         if lines[0].startswith('/*') or lines[0].startswith('//'):
             indent_level = len(indent_flags) - indent_flags.count('#')
             for line in lines:
-                new_lines.append('\t' * indent_level + line)
+                new_lines.append(indent_char * indent_level + line)
             continue
 
         for line_index, line in enumerate(lines):
@@ -711,10 +711,11 @@ def indent_lines(lines):
                 if line.startswith('#if'):
                     new_line += '\n'
                 # if (4 * indent_level + len(line)) < MAX_LINE_LENGTH:
-                #     new_line += '\t' * indent_level + line
+                #     new_line += indent_char * indent_level + line
                 # else:
-                #     new_line += break_long_line(line, indent_level)
-                new_line += '\t' * indent_level + line
+                #     new_line += break_long_line(line, indent_level,
+                #                                 indent_char)
+                new_line += indent_char * indent_level + line
                 if line.startswith('#endif'):
                     new_line += '\n'
             else:
@@ -722,10 +723,11 @@ def indent_lines(lines):
                 if no_indent_once:
                     indent_level -= 1
                 # if (4 * indent_level + len(line)) < MAX_LINE_LENGTH:
-                #     new_line = '\t' * indent_level + line
+                #     new_line = indent_char * indent_level + line
                 # else:
-                #     new_line = break_long_line(line, indent_level)
-                new_line = '\t' * indent_level + line
+                #     new_line = break_long_line(line, indent_level,
+                #                                indent_char)
+                new_line = indent_char * indent_level + line
                 if line.startswith('}') and indent_flags.count('{') == 0:
                     new_line += '\n'
             new_lines.append(new_line)
@@ -934,11 +936,11 @@ def simplify_lines(lines):
     return lines
 
 
-def beautify_lines(lines):
+def beautify_lines(lines, indent_char='\t'):
     """Doc."""
     lines = strip_back_slash(lines)
     lines = break_lines(lines)
-    lines = indent_lines(lines)
+    lines = indent_lines(lines, indent_char)
     return lines
 
 
@@ -1074,11 +1076,11 @@ class CFile(file.File):
         self._check_modified()
         return self._beautified_lines
 
-    def get_beautified_text(self):
+    def get_beautified_text(self, indent_char='\t'):
         """Doc."""
         self._check_modified()
         if not self._beautified_lines:
-            self._beautified_lines = beautify_lines(self._lines)
+            self._beautified_lines = beautify_lines(self._lines, indent_char)
         beautified_text = '\n'.join(self._beautified_lines)
         beautified_text = beautified_text.replace('\n\n\n', '\n\n')
         beautified_text = beautified_text.replace('\n;', ';\n')
