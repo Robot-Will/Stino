@@ -1118,7 +1118,8 @@ class CFile(file.File):
         for line in self._simplified_lines:
             if line.endswith('{') or line.endswith('}') or line.endswith('};'):
                 line = line.split('{')[0].strip()
-                function_definitions.append(line)
+                if line.endswith(')'):
+                    function_definitions.append(line)
         return function_definitions
 
     def list_include_headers(self):
