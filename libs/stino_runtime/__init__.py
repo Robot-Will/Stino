@@ -1965,16 +1965,19 @@ def simply_minus_src(minus_src_path, file_path):
 
         is_src_text = False
         for line in lines:
+            line = line.strip()
+            if not line:
+                continue
+
             if line.startswith('#') and line.count('"') > 1:
-                words = line.split()
-                if len(words) > 2:
-                    word = words[2]
-                    if word.count('"') > 1:
-                        f_path = word[1:-1]
-                        if f_path == file_path:
-                            is_src_text = True
-                        else:
-                            is_src_text = False
+                index = line.index('"')
+                part_line = line[index + 1:]
+                index = part_line.index('"')
+                f_path = part_line[:index]
+                if f_path == file_path:
+                    is_src_text = True
+                else:
+                    is_src_text = False
 
             if is_src_text and not line.startswith('#'):
                 text += line + '\n'
@@ -2390,7 +2393,11 @@ def beautify_src(view, edit, file_path):
     """."""
     cur_file = c_file.CFile(file_path)
     if cur_file.is_cpp_file():
-        beautiful_text = cur_file.get_beautified_text()
+        lead_char = '\t'
+        indent_char = arduino_info['selected'].get('indent_char')
+        if indent_char.isdigit():
+            lead_char = int(indent_char) * ' '
+        beautiful_text = cur_file.get_beautified_text(lead_char)
         region = sublime.Region(0, view.size())
         view.replace(edit, region, beautiful_text)
 
@@ -2536,6 +2543,8 @@ def init_selected_settings():
         sel_settings.set('baudrate', '9600')
     if sel_settings.get('line_ending', None) is None:
         sel_settings.set('line_ending', 'None')
+    if sel_settings.get('indent_char', None) is None:
+        sel_settings.set('indent_char', 'tab')
     arduino_info['selected'] = sel_settings
 
 

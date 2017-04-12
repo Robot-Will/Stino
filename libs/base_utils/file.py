@@ -130,7 +130,7 @@ class File(AbstractFile):
         """Method Docs."""
         text = ''
         try:
-            with codecs.open(self._path, 'r', self._encoding) as f:
+            with codecs.open(self._path, 'r', self._encoding, 'ignore') as f:
                 text = f.read()
         except (IOError, UnicodeError):
             pass
@@ -148,7 +148,7 @@ class File(AbstractFile):
         if not os.path.isdir(self._dir):
             os.makedirs(self._dir)
         try:
-            with codecs.open(self._path, mode, self._encoding) as f:
+            with codecs.open(self._path, mode, self._encoding, 'ignore') as f:
                 f.write(text)
         except (IOError, UnicodeError):
             pass
