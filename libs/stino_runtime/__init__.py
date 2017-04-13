@@ -772,14 +772,16 @@ def open_project(project_path, win):
             has_prj_file = True
             break
 
-    if has_prj_file:
+    is_open_all_src = arduino_info['settings'].get('open_all_src')
+
+    if has_prj_file and not is_open_all_src:
         win.open_file(file_path)
     else:
         paths = glob.glob(project_path + '/*')
         file_paths = [p for p in paths if os.path.isfile(p)]
         for file_path in file_paths:
             ext = os.path.splitext(file_path)[-1]
-            if ext in c_file.INOC_EXTS:
+            if ext in c_file.SRC_EXTS:
                 win.open_file(file_path)
 
 

@@ -82,6 +82,12 @@
                         "command": "stino_open_in_new_win",
                         "checkbox": true
                     },
+                    {
+                        "caption": "All Source Files",
+                        "id": "stino_open_all_src",
+                        "command": "stino_open_all_src",
+                        "checkbox": true
+                    },
                     {"caption": "-"},
                     {
                         "caption": "New Sketch...",

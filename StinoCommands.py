@@ -278,6 +278,25 @@ class StinoOpenInNewWinCommand(sublime_plugin.WindowCommand):
         return state
 
 
+class StinoOpenAllSrcCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            state = \
+                bool(stino.arduino_info['settings'].get('open_all_src'))
+            stino.arduino_info['settings'].set('open_all_src', not state)
+
+    def is_checked(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            state = \
+                bool(stino.arduino_info['settings'].get('open_all_src'))
+        return state
+
+
 class StinoOpenSketchCommand(sublime_plugin.WindowCommand):
     """Open Sketch."""
 
