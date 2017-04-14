@@ -733,6 +733,8 @@ def check_tools_deps(platform_info):
             down_tool_info = down_tools_info.get(name, {})
             version_info = down_tool_info.get(version, {})
             systems_info = version_info.get('systems', [])
+
+            go_down = False
             for system_info in systems_info:
                 host = system_info.get('host', '')
                 url = system_info.get('url', '')
@@ -744,7 +746,6 @@ def check_tools_deps(platform_info):
                 elif sys_info.get_os_name() == 'linux':
                     id_text = '%s-' % platform.machine()
 
-                go_down = False
                 if id_text in host:
                     go_down = True
                     break
