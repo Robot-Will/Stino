@@ -2002,6 +2002,9 @@ def gen_minus_src_file(cmd, dummy_dir_path):
         if not os.path.isdir(dummy_dir_path):
             os.makedirs(dummy_dir_path)
         if not os.path.isfile(dummy_file_path):
+            dir_path = os.path.dirname(dummy_file_path)
+            if not os.path.isdir(dir_path):
+                os.makedirs(dir_path)
             with open(dummy_file_path, 'w') as f:
                 f.write('')
 
