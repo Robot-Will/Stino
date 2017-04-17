@@ -342,7 +342,14 @@ class StinoOpenExampleCommand(sublime_plugin.WindowCommand):
 
     def run(self, example_path):
         """."""
-        stino.open_project(example_path, self.window)
+        if stino.arduino_info['init_done']:
+            in_new = \
+                bool(stino.arduino_info['settings'].get('open_in_new_window'))
+            win = self.window
+            if in_new:
+                sublime.run_command('new_window')
+                win = sublime.windows()[-1]
+            stino.open_project(example_path, win)
 
 
 class StinoRefreshLibrariesCommand(sublime_plugin.WindowCommand):

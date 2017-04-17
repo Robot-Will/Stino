@@ -1043,7 +1043,7 @@ def get_h_path_info(project):
     ext_app_path = arduino_info['ext_app_path']
     platform_path = selected.get_sel_platform_path(arduino_info)
 
-    platform_paths = [sketchbook_path, platform_path, ext_app_path]
+    platform_paths = [platform_path, sketchbook_path, ext_app_path]
     for path in platform_paths:
         libraries_path = os.path.join(path, 'libraries')
         paths = glob.glob(libraries_path + '/*')
