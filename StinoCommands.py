@@ -1218,6 +1218,32 @@ class StinoSerialMonitorStopCommand(sublime_plugin.WindowCommand):
         return state
 
 
+class StinoSerialMonitorToggleRunningCommand(sublime_plugin.WindowCommand):
+    """."""
+
+    def run(self):
+        """."""
+        if stino.arduino_info['init_done']:
+            serial_port = stino.arduino_info['selected'].get('serial_port', '')
+            if serial_port:
+                monitor = \
+                    stino.arduino_info['serial_monitors'].get(serial_port,
+                                                              None)
+                if monitor and monitor.is_running():
+                    monitor.stop()
+                elif not monitor or not monitor.is_running():
+                    stino.start_serial_monitor(serial_port)
+
+    def is_enabled(self):
+        """."""
+        state = False
+        if stino.arduino_info['init_done']:
+            serial_port = stino.arduino_info['selected'].get('serial_port', '')
+            if serial_port:
+              state = True
+        return state
+
+
 class StinoSerialMonitorToggleScrollCommand(sublime_plugin.WindowCommand):
     """."""
 
