@@ -557,7 +557,7 @@ def unzip(zip_path, target_dir_path):
             except (IOError, zipfile.FileNotFoundError) as e:
                 message_queue.put('%s' % e)
                 is_ok = False
-    elif zip_path.endswith('.gz') or zip_path.endswith('.bz2'):
+    elif zip_path.endswith('.gz') or zip_path.endswith('.bz2') or zip_path.endswith('.tgz'):
         with tarfile.open(zip_path, 'r') as f:
             names = f.getnames()
             try:
