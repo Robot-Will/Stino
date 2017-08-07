@@ -744,7 +744,7 @@ def check_tools_deps(platform_info):
                 elif sys_info.get_os_name() == 'osx':
                     id_text = '-apple'
                 elif sys_info.get_os_name() == 'linux':
-                    id_text = '%s-' % platform.machine()
+                    id_text = '%s-pc-linux-gnu' % platform.machine()
 
                 if id_text in host:
                     go_down = True
