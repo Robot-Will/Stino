@@ -557,7 +557,7 @@ def unzip(zip_path, target_dir_path):
             except (IOError, zipfile.FileNotFoundError) as e:
                 message_queue.put('%s' % e)
                 is_ok = False
-    elif zip_path.endswith('.gz') or zip_path.endswith('.bz2'):
+    elif zip_path.endswith('.gz') or zip_path.endswith('.bz2') or zip_path.endswith('.tgz'):
         with tarfile.open(zip_path, 'r') as f:
             names = f.getnames()
             try:
@@ -744,7 +744,7 @@ def check_tools_deps(platform_info):
                 elif sys_info.get_os_name() == 'osx':
                     id_text = '-apple'
                 elif sys_info.get_os_name() == 'linux':
-                    id_text = '%s-' % platform.machine()
+                    id_text = '%s-pc-linux-gnu' % platform.machine()
 
                 if id_text in host:
                     go_down = True
