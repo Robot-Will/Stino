@@ -2191,7 +2191,7 @@ def build_sketch(build_info={}):
                                 prj_src_paths, lib_src_paths, core_src_paths,
                                 h_cpp_info)
 
-    msg = '[Step 3] Start building. %s %s' % (cmds, msgs)
+    msg = '[Step 3] Start building.'
     build_message_queue.put(msg)
     prog_bar.start(sublime.active_window().status_message,
                    'Building sketch')
