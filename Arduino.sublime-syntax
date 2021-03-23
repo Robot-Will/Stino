@@ -12,7 +12,7 @@ contexts:
       with_prototype:
         - match: \b(HIGH|LOW|INPUT|OUTPUT|INPUT_PULLUP|LED_BUILTIN)\b
           scope: constant.language.arduino
-        - match: \b(boolean|word|String|string|array)\b
+        - match: \b(boolean|byte|word|String|string|array)\b
           scope: storage.type.arduino
         - match: PROGRAM
           scope: storage.modifier.arduino
