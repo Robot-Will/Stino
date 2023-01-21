@@ -1825,7 +1825,7 @@ def run_build_commands(cmds, msgs):
     """."""
     is_ok = True
     n = 0
-
+    percent = 0
     non_blank_msgs = [m for m in msgs if m]
     total = len(non_blank_msgs)
     for cmd, msg in zip(cmds, msgs):
